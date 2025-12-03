@@ -1,4 +1,3 @@
-import { ArrowUpIcon } from '@/assets/icons';
 import Link from 'next/link';
 import React from 'react';
 
@@ -14,7 +13,7 @@ export default function StillExploring() {
         </h3>
         <Link
           href="/"
-          className="justify-center text-green-100 pt-6 gap-1  text-2xl font-medium transition-colors"
+          className="justify-center text-green-100 pt-6 gap-1  text-lg md:text-2xl font-medium transition-colors"
         >
           Take a Free Personality Test.{' '}
         </Link>
