@@ -1,9 +1,9 @@
 export const NAV_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'About us', href: '' },
-  { label: 'Mentors', href: '/' },
-  { label: 'FAQs', href: '/' },
-  { label: 'Contact us', href: '/' },
+  { label: 'About us', href: '/about' },
+  { label: 'Mentors', href: '#' },
+  { label: 'FAQs', href: '#' },
+  { label: 'Contact us', href: '#' },
 ];
 export const users = [
   '/reviews/user1.png',
@@ -28,7 +28,11 @@ export const imageSources = [
   '/image/user2.jpg',
   '/image/user.png',
 ];
-
+export const AboutimageSources = [
+  '/AboutImage/us.jpg',
+  '/AboutImage/user.jpg',
+  '/AboutImage/user2.jpg',
+];
 export const courseCategories = [
   {
     title: 'Foundations',

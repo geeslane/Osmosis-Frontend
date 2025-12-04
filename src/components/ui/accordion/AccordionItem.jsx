@@ -1,22 +1,29 @@
 'use client';
 import { AccordionIcon } from '@/assets/icons';
 
-export default function AccordionItem({ title, children }) {
+export default function AccordionItem({
+  title,
+  children,
+  className = '',
+  subcolor = '#0A2A20',
+}) {
   return (
-    <div className="group border-b border-green-100 py-4 cursor-pointer">
+    <div
+      className={`group ${className} border-b border-green-100 py-4 cursor-pointer `}
+    >
       {/* Header */}
       <div className="flex justify-between items-center select-none">
-        <h3 className="text-lg md:text-2xl font-semibold text-green-200">
+        <h3
+          className={`${className} text-lg md:text-2xl font-semibold text-green-200`}
+        >
           {title}
         </h3>
-
-        {/* Arrow animation */}
         <AccordionIcon
-          className="
+          className={`
             transition-all duration-300
             rotate-0 translate-x-0
             group-hover:-rotate-90 group-hover:-translate-x-[200px]
-          "
+          `}
         />
       </div>
 
@@ -28,7 +35,7 @@ export default function AccordionItem({ title, children }) {
           group-hover:max-h-40 group-hover:mt-3 group-hover:opacity-100
         "
       >
-        <p className="text-[#0A2A20]">{children}</p>
+        <h3 className={`text-[${subcolor}]`}>{children}</h3>
       </div>
     </div>
   );

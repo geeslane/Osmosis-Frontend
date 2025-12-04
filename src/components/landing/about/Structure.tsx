@@ -1,11 +1,10 @@
 'use client';
-import { ArrowUpIcon, CheckedIcon } from '@/assets/icons';
+import { CheckedIcon } from '@/assets/icons';
 import { ProductIMAGES } from '@/utils/data';
 import Image from 'next/image';
-import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
-export default function Program() {
+export default function Structure() {
   const [positions, setPositions] = useState(ProductIMAGES);
   useEffect(() => {
     const interval = setInterval(() => {
@@ -20,7 +19,7 @@ export default function Program() {
     return () => clearInterval(interval);
   }, []);
   return (
-    <div className="w-full flex flex-col items-center gap-10 lg:flex-row py-12 md:py-20 px-4 md:px-8 lg:px-16">
+    <div className="w-full flex flex-col justify-center items-center gap-10 lg:flex-row py-12 md:py-20 px-4 md:px-8 lg:px-16">
       <div className="flex flex-1 justify-center  mx-auto items-center  gap-3  ">
         <div className="flex gap-2 flex-col rounded-xl ">
           <Image
@@ -89,14 +88,6 @@ export default function Program() {
           Approximately 2.5 hours of scheduled sessions per week, plus personal
           reflection and weekly deliverables.{' '}
         </h3>
-        <div className="">
-          <Link
-            href="/"
-            className="md:px-6 justify-center  max-w-[380px]  px-2 flex items-center gap-1 py-2 border rounded-lg text-white font-semibold transition-colors bg-green-100"
-          >
-            See the 3-Month Program Outline <ArrowUpIcon />
-          </Link>
-        </div>
       </div>
     </div>
   );

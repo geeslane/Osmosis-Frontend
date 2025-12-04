@@ -1,26 +1,40 @@
-import Footer from "@/layout/home/Footer";
-import Navbar from "@/layout/home/Navbar";
-import { generateMetadata } from "@/utils/metadata";
-import { Metadata } from "next";
+import AboutHero from '@/components/landing/about/AboutHero';
+import Benefits from '@/components/landing/about/Benefits';
+import Impact from '@/components/landing/about/Impact';
+import Process from '@/components/landing/about/Process';
+import Ready from '@/components/landing/about/Ready';
+import Structure from '@/components/landing/about/Structure';
+import Team from '@/components/landing/about/Team';
+import VisionAndMisson from '@/components/landing/about/VisionAndMisson';
+import Why from '@/components/landing/about/Why';
+import Footer from '@/layout/home/Footer';
+import Navbar from '@/layout/home/Navbar';
+import { generateMetadata } from '@/utils/metadata';
+import { Metadata } from 'next';
 
-export const metadata: Metadata = generateMetadata({ title: 'FOJO | About', description: 'About FOJO - A community of believers passionately committed to walking in the footsteps of Jesus Christ.', url: '/about' });
+export const metadata: Metadata = generateMetadata({
+  title: 'Osmosis | About',
+  description:
+    'About Osmosis -  Osmosis is the launching pad for teenagers to absorb the clarity, confidence, and self-leadership skills to thrive in a complex world.',
+  url: '/about',
+});
 
 export default function AboutPage() {
-    return (
-        <div className="relative h-screen w-full">
-            <div
-                className="absolute inset-0 bg-cover text-white bg-center bg-no-repeat"
-                style={{ backgroundImage: "url('/images/home/hero-banner.png')" }}
-            >
-                <div className="absolute inset-0 bg-black/40" />
-            </div>
-            <Navbar />
-            <div className="relative z-10 h-full flex items-center justify-center">
-                About Page
-            </div>
-            <div className="relative z-0">
-                <Footer />
-            </div>
-        </div>
-    );
+  return (
+    <div className="h-full w-full max-w-[1600px] mx-auto">
+      <Navbar />
+      <div className=" mt-18 z-10 h-full">
+        <AboutHero />
+        <VisionAndMisson />
+        <Benefits />
+        <Process />
+        <Structure />
+        <Impact />
+        <Ready />
+        <Why />
+        <Team />
+        <Footer />
+      </div>
+    </div>
+  );
 }

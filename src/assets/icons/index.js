@@ -1114,3 +1114,32 @@ export const MenuCourse = () => {
     </svg>
   );
 };
+
+export const LongArrowUpIcon = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="113"
+      viewBox="0 0 24 113"
+      fill="none"
+    >
+      <path
+        d="M18.0698 103.18L11.9998 109.25L5.92983 103.18"
+        stroke="#6CBB01"
+        strokeWidth="1.5"
+        strokeMiterlimit="10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 0.75L12 108.75"
+        stroke="#6CBB01"
+        strokeWidth="1.5"
+        strokeMiterlimit="10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};

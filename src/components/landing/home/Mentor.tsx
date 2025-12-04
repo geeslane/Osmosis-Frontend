@@ -25,7 +25,7 @@ export default function Mentor() {
               <ArrowUpIcon />
             </Link>
           </div>
-          <div className="grid mt-10  grid-cols-2 md:grid-cols-4 ">
+          <div className="grid mt-10 lg:mx-[84px]  grid-cols-2 gap-3 md:grid-cols-4 ">
             <div className="flex flex-col gap-2 items-center justify-center w-full">
               <Image
                 src={'/image/prod.jpg'}

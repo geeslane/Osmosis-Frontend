@@ -13,13 +13,13 @@ export default function Transformation() {
           interactive experience designed for deep, lasting change.
         </h3>
         <div>
-          <AccordionItem title="The Foundation">
+          <AccordionItem className="" title="The Foundation">
             This is the content for The Foundation section.
           </AccordionItem>
           <AccordionItem title="The Framework">
             This is the content for The Foundation section.
           </AccordionItem>
-          <AccordionItem title="The Launchpad">
+          <AccordionItem className="border-none" title="The Launchpad">
             This is the content for The Foundation section.
           </AccordionItem>
         </div>

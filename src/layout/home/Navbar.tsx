@@ -66,8 +66,10 @@ const Navbar = () => {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className={`text-sm text-black-100 font-medium transition-colors duration-200 ${
-                      pathname === link.href ? 'text-black-100 font-normal' : ''
+                    className={`text-base  font-normal transition-colors duration-200 ${
+                      pathname === link.href
+                        ? 'text-black-100 font-semibold'
+                        : ''
                     }`}
                   >
                     {link.label}
