@@ -41,7 +41,7 @@ export default function Benefits() {
           title={`"They lack motivation and direction for the future."`}
           className="text-white  border-none"
         >
-          <h3 className="fontbold text-green-100 text-2xl">
+          <h3 className="fontbold text-green-100 ">
             This is the content for The Foundation section.
           </h3>
         </AccordionItem>
