@@ -2,8 +2,8 @@ export const NAV_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'About us', href: '/about' },
   { label: 'Mentors', href: '#' },
-  { label: 'FAQs', href: '#' },
-  { label: 'Contact us', href: '#' },
+  { label: 'FAQs', href: '/FAQ' },
+  { label: 'Contact us', href: '/contact' },
 ];
 export const users = [
   '/reviews/user1.png',

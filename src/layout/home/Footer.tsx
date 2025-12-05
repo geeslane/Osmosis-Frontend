@@ -1,5 +1,10 @@
 'use client';
-
+import {
+  FacebookIcon,
+  InstagramIcon,
+  LinkedinIcon,
+  YoutubeIcon,
+} from '@/assets/icons';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -49,7 +54,12 @@ const Footer = () => {
               <li>
                 <Link href="#">Contact</Link>
               </li>
-              <div></div>
+              <div className='flex items-center  gap-2'>
+                <YoutubeIcon />
+                <FacebookIcon />
+                <LinkedinIcon />
+                <InstagramIcon />
+              </div>
             </ul>
           </div>
         </div>

@@ -1,5 +1,5 @@
 'use client';
-import { AboutimageSources, } from '@/utils/data';
+import { AboutimageSources } from '@/utils/data';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 
@@ -29,10 +29,10 @@ export default function AboutHero() {
           className="hidden lg:flex"
         />
         <div className="w-full max-w-[879px] px-2 mx-auto flex flex-col gap-4 md:gap-8">
-          <h3 className="font-montserrat montserrat text-[32px]  md:text-[72px] leading-9  font-bold md:leading-18 text-center">
+          <h3 className="font-montserrat text-green-200 montserrat text-[32px]  md:text-[72px] leading-9  font-bold md:leading-18 text-center">
             Unlock Your Potential. Find Your Path.
           </h3>
-          <p className="text-black-200 montserrat px-4  text-center  md:text-xl">
+          <p className="text-green-200 montserrat px-4  text-center  md:text-xl">
              Osmosis is the launching pad for teenagers to absorb the clarity,
             confidence, and self-leadership skills to thrive in a complex world.
           </p>
@@ -45,7 +45,7 @@ export default function AboutHero() {
           className="hidden lg:flex"
         />
       </div>
-   
+
       <div className="flex h-full relative justify-center gap-2 ">
         <Image
           src={'/image/group.png'}

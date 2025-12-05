@@ -30,7 +30,7 @@ export default function Button({
 
   const variantClass =
     variant === 'primary'
-      ? 'bg-black-100 flex items-center font-semibold text-white hover:bg-[#1c1b1b]'
+      ? 'bg-green-100 flex items-center font-semibold text-white hover:bg-green-200'
       : variant === 'secondary'
       ? 'bg-gray-100 flex items-center text-gray-800 hover:bg-gray-200'
       : variant === 'outline'
