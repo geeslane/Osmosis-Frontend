@@ -39,12 +39,11 @@ export default function ContactHero() {
       <div className="w-full md:mt-5 mt-12  flex justify-center">
         <Link
           href="/"
-          className="px-6  flex items-center gap-2 py-2 border rounded-lg text-white font-semibold transition-colors bg-green-100"
+          className="px-6  flex items-center gap-2 py-2 border rounded-xl text-white font-semibold transition-colors bg-green-100"
         >
           Book a Free Call & Secure Their Spot <ArrowUpIcon />
         </Link>
       </div>
-    
     </div>
   );
 }

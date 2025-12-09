@@ -55,10 +55,10 @@ export default function GetInTouch() {
               <Button
                 variant="primary"
                 type="submit"
-                              rightIcon={<ArrowSubmit />}
-                              className='px-8 py-4'
+                rightIcon={<ArrowSubmit />}
+                className="px-8 py-4"
               >
-                Submit
+                Send Message
               </Button>
             </div>
           </form>

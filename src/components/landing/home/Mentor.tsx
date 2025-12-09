@@ -19,7 +19,7 @@ export default function Mentor() {
           <div className="mt-6 flex justify-center">
             <Link
               href="/"
-              className="md:px-6 justify-center  max-w-[380px]  px-4 flex items-center gap-1 py-2  border-0 rounded-lg text-white font-semibold transition-colors bg-green-100"
+              className="md:px-6 justify-center  max-w-[380px]  px-4 flex items-center gap-1 py-2  border-0 rounded-xl text-white font-semibold transition-colors bg-green-100"
             >
               Become a Mentor
               <ArrowUpIcon />

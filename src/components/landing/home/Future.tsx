@@ -23,7 +23,7 @@ export default function Future() {
       <div className="">
         <Link
           href="/"
-          className="md:px-6 justify-center  max-w-[380px]  px-2 flex items-center gap-1 py-2 border rounded-lg text-white font-semibold transition-colors bg-green-100"
+          className="md:px-6 justify-center  max-w-[380px]  px-2 flex items-center gap-1 py-2 border rounded-xl text-white font-semibold transition-colors bg-green-100"
         >
           Book a Free Call & Secure Their Spot <ArrowUpIcon />
         </Link>
