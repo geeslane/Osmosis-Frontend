@@ -8,7 +8,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CloseIcon, Hamburger } from '@/assets/icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import Logout from '../../components/auth/Logout';
 import { mobileMenuVariants, navbarVariants } from '@/animation';
 import { NAV_LINKS } from '@/utils/data';
 
@@ -94,9 +93,7 @@ const Navbar = () => {
                     </Link>
                   </li>
 
-                  <li>
-                    <Logout />
-                  </li>
+                  <li>Logout</li>
                 </ul>
               </li>
             ) : (
@@ -202,7 +199,7 @@ const Navbar = () => {
                           </Link>
                         </li>
                         <li>
-                          <Logout />
+                          hello
                         </li>
                       </ul>
                     )}

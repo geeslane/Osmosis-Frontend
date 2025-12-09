@@ -1,4 +1,3 @@
-import GridShape from '@/components/common/GridShape';
 import { generateMetadata } from '@/utils/metadata';
 import { Metadata } from 'next';
 import Image from 'next/image';
@@ -12,7 +11,6 @@ export const metadata: Metadata = generateMetadata({
 export default function Error404() {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden z-1">
-      <GridShape />
       <div className="mx-auto w-full max-w-[242px] text-center sm:max-w-[472px]">
         <h1 className="mb-8 font-bold text-gray-800 text-title-md dark:text-white/90 xl:text-title-2xl">
           ERROR
