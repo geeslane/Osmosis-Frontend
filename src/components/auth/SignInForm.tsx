@@ -67,9 +67,6 @@ export default function SignInForm() {
             <h1 className="ml-0 mb-1 font-lora font-bold text-black text-title-sm sm:text-title-md">
               Welcome Back!
             </h1>
-            <p className="text-sm text-gray-500 font-normal font-lora">
-              Continue your journey of discipleship
-            </p>
           </div>
           <div>
             <div className="">

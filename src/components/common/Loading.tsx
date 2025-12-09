@@ -8,8 +8,8 @@ const Loading = () => {
             <div className="w-12 h-12">
                 <Link href="/">
                     <Image
-                        src="/images/home/logo.png"
-                        alt="FOJO Logo"
+                        src="/image/logo.png"
+                        alt="Osmosis Logo"
                         width={90}
                         height={40}
                         className="object-contain mx-auto md:mx-0"

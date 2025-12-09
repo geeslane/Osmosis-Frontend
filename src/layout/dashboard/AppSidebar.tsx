@@ -11,10 +11,7 @@ import {
   AdminIcon,
 } from '@/assets/icons';
 import Image from 'next/image';
-import Fojo from '../../../public/images/home/Fojo.png';
-import FojoDark from '../../../public/images/home/logoDark.png';
-import FojoLogo from '../../../public/images/home/FojoLogo.png';
-import FojoDarkLogo from '../../../public/images/home/logo.png';
+
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { ChevronDown } from 'lucide-react';
@@ -182,26 +179,26 @@ const AppSidebar: React.FC = () => {
           {isExpanded || isMobileOpen ? (
             <>
               <Image
-                src={FojoLogo}
-                alt="Fojo Logo"
+                src={'/image/logo.png'}
+                alt="Osmosis Logo"
                 className="dark:hidden object-cover"
               />
               <Image
-                src={FojoDarkLogo}
-                alt="Fojo Logo Dark"
+                src={'/image/logo.png'}
+                alt="Osmosis Logo Dark"
                 className="hidden dark:block object-cover py-2"
               />
             </>
           ) : (
             <>
               <Image
-                src={Fojo}
-                alt="Fojo icon"
+                src={'/image/logo.png'}
+                alt="Osmosis icon"
                 className="dark:hidden object-cover"
               />
               <Image
-                src={FojoDark}
-                alt="Fojo Logo Dark"
+                src={'/image/logo.png'}
+                alt="Osmosis Logo Dark"
                 className="hidden dark:block object-cover py-2"
               />
             </>

@@ -1,9 +1,5 @@
 'use client';
-import {
-  MenuBarCLose,
-  MenuBarIcon,
-  MenuIcon,
-} from '@/assets/icons';
+import { MenuBarCLose, MenuBarIcon, MenuIcon } from '@/assets/icons';
 import { ThemeToggleButton } from '@/components/common/ThemeToggleButton';
 import NotificationDropdown from '@/components/header/NotificationDropdown';
 import UserDropdown from '@/components/header/UserDropdown';
@@ -12,8 +8,7 @@ import { useSidebar } from '@/context/SidebarContext';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState, useEffect, useRef } from 'react';
-import FojoLogo from '../../../public/images/home/FojoLogo.png';
-import FojoDarkLogo from '../../../public/images/home/logo.png';
+
 import SearchForm from '../dashboard/Search';
 
 const AppHeader: React.FC = () => {
@@ -64,13 +59,13 @@ const AppHeader: React.FC = () => {
           <Link href="/" className="lg:hidden">
             <>
               <Image
-                src={FojoLogo}
-                alt="Fojo Logo"
+                src={'/image/logo1.png'}
+                alt="Osmosis Logo"
                 className="dark:hidden object-cover"
               />
               <Image
-                src={FojoDarkLogo}
-                alt="Fojo Logo Dark"
+                src={'/image/logo1.png'}
+                alt="Osmosis Logo Dark"
                 className="hidden dark:block object-cover py-2"
               />
             </>
@@ -92,7 +87,6 @@ const AppHeader: React.FC = () => {
     lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none
     bg-white dark:bg-gray-900`}
         >
-
           <div className="flex items-center gap-2 2xsm:gap-3">
             {/* <!-- Dark Mode Toggler --> */}
             <ThemeToggleButton />

@@ -46,16 +46,18 @@ export default function SignUpForm() {
       const response = await registerUser(apiData).unwrap();
       await setSessionCookie(response.data?.token);
       showToast(response.message, 'success');
-      router.replace(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+      router.replace(
+        `/verify-email?email=${encodeURIComponent(formData.email)}`
+      );
     } catch (error: any) {
       if (error?.data?.errors) {
         Object.entries(error.data.errors).forEach(([field, messages]) =>
           setError(
             field as
-            | 'full_name'
-            | 'email'
-            | 'password'
-            | 'password_confirmation',
+              | 'full_name'
+              | 'email'
+              | 'password'
+              | 'password_confirmation',
             {
               type: 'server',
               message: Array.isArray(messages) ? messages[0] : messages,
@@ -70,14 +72,7 @@ export default function SignUpForm() {
     <div className="flex flex-col flex-1 lg:mx-18 my-[40px] shadow-[1px_4px_40px_0px_#0000000D] rounded-[20px] px-2 md:px-8 py-10  w-full overflow-y-auto no-scrollbar">
       <div className="flex flex-col font-lora justify-center flex-1 w-full max-w-md mx-auto">
         <div>
-          <div className="mb-5 sm:mb-8">
-            <h1 className="mb-2 font-semibold text-black text-title-sm sm:text-title-md">
-              Join the FOJO Community.
-            </h1>
-            <p className="text-sm text-gray-500 ">
-              Start your discipleship journey.
-            </p>
-          </div>
+          <div className="mb-5 sm:mb-8"></div>
           <div>
             <div className="">
               <Suspense fallback={<Loading />}>
@@ -149,7 +144,11 @@ export default function SignUpForm() {
                     className="flex mt-6 items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-black shadow-theme-xs  disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={isLoading}
                   >
-                    {isLoading ? <LoadingIcon width='20' height='20' /> : 'Sign Up'}
+                    {isLoading ? (
+                      <LoadingIcon width="20" height="20" />
+                    ) : (
+                      'Sign Up'
+                    )}
                   </button>
                 </div>
               </div>

@@ -1,5 +1,4 @@
 'use client';
-
 import { useSidebar } from '@/context/SidebarContext';
 import AppHeader from '@/layout/dashboard/AppHeader';
 import AppSidebar from '@/layout/dashboard/AppSidebar';

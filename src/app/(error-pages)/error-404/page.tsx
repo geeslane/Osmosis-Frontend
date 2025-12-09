@@ -1,10 +1,13 @@
-import GridShape from "@/components/common/GridShape";
-import { generateMetadata } from "@/utils/metadata";
-import { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
+import GridShape from '@/components/common/GridShape';
+import { generateMetadata } from '@/utils/metadata';
+import { Metadata } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
 
-export const metadata: Metadata = generateMetadata({ title: 'FOJO | Error', description: 'Page not found - FOJO' });
+export const metadata: Metadata = generateMetadata({
+  title: 'Osmosis | Error',
+  description: 'Page not found - Osmosis',
+});
 
 export default function Error404() {
   return (
@@ -43,7 +46,7 @@ export default function Error404() {
       </div>
       {/* <!-- Footer --> */}
       <p className="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-6 left-1/2 dark:text-gray-400">
-        &copy; {new Date().getFullYear()} - Fojo
+        &copy; {new Date().getFullYear()} - Osmosis
       </p>
     </div>
   );

@@ -23,7 +23,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`$ ${montserrat.variable}`}>
+    <html
+      lang="en"
+      className={`$ ${montserrat.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="robots" content="max-image-preview:large, NOODP, NOYDIR" />

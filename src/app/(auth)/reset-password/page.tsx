@@ -3,7 +3,7 @@ import AlertMessage from '@/components/common/AlertMessage';
 import { generateMetadata } from '@/utils/metadata';
 import { Metadata } from 'next';
 
-export const metadata: Metadata = generateMetadata({ title: 'FOJO | Reset Password' });
+export const metadata: Metadata = generateMetadata({ title: 'Osmosis | Reset Password' });
 
 interface PageProps {
   searchParams: Promise<{ token?: string; email?: string }>;

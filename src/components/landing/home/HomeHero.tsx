@@ -93,12 +93,12 @@ export default function HomeHero() {
           <div className="w-full flex justify-center">
             <Link
               href="/"
-              className="px-6 w-[160px] flex items-center gap-2 py-2 border rounded-lg text-white font-semibold transition-colors bg-green-100"
+              className="w-[213px] mb-20 mb:mb-0 montserrat flex items-center justify-center gap-2 py-2 border rounded-lg text-white font-semibold transition-colors bg-green-100"
             >
               Get Started <ArrowUpIcon />
             </Link>
           </div>
-          <div className="flex justify-center items-center mb-20">
+          <div className="md:flex hidden justify-center items-center mb-20">
             <div className="hidden md:flex absolute top-28 z-99 left-60 px-3 py-2 gap-3 justify-center items-center bg-white w-[260px] h-[50px] shadow-2xl rounded-full">
               <Image
                 src={'/image/Avatar.png'}
@@ -184,7 +184,7 @@ export default function HomeHero() {
               height={10}
               className="absolute top-24 rotate-12"
             />
-            <div className="flex items-center gap-3 ">
+            <div className="md:flex hidden items-center gap-3 ">
               <div className="flex flex-col gap-5">
                 {/* FIRST IMAGE STACK */}
                 <div className="relative w-[208px] max-md:w-[130px] max-md:h-[200px]">

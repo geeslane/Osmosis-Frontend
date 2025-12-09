@@ -1,10 +1,11 @@
-
 import ResendVerificationEmail from '@/components/auth/ResendEmailVerification';
 import AlertMessage from '@/components/common/AlertMessage';
 import { generateMetadata } from '@/utils/metadata';
 import { Metadata } from 'next';
 
-export const metadata: Metadata = generateMetadata({ title: 'FOJO | Verify Email' });
+export const metadata: Metadata = generateMetadata({
+  title: 'Osmosis | Verify Email',
+});
 interface PageProps {
   searchParams: Promise<{ email?: string }>;
 }
@@ -17,7 +18,7 @@ export default async function Page({ searchParams }: PageProps) {
       <div className="max-w-md mx-auto mt-10">
         <AlertMessage
           type="error"
-          message='Email is required to resend verification link.'
+          message="Email is required to resend verification link."
         />
       </div>
     );

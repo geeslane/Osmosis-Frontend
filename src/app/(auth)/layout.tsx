@@ -1,6 +1,5 @@
-import React from "react";
-import Image from "next/image";
-import Link from "next/link";
+import React from 'react';
+import Link from 'next/link';
 
 export default function AuthLayout({
   children,
@@ -15,18 +14,7 @@ export default function AuthLayout({
           <div className="absolute inset-0 authbg" />
           <div className="absolute inset-0 bg-black/20 z-0" />
           <div className="absolute top-8 left-8 z-10">
-            <Link href="/">
-            <Image  src="/authImages/logo1.png" alt="FOJO Logo" width={64} height={40} />
-            </Link>
-          </div>
-          <div className="absolute bottom-0 left-0 w-full px-9 pb-10 text-white z-10">
-            <h3 className="font-bold text-[60px] -tracking-tighter leading-[70px] uppercase">
-              begin your walk with Jesus today.
-            </h3>
-            <p className="text-start lora italic font-normal text-[22px]">
-              “Come, follow me, and I will make you fishers of men.”
-            </p>
-            <p className="text-start lora font-normal text-[22px]">— Matthew 4:19 (NIV)</p>
+            <Link href="/"></Link>
           </div>
         </div>
       </div>

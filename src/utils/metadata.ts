@@ -10,23 +10,10 @@ type MetadataProps = {
 };
 
 export function generateMetadata({
-  title = 'FOJO - Followers of Jesus Only',
-  description = 'At FOJO, we are a community of believers passionately committed to walking in the footsteps of Jesus Christ—nothing more, nothing less. In a world full of compromise and distraction, FOJO stands as a bold call back to authentic discipleship: living out the teachings of Christ with unwavering truth and fearless faith.',
-  keywords = [
-    'Jesus',
-    'Christian Discipleship',
-    'Bible Study',
-    'Faith',
-    'Spirit-filled',
-    'Biblical Teachings',
-    'Christian Videos',
-    'Fearless Faith',
-    'Followers of Jesus',
-    'FOJO',
-    'True Christianity',
-    'Christian Learning Platform',
-  ],
-  image = '/images/home/logo.png',
+  title = 'Osmosis',
+  description = '',
+  keywords = ['Learning'],
+  image = '/image/logo1.png',
   url,
 }: MetadataProps): Metadata {
   return {
@@ -43,7 +30,7 @@ export function generateMetadata({
           url: image,
           width: 1200,
           height: 630,
-          alt: 'FOJO - Followers of Jesus Only',
+          alt: 'Osmosis',
         },
       ],
     },
