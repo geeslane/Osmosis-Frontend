@@ -10,8 +10,8 @@ type MetadataProps = {
 };
 
 export function generateMetadata({
-  title = 'Viro',
-  description = 'Viro',
+  title = 'Osmosis',
+  description = 'Osmosis',
   keywords = ['learning'],
   image = '/image/logo1.png',
   url,
@@ -30,7 +30,7 @@ export function generateMetadata({
           url: image,
           width: 1200,
           height: 630,
-          alt: 'Viro',
+          alt: 'Osmosis',
         },
       ],
     },
