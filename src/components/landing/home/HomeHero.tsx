@@ -93,7 +93,7 @@ export default function HomeHero() {
           <div className="w-full flex justify-center">
             <Link
               href="/"
-              className="w-[213px] mb-20 mb:mb-0 montserrat flex items-center justify-center gap-2 py-2 border rounded-lg text-white font-semibold transition-colors bg-green-100"
+              className="w-[213px] mb-20 mb:mb-0 montserrat flex items-center justify-center gap-2 py-2 border rounded-xl text-white font-semibold transition-colors bg-green-100"
             >
               Get Started <ArrowUpIcon />
             </Link>

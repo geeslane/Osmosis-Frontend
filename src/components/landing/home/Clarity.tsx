@@ -1,4 +1,5 @@
-import { CheckedIcon } from '@/assets/icons';
+import { ArrowUpIcon, CheckedIcon } from '@/assets/icons';
+import Link from 'next/link';
 import React from 'react';
 
 export default function Clarity() {
@@ -60,6 +61,14 @@ export default function Clarity() {
                 </p>
               </div>
             </div>
+          </div>
+          <div className="w-full flex justify-start mt-6">
+            <Link
+              href="/"
+              className="w-[375px] mb-20 mb:mb-0 montserrat flex items-center justify-center gap-2 py-2 border rounded-xl text-white font-semibold transition-colors bg-green-100"
+            >
+              See the 3-Month Program Outline <ArrowUpIcon />
+            </Link>
           </div>
         </div>
       </div>
