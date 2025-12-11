@@ -18,7 +18,6 @@ export default function NotFound() {
             Back to Home Page
           </Link>
         </div>
-        {/* <!-- Footer --> */}
       </div>
       <Footer />
     </>
