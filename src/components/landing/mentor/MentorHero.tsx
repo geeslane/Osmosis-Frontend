@@ -33,7 +33,7 @@ export default function MentorHero() {
               Transform a Teen’s Life and Shape The Next Generation.
             </h3>
 
-            <p className="text-black-200 montserrat px-4  lg:text-start text-center  md:text-xl">
+            <p className="text-black-200 montserrat px-4 md:px-0  lg:text-start text-center  md:text-xl">
               We are looking for experienced teen coaches, mentors, and
               professionals passionate about teenagers to guide them through
               their journey of self-discovery. Your experience could be their

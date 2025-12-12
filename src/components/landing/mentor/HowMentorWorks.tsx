@@ -9,31 +9,39 @@ export default function HowMentorWorks() {
       </h3>
       <div className="px-6">
         <AccordionItem className="" title="Application">
-          This is the content for The Foundation section.
+          Submit your mentor application and share your areas of expertise.{' '}
         </AccordionItem>
         <AccordionItem title="Screening & Interview">
-          This is the content for The Foundation section.
+          We assess your experience, passion, and fit for supporting teenagers.{' '}
         </AccordionItem>
         <AccordionItem title="Mentor Agreement">
-          This is the content for The Foundation section.
+          mentors get to sign our mentor agreement to align with our code of
+          conduct.{' '}
         </AccordionItem>
         <AccordionItem title="Onboarding">
-          This is the content for The Foundation section.
+          Receive training, mentoring guidelines, and access to the mentor
+          platform.{' '}
         </AccordionItem>
         <AccordionItem title="Set Your Topics & Availability">
-          This is the content for The Foundation section.
+          Choose 2–3 topics you want to mentor teenagers on. Upload your
+          calendar and set your preferred time slots for mentoring sessions.{' '}
         </AccordionItem>
         <AccordionItem title="Teenagers Schedule You Directly">
-          This is the content for The Foundation section.
+          Teenagers browse mentors by topic and availability. They schedule
+          one-on-one sessions with you only during the time slots you have made
+          available.{' '}
         </AccordionItem>
         <AccordionItem title="Mentoring Cycle (3 Months)">
-          This is the content for The Foundation section.
+          Provide guidance for 2–4 hours per month, depending on your selected
+          topics, and support teens through conversations, clarity-building, and
+          personal development.{' '}
         </AccordionItem>
         <AccordionItem
           className="border-none"
           title="Completion & Impact Report"
         >
-          This is the content for The Foundation section.
+          View your real-time impact and contribution report through your mentor
+          dashboard.{' '}
         </AccordionItem>
       </div>
     </div>

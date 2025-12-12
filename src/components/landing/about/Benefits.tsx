@@ -16,7 +16,8 @@ export default function Benefits() {
           className="text-white"
         >
           <p className="fontbold text-green-100 md:text-2xl">
-            This is the content for The Foundation section.
+            The overwhelming pressure to have it all figured out leads to
+            anxiety and a fragile sense of self.{' '}
           </p>
         </AccordionItem>
         <AccordionItem
@@ -24,7 +25,8 @@ export default function Benefits() {
           className="text-white "
         >
           <p className="fontbold text-green-100 md:text-2xl">
-            This is the content for The Foundation section.
+            From big life decisions to daily habits, indecision creates stress
+            and inaction.
           </p>
         </AccordionItem>
         <AccordionItem
@@ -33,16 +35,18 @@ export default function Benefits() {
           className="text-white "
         >
           <p className="fontbold text-green-100 md:text-2xl">
-            This is the content for The Foundation section.
+            The path after high school feels like a fog, leading to
+            procrastination or a lack of ownership.
           </p>
         </AccordionItem>
         <AccordionItem
           subcolor={'#6cbb01'}
-          title={`"They lack motivation and direction for the future."`}
+          title={`"They need positive role models outside the family."`}
           className="text-white  border-none"
         >
           <h3 className="fontbold text-green-100 ">
-            This is the content for The Foundation section.
+            They feel alone in their struggles and are heavily influenced by
+            their immediate peer circle.
           </h3>
         </AccordionItem>
       </div>

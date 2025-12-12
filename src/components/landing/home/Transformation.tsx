@@ -14,13 +14,22 @@ export default function Transformation() {
         </h3>
         <div>
           <AccordionItem className="" title="The Foundation">
-            This is the content for The Foundation section.
+            Discovering Their Core Identity. They start by looking inward to
+            build an unshakeable foundation of self-awareness. They&#39;ll
+            define their values, identify their unique strengths, and craft a
+            personal mission statement that will act as their North Star.{' '}
           </AccordionItem>
           <AccordionItem title="The Framework">
-            This is the content for The Foundation section.
+            Building Tools for Life. With a clear identity, they&#39;ll build
+            the practical skills to navigate the world. This includes expert-led
+            masterclasses on habit formation, effective communication, emotional
+            resilience, and even the basics of financial literacy.{' '}
           </AccordionItem>
           <AccordionItem className="border-none" title="The Launchpad">
-            This is the content for The Foundation section.
+            Leading Their Own Future Finally, they turn their vision into a
+            plan. They&#39;ll learn the principles of self-leadership, time
+            management, and goal setting, culminating in a 5-year personal
+            growth plan they can start executing on day one.{' '}
           </AccordionItem>
         </div>
       </div>
