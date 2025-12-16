@@ -41,7 +41,7 @@ export default function MentorHero() {
             </p>
             <div className="w-full flex justify-center lg:justify-start ">
               <Link
-                href="/"
+                href="/mentor/signup"
                 className="w-[317px] mb:mb-0 montserrat flex items-center justify-center gap-2 py-2 border rounded-xl text-white font-semibold transition-colors bg-green-100"
               >
                 Apply to Become a Mentor <ArrowUpIcon />
