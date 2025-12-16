@@ -35,6 +35,18 @@
     background-repeat: no-repeat;
   }
 }
+@keyframes scrollUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+.scroll-vertical {
+  animation: scrollUp 10s linear infinite;
+}
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;

@@ -1,7 +1,7 @@
 export const NAV_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'About us', href: '/about' },
-  { label: 'Mentors', href: '#' },
+  { label: 'Mentors', href: '/mentor' },
   { label: 'FAQs', href: '/FAQ' },
   { label: 'Contact us', href: '/contact' },
 ];
@@ -10,6 +10,29 @@ export const users = [
   '/reviews/user2.png',
   '/reviews/user3.png',
   '/reviews/user.png',
+];
+
+export const mentors = [
+  {
+    image: '/image/mentor1.jpg',
+    name: 'Alex Johnson',
+    role: 'Mentor',
+  },
+  {
+    image: '/image/prod1.jpg',
+    name: 'Sarah Williams',
+    role: 'Lead Mentor',
+  },
+  {
+    image: '/image/prod.jpg',
+    name: 'Michael Brown',
+    role: 'Youth Coach',
+  },
+  {
+    image: '/image/prod2.jpg',
+    name: 'Michael Brown',
+    role: 'Youth Coach',
+  },
 ];
 
 export const IMAGES = [
