@@ -59,7 +59,7 @@ export default function RootLayout({
           href="/favicon/android-chrome-512x512.png"
         />
       </head>
-      <body className="font-outfit dark:bg-gray-900">
+      <body className="font-outfit dark:bg-gray-900" suppressHydrationWarning>
         <NextTopLoader {...loadingIndicatorProperties} />
         <GoogleOAuthProvider clientId={config.googleClientId ?? ''}>
           <Providers>{children}</Providers>
