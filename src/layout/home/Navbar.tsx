@@ -99,13 +99,13 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center gap-3">
                 <Link
-                  href="/"
+                  href="/signin"
                   className="px-6 py-2 montserrat   rounded-lg  text-black-100 font-medium transition-colors  hover:bg-green-100"
                 >
                   Sign in
                 </Link>
                 <Link
-                  href="/"
+                  href="/teenagers/signup"
                   className=" px-6 py-2 border rounded-lg text-white font-medium transition-colors bg-green-200 hover:bg-green-100"
                 >
                   Get Started
@@ -198,23 +198,21 @@ const Navbar = () => {
                             Dashboard
                           </Link>
                         </li>
-                        <li>
-                          hello
-                        </li>
+                        <li>hello</li>
                       </ul>
                     )}
                   </div>
                 ) : (
                   <>
                     <Link
-                      href="/"
+                      href="/signin"
                       className="block text-center text-sm border border-green-100 text-black-100 px-6 py-2 rounded-lg font-medium hover:bg-white hover:text-black transition-colors duration-200"
                       onClick={() => setMenuOpen(false)}
                     >
                       Sign in
                     </Link>
                     <Link
-                      href="/signin"
+                      href="/teenagers/signup"
                       className="block text-center text-sm border bg-green-100 px-6 py-2 rounded-lg text-white font-medium hover:bg-white hover:text-black transition-colors duration-200"
                       onClick={() => setMenuOpen(false)}
                     >

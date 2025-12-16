@@ -1,15 +1,15 @@
-"use client";
-import { CloseIcon } from "@/assets/icons";
-import React, { useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
+'use client';
+import { CloseIcon } from '@/assets/icons';
+import React, { useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   className?: string;
   children: React.ReactNode;
-  showCloseButton?: boolean; 
-  isFullscreen?: boolean; 
+  showCloseButton?: boolean;
+  isFullscreen?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -24,40 +24,40 @@ export const Modal: React.FC<ModalProps> = ({
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener("keydown", handleEscape);
+      document.addEventListener('keydown', handleEscape);
     }
 
     return () => {
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen, onClose]);
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = 'unset';
     }
 
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
   const contentClasses = isFullscreen
-    ? "w-full h-full mx-auto"
-    : "relative w-full h-full rounded-3xl mx-auto  dark:bg-gray-900";
+    ? 'w-full h-full mx-auto'
+    : 'relative w-full h-full rounded-3xl mx-auto  dark:bg-gray-900';
 
   return createPortal(
-    <div className="fixed inset-0 flex items-center justify-center overflow-y-auto modal z-99999">
+    <div className="fixed inset-0 font-montserrat montserrat flex items-center justify-center overflow-y-auto modal z-99999">
       {!isFullscreen && (
         <div
           className="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-xs"
@@ -77,9 +77,13 @@ export const Modal: React.FC<ModalProps> = ({
             <CloseIcon />
           </button>
         )}
-        <div>{children}</div>
+        <div className="justify-center flex items-center h-full">
+          <div className="bg-white max-w-[400px] shadow-2xl p-6 w-full rounded-md">
+            {children}
+          </div>
+        </div>
       </div>
-    </div>
-    , document.body,
-  )
+    </div>,
+    document.body
+  );
 };

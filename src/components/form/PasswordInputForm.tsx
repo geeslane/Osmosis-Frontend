@@ -25,10 +25,8 @@ export default function PasswordInputForm({
   };
 
   return (
-    <div className="w-full">
-      {label && (
-        <label className="block mb-1 font-medium text-gray-500">{label}</label>
-      )}
+    <div className="flex font-montserrat montserrat flex-col gap-1">
+      {label && <label className="text-green-300 font-medium">{label}</label>}
       <div className="relative">
         <InputForm
           name={name}
@@ -42,9 +40,9 @@ export default function PasswordInputForm({
           className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-8"
         >
           {visible ? (
-            <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
+            <EyeIcon className="fill-[#1E1E1E] dark:fill-gray-400" />
           ) : (
-            <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
+            <EyeCloseIcon className="fill-[#1E1E1E] dark:fill-gray-400" />
           )}
         </span>
       </div>

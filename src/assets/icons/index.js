@@ -1289,3 +1289,222 @@ export const IntegrityIcon = () => {
     </svg>
   );
 };
+
+export const ChevronLeftIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M15 19l-7-7 7-7"
+    />
+  </svg>
+);
+
+export const ChevronRightIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 5l7 7-7 7"
+    />
+  </svg>
+);
+
+export const CheckIcon = () => (
+  <svg
+    className="w-6 h-6"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M5 13l4 4L19 7"
+    />
+  </svg>
+);
+
+export const UsersIcon = () => (
+  <svg
+    className="w-6 h-6"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+    />
+  </svg>
+);
+
+export const PhoneIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+  >
+    <g clipPath="url(#clip0_986_177)">
+      <path
+        d="M12.5418 4.16634C13.3557 4.32515 14.1038 4.72322 14.6902 5.30962C15.2766 5.89602 15.6746 6.64406 15.8334 7.45801M12.5418 0.833008C14.2328 1.02087 15.8098 1.77815 17.0136 2.98051C18.2175 4.18287 18.9768 5.75885 19.1668 7.44967M18.3334 14.0997V16.5997C18.3344 16.8318 18.2868 17.0615 18.1939 17.2741C18.1009 17.4868 17.9645 17.6777 17.7935 17.8346C17.6225 17.9915 17.4206 18.1109 17.2007 18.1853C16.9809 18.2596 16.7479 18.2872 16.5168 18.2663C13.9525 17.9877 11.4893 17.1115 9.32511 15.708C7.31163 14.4286 5.60455 12.7215 4.32511 10.708C2.91676 8.53401 2.04031 6.05884 1.76677 3.48301C1.74595 3.25256 1.77334 3.02031 1.84719 2.80103C1.92105 2.58175 2.03975 2.38025 2.19575 2.20936C2.35174 2.03847 2.54161 1.90193 2.75327 1.80844C2.96492 1.71495 3.19372 1.66656 3.42511 1.66634H5.92511C6.32953 1.66236 6.7216 1.80557 7.02824 2.06929C7.33488 2.333 7.53517 2.69921 7.59177 3.09967C7.69729 3.89973 7.89298 4.68528 8.17511 5.44134C8.28723 5.73961 8.31149 6.06377 8.24503 6.37541C8.17857 6.68705 8.02416 6.9731 7.80011 7.19967L6.74177 8.25801C7.92807 10.3443 9.65549 12.0717 11.7418 13.258L12.8001 12.1997C13.0267 11.9756 13.3127 11.8212 13.6244 11.7548C13.936 11.6883 14.2602 11.7126 14.5584 11.8247C15.3145 12.1068 16.1001 12.3025 16.9001 12.408C17.3049 12.4651 17.6746 12.669 17.9389 12.9809C18.2032 13.2928 18.3436 13.691 18.3334 14.0997Z"
+        stroke="#282F2E"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </g>
+    <defs>
+      <clipPath id="clip0_986_177">
+        <rect width="20" height="20" fill="white" />
+      </clipPath>
+    </defs>
+  </svg>
+);
+
+export const LockIcon = () => (
+  <svg
+    className="w-6 h-6"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+    />
+  </svg>
+);
+
+export const EmailIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+  >
+    <path
+      d="M18.3334 4.99967C18.3334 4.08301 17.5834 3.33301 16.6667 3.33301H3.33341C2.41675 3.33301 1.66675 4.08301 1.66675 4.99967M18.3334 4.99967V14.9997C18.3334 15.9163 17.5834 16.6663 16.6667 16.6663H3.33341C2.41675 16.6663 1.66675 15.9163 1.66675 14.9997V4.99967M18.3334 4.99967L10.0001 10.833L1.66675 4.99967"
+      stroke="#282F2E"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const CalendarIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+    />
+  </svg>
+);
+
+export const LocationIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+    />
+  </svg>
+);
+
+export const HeartIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+    />
+  </svg>
+);
+
+export const UploadFileIcon = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="46"
+      height="46"
+      viewBox="0 0 46 46"
+      fill="none"
+    >
+      <rect x="3" y="3" width="40" height="40" rx="20" fill="#D4F0F9" />
+      <rect
+        x="3"
+        y="3"
+        width="40"
+        height="40"
+        rx="20"
+        stroke="#F2F3FC"
+        strokeWidth="6"
+      />
+      <g clipPath="url(#clip0_1010_5597)">
+        <path
+          d="M26.3333 26.3332L23 22.9999M23 22.9999L19.6666 26.3332M23 22.9999V30.4999M29.9916 28.3249C30.8044 27.8818 31.4465 27.1806 31.8165 26.3321C32.1866 25.4835 32.2635 24.5359 32.0351 23.6388C31.8068 22.7417 31.2862 21.9462 30.5555 21.3778C29.8248 20.8094 28.9257 20.5005 28 20.4999H26.95C26.6977 19.5243 26.2276 18.6185 25.5749 17.8507C24.9222 17.0829 24.104 16.4731 23.1817 16.0671C22.2594 15.661 21.2571 15.4694 20.2501 15.5065C19.243 15.5436 18.2575 15.8085 17.3676 16.2813C16.4777 16.7541 15.7066 17.4225 15.1122 18.2362C14.5177 19.05 14.1155 19.9879 13.9358 20.9794C13.756 21.9709 13.8034 22.9903 14.0743 23.961C14.3452 24.9316 14.8327 25.8281 15.5 26.5832"
+          stroke="#29A3CC"
+          strokeWidth="1.66667"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </g>
+      <defs>
+        <clipPath id="clip0_1010_5597">
+          <rect
+            width="20"
+            height="20"
+            fill="white"
+            transform="translate(13 13)"
+          />
+        </clipPath>
+      </defs>
+    </svg>
+  );
+};
