@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function Why() {
   return (
-    <div className=" flex flex-col font-montserrat montserrat items-center justify-center py-24 px-4">
+    <div className=" flex flex-col font-montserrat montserrat items-center justify-center py-24 px-6">
       <div className="max-w-[640px] flex flex-col gap-8 w-full ">
         <h3 className="text-green-200  text-[26px] leading-8 md:leading-14 md:text-5xl font-bold">
           Why Osmosis{' '}

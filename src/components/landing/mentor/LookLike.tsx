@@ -15,7 +15,7 @@ export default function LookLike() {
   }, []);
 
   return (
-    <div className="lg:-mt-40 lg:mb-40 flex md:max-w-[1133px] md:mx-auto gap-12 font-montserrat md:px-10 items-center lg:px-[100px]">
+    <div className="lg:-mt-40 lg:mb-40 flex md:max-w-[1133px] md:mx-auto gap-12 montserrat md:px-10 items-center lg:px-[100px]">
       <div className="md:flex-1/3 lg:flex hidden">
         <div className="relative hidden md:flex items-center">
           <div className="bg-white flex flex-col gap-6 border-[#68624E] p-4 border-2 w-[301px] ml-6 absolute h-[695px] rounded-[40px] overflow-hidden">
@@ -51,7 +51,7 @@ export default function LookLike() {
         </div>
       </div>
 
-      <div className="md:flex-2/3 gap-4 flex flex-col md:max-w-[751px] ">
+      <div className="md:flex-2/3 gap-8 flex flex-col md:max-w-[751px] ">
         <h3 className="font-montserrat text-green-200 montserrat text-[24px] md:leading-14   md:text-[48px]   font-bold  lg:text-start text-center  ">
           What Our Mentoring Looks Like{' '}
         </h3>

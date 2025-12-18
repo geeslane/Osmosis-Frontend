@@ -11,6 +11,11 @@ export const RegisterMentorFormSchema = yup.object({
   phoneNumber: yup.string().required('Phone number is required'),
   gender: yup.string().required('Gender is required'),
   address: yup.string().required('Address is required'),
+  linkedin: yup
+    .string()
+    .url('Please enter a valid LinkedIn URL')
+    .required('LinkedIn profile is required'),
+  bio: yup.string().required('Bio is required'),
 });
 
 export const RegisterFormSchema = yup.object({
@@ -18,11 +23,17 @@ export const RegisterFormSchema = yup.object({
 
   email: yup.string().email('Invalid email').required('Email is required'),
 
+  phoneNumber: yup.string().required('Phone number is required'),
+
+  parentFullName: yup.string().required('Parent full name is required'),
+
+  parentEmail: yup.string().email('Invalid email').required('Parent email is required'),
+
+  parentPhoneNumber: yup.string().required('Parent phone number is required'),
+
   dateOfBirth: yup.string().required('Date of birth is required'),
 
   gender: yup.string().required('Gender is required'),
-
-  phoneNumber: yup.string().required('Phone number is required'),
 
   address: yup.string().required('Address is required'),
 

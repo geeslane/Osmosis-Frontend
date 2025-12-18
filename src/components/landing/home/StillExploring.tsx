@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function StillExploring() {
   return (
-    <section className="w-full font-montserrat montserrat py-12 md:py-20 px-4 md:px-8 lg:px-16">
+    <section className="w-full font-montserrat montserrat py-12 md:py-20 px-4 md:px-8 lg:px-[190px]">
       <div className="max-w-7xl  mx-auto">
         <h3 className="text-green-200  text-[26px] leading-8 md:leading-14 md:text-5xl font-bold">
           Still Exploring?{' '}

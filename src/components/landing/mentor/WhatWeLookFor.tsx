@@ -27,7 +27,7 @@ export default function WhatWeLookFor() {
             <h3 className="text-lg md:text-2xl font-semibold">
               Professional Excellence
             </h3>
-            <p className="text-base md:text-xl">
+            <p className="text-base leading-8 md:text-xl">
               Minimum 5+ years of experience. You bring real-world insights that
               textbooks can&#39;t teach.
             </p>
@@ -39,7 +39,7 @@ export default function WhatWeLookFor() {
             <h3 className="text-lg md:text-2xl font-semibold">
               Radical Empathy{' '}
             </h3>
-            <p className="text-base md:text-xl">
+            <p className="text-base leading-8 md:text-xl">
               The ability to listen without judgment. We don&#39;t dictate
               paths; we help teens discover their own.
             </p>
@@ -60,7 +60,7 @@ export default function WhatWeLookFor() {
           <IntegrityIcon />
           <div className="space-y-2">
             <h3 className="text-lg md:text-2xl font-semibold">Integrity</h3>
-            <p className="text-base md:text-xl">
+            <p className="text-base md:text-xl leading-8">
               Working with minors is a privilege. Mentors must pass a background
               check and adhere to our code of conduct.{' '}
             </p>

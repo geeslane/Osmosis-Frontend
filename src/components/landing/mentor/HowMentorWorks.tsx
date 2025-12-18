@@ -3,9 +3,9 @@ import React from 'react';
 
 export default function HowMentorWorks() {
   return (
-    <div className="max-w-[880px]  flex flex-col gap-14 mx-auto w-full py-[120px]">
+    <div className="max-w-[880px] montserrat  flex flex-col gap-14 mx-auto w-full py-[120px]">
       <h3 className="font-montserrat text-green-100 montserrat text-[24px] md:leading-14   md:text-[48px]   font-bold  lg:text-start text-center  ">
-        What Our Mentoring Looks Like{' '}
+        How The Mentorship Works{' '}
       </h3>
       <div className="px-6">
         <AccordionItem className="" title="Application">

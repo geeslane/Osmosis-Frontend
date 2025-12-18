@@ -1,6 +1,6 @@
 'use client';
-import { ArrowUpIcon, Star } from '@/assets/icons';
-import { imageSources, users } from '@/utils/data';
+import { ArrowUpIcon } from '@/assets/icons';
+import { imageSources } from '@/utils/data';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
@@ -31,7 +31,7 @@ export default function HomeHero() {
           className="hidden lg:flex"
         />
         <div className="w-full max-w-[879px] mx-auto flex flex-col gap-4 md:gap-8">
-          <h3 className="font-montserrat montserrat text-[32px]  md:text-[72px] leading-9  font-bold md:leading-18 text-center">
+          <h3 className="font-montserrat montserrat text-green-200 text-[32px]  md:text-[72px] leading-9  font-bold md:leading-18 text-center">
             Navigate Your Now. Design Your Future
           </h3>
           <p className="text-black-200 montserrat px-4  text-center  md:text-xl">
@@ -48,8 +48,9 @@ export default function HomeHero() {
           className="hidden lg:flex"
         />
       </div>
+      {/* 
       <div className="flex justify-center md:mt-0 mt-8 items-center gap-3">
-        <div className="flex -space-x-3">
+         <div className="flex -space-x-3">
           {users.map((src, i) => (
             <div
               key={i}
@@ -78,8 +79,8 @@ export default function HomeHero() {
               from 200+ reviews
             </span>
           </div>
-        </div>
       </div>
+        </div> */}
       <div className="flex h-full relative justify-center gap-2 ">
         <Image
           src={'/image/group.png'}
@@ -89,10 +90,10 @@ export default function HomeHero() {
           className="absolute w-full "
         />
 
-        <div className="relative w-full flex flex-col mt-12 gap-20">
+        <div className="relative w-full flex flex-col mt-6 gap-20">
           <div className="w-full flex justify-center">
             <Link
-              href="/"
+              href="/teenagers/signup"
               className="w-[213px] mb-20 mb:mb-0 montserrat flex items-center justify-center gap-2 py-2 border rounded-xl text-white font-semibold transition-colors bg-green-100"
             >
               Get Started <ArrowUpIcon />

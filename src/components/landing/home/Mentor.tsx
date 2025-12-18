@@ -11,31 +11,31 @@ export default function Mentor() {
           Our Mentors{' '}
         </h3>
         <div>
-          <p className="max-w-[1000px] text-center md:text-xl text-green-200">
+          <p className="max-w-[754px] mx-auto text-center md:text-xl text-green-200">
             Behind every confident teen is a mentor who believes in them.Our
             mentors are skilled professionals and passionate individuals who
             guide teenagers with empathy, accountability, and experience.
           </p>
           <div className="mt-6 flex justify-center">
             <Link
-              href="/"
+              href="/mentor/signup"
               className="md:px-6 justify-center  max-w-[380px]  px-4 flex items-center gap-1 py-2  border-0 rounded-xl text-white font-semibold transition-colors bg-green-100"
             >
               Become a Mentor
               <ArrowUpIcon />
             </Link>
           </div>
-          <div className="grid mt-10 lg:mx-[84px]  grid-cols-2 gap-3 md:grid-cols-4 ">
+          <div className="grid mt-10 lg:mx-[64px]  grid-cols-2 gap-6 md:grid-cols-4 ">
             <div className="flex flex-col gap-2 items-center justify-center w-full">
               <Image
                 src={'/image/prod.jpg'}
                 alt=""
-                width={165}
-                height={167}
+                width={300}
+                height={300}
                 className="rounded-xl transition-all duration-700"
               />
               <div className="flex flex-col items-center">
-                <h3 className="text-green-100 font-semibold md:text-xl">
+                <h3 className="text-green-100 font-bold md:text-xl">
                   Alex Johnson
                 </h3>
                 <p className="text-green-200 text-sm font-medium">Mentor</p>
@@ -45,12 +45,12 @@ export default function Mentor() {
               <Image
                 src={'/image/prod.jpg'}
                 alt=""
-                width={165}
-                height={167}
+                width={300}
+                height={300}
                 className="rounded-xl transition-all duration-700"
               />
               <div className="flex flex-col items-center">
-                <h3 className="text-green-100 font-semibold md:text-xl">
+                <h3 className="text-green-100 font-bold md:text-xl">
                   Alex Johnson
                 </h3>
                 <p className="text-green-200 text-sm font-medium">Mentor</p>
@@ -60,12 +60,12 @@ export default function Mentor() {
               <Image
                 src={'/image/prod.jpg'}
                 alt=""
-                width={165}
-                height={167}
+                width={300}
+                height={300}
                 className="rounded-xl transition-all duration-700"
               />
               <div className="flex flex-col items-center">
-                <h3 className="text-green-100 font-semibold md:text-xl">
+                <h3 className="text-green-100 font-bold md:text-xl">
                   Alex Johnson
                 </h3>
                 <p className="text-green-200 text-sm font-medium">Mentor</p>
@@ -75,12 +75,12 @@ export default function Mentor() {
               <Image
                 src={'/image/prod.jpg'}
                 alt=""
-                width={165}
-                height={167}
+                width={300}
+                height={300}
                 className="rounded-xl transition-all duration-700"
               />
               <div className="flex flex-col items-center">
-                <h3 className="text-green-100 font-semibold md:text-xl">
+                <h3 className="text-green-100 font-bold md:text-xl">
                   Alex Johnson
                 </h3>
                 <p className="text-green-200 text-sm font-medium">Mentor</p>
