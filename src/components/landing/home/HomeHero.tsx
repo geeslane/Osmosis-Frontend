@@ -22,7 +22,7 @@ export default function HomeHero() {
   }, []);
   return (
     <div className="flex h-full flex-col ">
-      <div className="flex font-montserrat montserrat items-center pt-[48px] justify-between">
+      <div className="flex font-montserrat   montserrat items-center  lg:px-0 justify-between">
         <Image
           src={'/image/Oval.png'}
           alt="Oval"
@@ -30,7 +30,7 @@ export default function HomeHero() {
           height={238}
           className="hidden lg:flex"
         />
-        <div className="w-full max-w-[879px] mx-auto flex flex-col gap-4 md:gap-8">
+        <div className="w-full max-w-[879px] mt-[100px] mx-auto flex flex-col gap-4 md:gap-8">
           <h3 className="font-montserrat montserrat text-green-200 text-[32px]  md:text-[72px] leading-9  font-bold md:leading-18 text-center">
             Navigate Your Now. Design Your Future
           </h3>
@@ -39,6 +39,15 @@ export default function HomeHero() {
             where teenagers are equipped with the clarity, confidence, and
             self-leadership skills to thrive in a complex world.
           </p>
+
+          <div className="w-full  flex mt-7 justify-center">
+            <Link
+              href="/teenagers/signup"
+              className="w-[213px] mb-20 mb:mb-0 montserrat flex items-center justify-center gap-2 py-2 border rounded-xl text-white font-semibold transition-colors bg-green-100"
+            >
+              Get Started <ArrowUpIcon />
+            </Link>
+          </div>
         </div>
         <Image
           src={'/image/Oval2.png'}
@@ -81,7 +90,7 @@ export default function HomeHero() {
           </div>
       </div>
         </div> */}
-      <div className="flex h-full relative justify-center gap-2 ">
+      <div className="flex h-full  relative justify-center gap-2 ">
         <Image
           src={'/image/group.png'}
           alt=""
@@ -90,15 +99,7 @@ export default function HomeHero() {
           className="absolute w-full "
         />
 
-        <div className="relative w-full flex flex-col mt-6 gap-20">
-          <div className="w-full flex justify-center">
-            <Link
-              href="/teenagers/signup"
-              className="w-[213px] mb-20 mb:mb-0 montserrat flex items-center justify-center gap-2 py-2 border rounded-xl text-white font-semibold transition-colors bg-green-100"
-            >
-              Get Started <ArrowUpIcon />
-            </Link>
-          </div>
+        <div className="relative  max-w-[1300px] mx-auto  w-full flex flex-col">
           <div className="md:flex hidden justify-center items-center mb-20">
             <div className="hidden md:flex absolute top-28 z-99 left-60 px-3 py-2 gap-3 justify-center items-center bg-white w-[260px] h-[50px] shadow-2xl rounded-full">
               <Image
@@ -185,7 +186,7 @@ export default function HomeHero() {
               height={10}
               className="absolute top-24 rotate-12"
             />
-            <div className="md:flex hidden items-center gap-3 ">
+            <div className="md:flex  hidden items-center gap-3 ">
               <div className="flex flex-col gap-5">
                 {/* FIRST IMAGE STACK */}
                 <div className="relative w-[208px] max-md:w-[130px] max-md:h-[200px]">

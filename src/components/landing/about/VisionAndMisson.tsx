@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function VisionAndMisson() {
   return (
-    <div className="flex px-4 relative flex-col gap-14 w-full items-center my-[150px]">
+    <div className="flex px-4 relative flex-col gap-14 w-full items-center mt-5 mb-20 md:my-[150px]">
       <div className="absolute right-0 -top-56">
         <Image
           src={'/authImages/Oval.png'}

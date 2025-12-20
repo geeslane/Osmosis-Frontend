@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function WhyJoinUs() {
   return (
-    <div className="montserrat  flex px-6 gap-4 flex-col mx-auto max-w-[770px] w-full py-[120px]">
+    <div className="montserrat  flex px-6 gap-4  flex-col mx-auto max-w-[870px] w-full ">
       <div className="flex w-full items-center gap-6">
         <div className=" ">
           <LongArrowUpIcon />
@@ -14,7 +14,7 @@ export default function WhyJoinUs() {
           </h3>
         </div>
       </div>
-      <div className="grid  grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid  grid-cols-1 md:grid-cols-2 gap-8">
         <div className="mt-8 group flex flex-col gap-3">
           <div className=" bg-green-100 h-14 w-14 text-3xl rounded-full text-white font-semibold justify-center items-center flex">
             1

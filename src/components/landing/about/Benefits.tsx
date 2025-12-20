@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function Benefits() {
   return (
-    <div className="bg-green-200 montserrat flex px-6 flex-col items-center justify-center py-[120px]">
+    <div className="bg-green-200 montserrat flex px-8 flex-col items-center justify-center py-[120px]">
       <p className="text-green-100 text-[26px] leading-8 md:leading-14 md:text-5xl font-bold">
         Pain Points & Benefits
       </p>

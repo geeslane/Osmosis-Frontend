@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function Team() {
   return (
-    <div className=" flex flex-col mb-30 font-montserrat montserrat items-center justify-center py-4 px-6">
+    <div className=" flex flex-col mb-30 font-montserrat montserrat items-center justify-center py-4 px-8">
       <h3 className="text-green-200  text-[26px] leading-8 md:leading-14 md:text-5xl font-bold">
         Our Team
       </h3>

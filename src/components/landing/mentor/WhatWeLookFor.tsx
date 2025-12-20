@@ -9,7 +9,7 @@ import React from 'react';
 
 export default function WhatWeLookFor() {
   return (
-    <div className="bg-green-200 h-full mt-20 text-white flex flex-col gap-8 font-montserrat montserrat w-full py-[60px] px-6 md:p-[60px] lg:p-[120px]">
+    <div className="bg-green-200 h-full mt-20 text-white flex flex-col gap-8 font-montserrat montserrat w-full py-[60px] px-8 md:p-[60px] lg:p-[120px]">
       <div className="flex flex-col gap-4">
         <h3 className="text-2xl md:text-[40px] font-bold text-white">
           What We Look For

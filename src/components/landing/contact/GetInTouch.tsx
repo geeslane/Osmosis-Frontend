@@ -4,7 +4,7 @@ import React from 'react';
 
 export default function GetInTouch() {
   return (
-    <div className=" flex flex-col font-montserrat montserrat items-center justify-center py-14 px-4">
+    <div className=" flex flex-col font-montserrat montserrat items-center justify-center py-14 px-8">
       <div className="max-w-[700px]  w-full flex flex-col items-center md:py-24 ">
         <h3 className="text-green-200  text-[26px] leading-8 md:leading-14 md:text-5xl font-bold">
           Get in Touch

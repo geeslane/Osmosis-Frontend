@@ -3,11 +3,11 @@ import React from 'react';
 
 export default function HowMentorWorks() {
   return (
-    <div className="max-w-[880px] montserrat  flex flex-col gap-14 mx-auto w-full py-[120px]">
-      <h3 className="font-montserrat text-green-100 montserrat text-[24px] md:leading-14   md:text-[48px]   font-bold  lg:text-start text-center  ">
+    <div className="max-w-[880px] montserrat px-6 md:px-0  flex flex-col gap-5 md:gap-14 mx-auto w-full  py-[100px]">
+      <h3 className="font-montserrat text-green-100  montserrat text-[24px] md:leading-14   md:text-[48px]   font-bold  lg:text-start text-center  ">
         How The Mentorship Works{' '}
       </h3>
-      <div className="px-6">
+      <div className="">
         <AccordionItem className="" title="Application">
           Submit your mentor application and share your areas of expertise.{' '}
         </AccordionItem>

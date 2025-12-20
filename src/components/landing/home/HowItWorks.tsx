@@ -9,7 +9,7 @@ import React from 'react';
 
 export default function HowItWorks() {
   return (
-    <div className="w-full font-montserrat montserrat grid grid-cols-1 lg:grid-cols-3 gap-3 py-12 md:py-20 px-4 md:px-8 lg:px-[84px]">
+    <div className="w-full max-w-[1300px] mx-auto  font-montserrat montserrat grid grid-cols-1 lg:grid-cols-3 gap-3 py-12 md:py-20 px-8 md:px-8 lg:px-[84px]">
       <div className="flex flex-col gap-8">
         <div>
           <span className="uppercase bg-[#94FF92] rounded-full text-green-200 px-10 py-2 font-medium">

@@ -6,7 +6,7 @@ import React from 'react';
 export default function Mentor() {
   return (
     <div>
-      <div className="w-full font-montserrat montserrat flex flex-col justify-center items-center  gap-8 py-12 md:py-20 px-4 md:px-8 lg:px-16">
+      <div className="w-full font-montserrat montserrat flex flex-col justify-center items-center  gap-8 py-12 md:py-20 px-8 md:px-8 lg:px-16">
         <h3 className="text-green-200 max-w-[1000px] text-center  text-[26px] leading-8 md:leading-18 md:text-[72px] font-bold">
           Our Mentors{' '}
         </h3>

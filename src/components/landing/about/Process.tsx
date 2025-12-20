@@ -8,7 +8,7 @@ import React from 'react';
 
 export default function Process() {
   return (
-    <div className="montserrat px-6 flex gap-8 flex-col mx-auto max-w-[1070px] w-full py-[120px]">
+    <div className="montserrat px-8 flex gap-8 flex-col mx-auto max-w-[1070px] w-full py-[120px]">
       <div className="flex flex-col gap-4">
         <p className="text-green-200 text-start text-[26px]  md:text-[40px] font-bold">
           Our Coaching Process

@@ -4,7 +4,7 @@ import React from 'react';
 
 export default function Investment() {
   return (
-    <div className="w-full font-montserrat montserrat flex flex-col justify-center items-center  gap-8 py-12 md:py-20 px-4 md:px-8 lg:px-16">
+    <div className="w-full  font-montserrat montserrat flex flex-col justify-center items-center  gap-8 py-12 md:py-20 px-8 md:px-8 lg:px-16">
       <div className="Investmentbg flex px-10 md:px-[100px] items-center justify-center flex-col gap-4 max-w-[900px] h-[400px] rounded-xl w-full">
         <h3 className="text-green-100 text-center text-lg leading-8 md:leading-14 md:text-xl font-bold">
           They’re Drowning in Noise. You’re Looking for a Lifeline.
