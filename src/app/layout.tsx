@@ -20,11 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`$ ${montserrat.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="en" className={montserrat.variable} suppressHydrationWarning>
       <head>
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="robots" content="max-image-preview:large, NOODP, NOYDIR" />
@@ -59,7 +55,10 @@ export default function RootLayout({
           href="/favicon/android-chrome-512x512.png"
         />
       </head>
-      <body className="font-outfit dark:bg-gray-900" suppressHydrationWarning>
+      <body
+        className={`${montserrat.className} dark:bg-gray-900`}
+        suppressHydrationWarning
+      >
         <NextTopLoader {...loadingIndicatorProperties} />
         <GoogleOAuthProvider clientId={config.googleClientId ?? ''}>
           <Providers>{children}</Providers>

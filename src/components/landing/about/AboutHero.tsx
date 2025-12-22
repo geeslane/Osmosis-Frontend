@@ -55,7 +55,7 @@ export default function AboutHero() {
           className="absolute w-full "
         />
 
-        <div className="relative w-full flex flex-col mt-12 gap-20">
+        <div className="relative max-w-[1300px] mx-auto  w-full flex flex-col mt-12 gap-20">
           <div className="flex justify-center items-center mb-20">
             <div className="hidden md:flex absolute top-28 z-99 left-60 px-3 py-2 gap-3 justify-center items-center bg-white w-[260px] h-[50px] shadow-2xl rounded-full">
               <Image

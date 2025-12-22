@@ -10,8 +10,10 @@ import {
 } from '@/assets/icons';
 import Image from 'next/image';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import InputForm from '../form/InputForm';
 import {
   RegisterFormSchema,
@@ -33,8 +35,10 @@ type RegisterFormData = {
   phoneNumber: string;
   address: string;
   occupation: string;
+  linkedin: string;
   topic: string;
   inspires: string;
+  bio: string;
 };
 
 export const MentorSignupForm = () => {
@@ -48,6 +52,8 @@ export const MentorSignupForm = () => {
     register,
     handleSubmit,
     trigger,
+    control,
+    setValue,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: yupResolver(RegisterMentorFormSchema),
@@ -60,8 +66,8 @@ export const MentorSignupForm = () => {
     const stepFields: Record<number, (keyof RegisterFormData)[]> = {
       1: ['fullName', 'email', 'phoneNumber'],
       2: ['dateOfBirth', 'gender'],
-      3: ['address', 'occupation'],
-      4: ['topic', 'inspires'],
+      3: ['address', 'occupation', 'linkedin'],
+      4: ['topic', 'inspires', 'bio'],
     };
 
     const isValid = await trigger(stepFields[currentStep]);
@@ -91,6 +97,10 @@ export const MentorSignupForm = () => {
         phoneNumber: data.phoneNumber,
         address: data.address,
         occupation: data.occupation,
+        linkedin: data.linkedin,
+        topic: data.topic,
+        inspires: data.inspires,
+        bio: data.bio,
       };
 
       console.log('Form Data:', data);
@@ -118,10 +128,10 @@ export const MentorSignupForm = () => {
         </div>
 
         {/* Progress */}
-        <div className="mb-2">
-          <div className="flex items-center justify-between">
+        <div className="mb-2 flex max-w-[900px] flex-col w-full mt-3">
+          <div className="flex items-center w-full justify-between">
             {[1, 2, 3, 4].map((step) => (
-              <div key={step} className="flex items-center">
+              <div key={step} className="flex w-full items-center">
                 <div
                   className={`w-5 h-5 text-sm rounded-full flex items-center justify-center font-medium transition-all duration-300 ${
                     step < currentStep
@@ -136,7 +146,7 @@ export const MentorSignupForm = () => {
 
                 {step < 4 && (
                   <div
-                    className={`h-1 w-20 mx-3 rounded-full ${
+                    className={`h-1 flex-1 w-full mx-2 sm:mx-3 rounded-full ${
                       step < currentStep ? 'bg-green-100' : 'bg-gray-200'
                     }`}
                   />
@@ -144,6 +154,14 @@ export const MentorSignupForm = () => {
               </div>
             ))}
           </div>
+          {/*   <div className="text-start mt-5">
+            <h2 className="text-sm font-bold text-green-200">
+              {currentStep === 1 && 'Personal Information'}
+              {currentStep === 2 && 'Parent Details'}
+              {currentStep === 3 && 'Personal Details'}
+              {currentStep === 4 && 'Contact & Location'}
+            </h2>
+          </div> */}
         </div>
         <div className="bg-white rounded-2xl shadow-xl">
           <form
@@ -182,14 +200,43 @@ export const MentorSignupForm = () => {
             )}
             {currentStep === 2 && (
               <div className="space-y-6">
-                <InputForm
-                  type="date"
-                  label="Date Of Birth"
-                  name="dateOfBirth"
-                  placeholder="Enter your address (optional)"
-                  register={register}
-                  error={errors.dateOfBirth}
-                />
+                <div className="flex font-montserrat montserrat flex-col gap-1">
+                  <label className="text-green-300 font-medium">Date Of Birth</label>
+                  <Controller
+                    name="dateOfBirth"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePicker
+                        selected={field.value ? new Date(field.value) : null}
+                        onChange={(date: Date | null) => {
+                          if (date) {
+                            const formattedDate = date.toISOString().split('T')[0];
+                            field.onChange(formattedDate);
+                            setValue('dateOfBirth', formattedDate, {
+                              shouldValidate: true,
+                            });
+                          }
+                        }}
+                        dateFormat="yyyy-MM-dd"
+                        maxDate={new Date()}
+                        showYearDropdown
+                        showMonthDropdown
+                        dropdownMode="select"
+                        placeholderText="Select date of birth"
+                        className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 ${
+                          errors.dateOfBirth ? 'border-red-500' : 'border-green-300'
+                        }`}
+                      />
+                    )}
+                  />
+                  {errors.dateOfBirth && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {typeof errors.dateOfBirth.message === 'string'
+                        ? errors.dateOfBirth.message
+                        : 'Date of birth is required'}
+                    </p>
+                  )}
+                </div>
                 <SelectForm
                   label="Gender"
                   name="gender"
@@ -225,16 +272,25 @@ export const MentorSignupForm = () => {
                 <InputForm
                   label="Occupation"
                   name="occupation"
-                  placeholder="Type Your Location"
+                  placeholder="Enter your occupation"
                   register={register}
                   error={errors.occupation}
+                />
+
+                <InputForm
+                  label="LinkedIn Profile"
+                  name="linkedin"
+                  type="url"
+                  placeholder="https://linkedin.com/in/yourprofile"
+                  register={register}
+                  error={errors.linkedin}
                 />
               </div>
             )}
             {currentStep === 4 && (
               <div className="space-y-6">
                 <InputForm
-                  label="What inspire you to be a teens mentort?"
+                  label="What inspire you to be a teens mentor?"
                   name="inspires"
                   placeholder="Type it Here"
                   register={register}
@@ -255,6 +311,16 @@ export const MentorSignupForm = () => {
                     { label: 'Other', value: 'other' },
                     { label: 'Prefer not to say', value: 'prefer-not-to-say' },
                   ]}
+                />
+
+                <InputForm
+                  label="Bio"
+                  name="bio"
+                  placeholder="Tell us about yourself..."
+                  register={register}
+                  error={errors.bio}
+                  as="textarea"
+                  rows={4}
                 />
               </div>
             )}

@@ -1508,3 +1508,22 @@ export const UploadFileIcon = () => {
     </svg>
   );
 };
+
+export const ArrowBackIcon = ({ className }) => {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M19 12H5M5 12L9 8M5 12L9 16"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};

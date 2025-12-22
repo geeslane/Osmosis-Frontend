@@ -5,7 +5,7 @@ import React from 'react';
 
 export default function Navigating() {
   return (
-    <section className="w-full py-12 md:py-20 px-4 md:px-8 lg:px-16">
+    <section className="w-full py-20 md:py-20 px-8 md:px-8 lg:px-16">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-14">
           <div className="w-full flex-1 font-montserrat montserrat  flex flex-col justify-center gap-6 md:gap-8">

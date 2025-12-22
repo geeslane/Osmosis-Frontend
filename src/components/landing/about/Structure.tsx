@@ -19,7 +19,7 @@ export default function Structure() {
     return () => clearInterval(interval);
   }, []);
   return (
-    <div className="w-full flex flex-col justify-center items-center gap-10 lg:flex-row py-12 md:py-20 px-4 md:px-8 lg:px-16">
+    <div className="w-full max-w-[1300px] mx-auto  flex flex-col justify-center items-center gap-10 lg:flex-row  md:py-20 px-8 md:px-8 lg:px-16">
       <div className="flex flex-1 justify-center  mx-auto items-center  gap-3  ">
         <div className="flex gap-2 flex-col rounded-xl ">
           <Image

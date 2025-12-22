@@ -20,7 +20,7 @@ export default function Lead() {
   }, []);
 
   return (
-    <section className="w-full py-12 md:py-20 px-4 md:px-8 lg:px-16">
+    <section className="w-full max-w-[1300px] mx-auto  py-3 md:py-20 px-8 md:px-8 lg:px-16">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
           <div className="flex items-center gap-3 flex-1 ">

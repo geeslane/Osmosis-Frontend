@@ -17,7 +17,7 @@
   background-position: center;
 }
 .Investmentbg {
-  background-image: linear-gradient(#002825, rgba(0, 10, 10, 0.9)),
+  background-image: linear-gradient(rgba(0, 10, 10, 0.9)),
     url('/image/Artboard.png');
   background-size: contain;
   background-repeat: no-repeat;
@@ -25,7 +25,7 @@
 }
 
 .authImage {
-  background-image: linear-gradient(rgba(156, 156, 156, 0.1)),
+  background-image: linear-gradient(rgba(156, 156, 156, 0.7)),
     url(/authImages/Frame.png);
   background-size: contain;
   background-position: center;
