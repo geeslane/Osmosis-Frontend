@@ -10,8 +10,10 @@ import {
 } from '@/assets/icons';
 import Image from 'next/image';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import InputForm from '../form/InputForm';
 import { RegisterFormSchema } from '@/validation/schema';
 import { useRegisterUserMutation } from '@/store/auth/auth.api';
@@ -25,9 +27,12 @@ import { Modal } from '../ui/modal';
 type RegisterFormData = {
   fullName: string;
   email: string;
+  phoneNumber: string;
+  parentFullName: string;
+  parentEmail: string;
+  parentPhoneNumber: string;
   dateOfBirth: string;
   gender: string;
-  phoneNumber: string;
   address: string;
   hobbies: string;
   class: string;
@@ -44,19 +49,22 @@ export const TeenagerSignupForm = () => {
     register,
     handleSubmit,
     trigger,
+    control,
+    setValue,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: yupResolver(RegisterFormSchema),
     mode: 'onTouched',
   });
 
-  const totalSteps = 3;
+  const totalSteps = 4;
 
   const nextStep = async () => {
     const stepFields: Record<number, (keyof RegisterFormData)[]> = {
       1: ['fullName', 'email', 'phoneNumber'],
-      2: ['dateOfBirth', 'gender'],
-      3: ['class', 'address', 'hobbies'],
+      2: ['parentFullName', 'parentEmail', 'parentPhoneNumber'],
+      3: ['dateOfBirth', 'gender'],
+      4: ['class', 'address', 'hobbies'],
     };
 
     const isValid = await trigger(stepFields[currentStep]);
@@ -81,11 +89,14 @@ export const TeenagerSignupForm = () => {
       const payload: any = {
         full_name: data.fullName,
         email: data.email,
+        phoneNumber: data.phoneNumber,
+        parentFullName: data.parentFullName,
+        parentEmail: data.parentEmail,
+        parentPhoneNumber: data.parentPhoneNumber,
         dateOfBirth: data.dateOfBirth,
+        gender: data.gender,
         class: data.class,
         hobbies: data.hobbies,
-        gender: data.gender,
-        phoneNumber: data.phoneNumber,
         address: data.address,
       };
 
@@ -105,7 +116,7 @@ export const TeenagerSignupForm = () => {
     <div className="w-full overflow-scroll max-h-[70vh] no-scrollbar font-montserrat montserrat">
       <Image src="/image/logo.png" alt="Logo" width={151} height={32} />
 
-      <div className="flex flex-col mt-6 gap-7">
+      <div className="flex flex-col mt-6 gap-5">
         <div>
           <h3 className="text-[40px] text-green-200 font-bold">
             Welcome Here!
@@ -114,10 +125,10 @@ export const TeenagerSignupForm = () => {
         </div>
 
         {/* Progress */}
-        <div className="mb-2">
-          <div className="flex items-center justify-between">
-            {[1, 2, 3].map((step) => (
-              <div key={step} className="flex items-center">
+        <div className="mb-2 flex max-w-[900px] flex-col w-full mt-3">
+          <div className="flex items-center w-full justify-between">
+            {[1, 2, 3, 4].map((step) => (
+              <div key={step} className="flex w-full items-center">
                 <div
                   className={`w-5 h-5 text-sm rounded-full flex items-center justify-center font-medium transition-all duration-300 ${
                     step < currentStep
@@ -130,15 +141,23 @@ export const TeenagerSignupForm = () => {
                   {step < currentStep ? <CheckIcon /> : step}
                 </div>
 
-                {step < 3 && (
+                {step < 4 && (
                   <div
-                    className={`h-1 w-32 mx-3 rounded-full ${
+                    className={`h-1 flex-1 w-full mx-2 sm:mx-3 rounded-full ${
                       step < currentStep ? 'bg-green-100' : 'bg-gray-200'
                     }`}
                   />
                 )}
               </div>
             ))}
+          </div>
+          <div className="text-start mt-5">
+            <h2 className="text-sm font-bold text-green-200">
+              {currentStep === 1 && 'Personal Information'}
+              {currentStep === 2 && 'Parent Details'}
+              {currentStep === 3 && 'Personal Details'}
+              {currentStep === 4 && 'Contact & Location'}
+            </h2>
           </div>
         </div>
         <div className="bg-white rounded-2xl shadow-xl">
@@ -179,13 +198,71 @@ export const TeenagerSignupForm = () => {
             {currentStep === 2 && (
               <div className="space-y-6">
                 <InputForm
-                  type="date"
-                  label="Date Of Birth"
-                  name="dateOfBirth"
-                  placeholder="Enter your address (optional)"
+                  label="Parent Full Name"
+                  name="parentFullName"
+                  placeholder="Enter parent's full name"
                   register={register}
-                  error={errors.dateOfBirth}
+                  error={errors.parentFullName}
                 />
+
+                <InputForm
+                  label="Parent Email"
+                  name="parentEmail"
+                  type="email"
+                  placeholder="Enter parent's email"
+                  register={register}
+                  error={errors.parentEmail}
+                  icon={<EmailIcon />}
+                />
+                <InputForm
+                  label="Parent Phone Number"
+                  name="parentPhoneNumber"
+                  placeholder="+234..."
+                  register={register}
+                  error={errors.parentPhoneNumber}
+                  icon={<PhoneIcon />}
+                />
+              </div>
+            )}
+            {currentStep === 3 && (
+              <div className="space-y-6">
+                <div className="flex font-montserrat montserrat flex-col gap-1">
+                  <label className="text-green-300 font-medium">Date Of Birth</label>
+                  <Controller
+                    name="dateOfBirth"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePicker
+                        selected={field.value ? new Date(field.value) : null}
+                        onChange={(date: Date | null) => {
+                          if (date) {
+                            const formattedDate = date.toISOString().split('T')[0];
+                            field.onChange(formattedDate);
+                            setValue('dateOfBirth', formattedDate, {
+                              shouldValidate: true,
+                            });
+                          }
+                        }}
+                        dateFormat="yyyy-MM-dd"
+                        maxDate={new Date()}
+                        showYearDropdown
+                        showMonthDropdown
+                        dropdownMode="select"
+                        placeholderText="Select date of birth"
+                        className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 ${
+                          errors.dateOfBirth ? 'border-red-500' : 'border-green-300'
+                        }`}
+                      />
+                    )}
+                  />
+                  {errors.dateOfBirth && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {typeof errors.dateOfBirth.message === 'string'
+                        ? errors.dateOfBirth.message
+                        : 'Date of birth is required'}
+                    </p>
+                  )}
+                </div>
                 <SelectForm
                   label="Gender"
                   name="gender"
@@ -208,7 +285,7 @@ export const TeenagerSignupForm = () => {
                 />
               </div>
             )}
-            {currentStep === 3 && (
+            {currentStep === 4 && (
               <div className="space-y-6">
                 <InputForm
                   label="Address/Location"
@@ -271,7 +348,7 @@ export const TeenagerSignupForm = () => {
               )}
             </div>
 
-            <div className="flex dm-sans text-[#0F1C24] text-[15px] font-medium items-center justify-center mt-4">
+            <div className="flex dm-sans text-[#0F1C24] text-[15px] font-semibold items-center justify-center mt-4">
               <span>Already have an account?</span>
               <Link href="/signin" className="text-green-100 ml-1">
                 Sign in

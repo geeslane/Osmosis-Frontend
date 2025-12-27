@@ -7,6 +7,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { loadingIndicatorProperties } from '@/utils/constant';
 import './globals.css';
+import { SidebarProvider } from '@/context/SidebarContext';
+import { NavbarTitleProvider } from '@/context/NavbarTitleContsxt';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -20,11 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`$ ${montserrat.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="en" className={montserrat.variable} suppressHydrationWarning>
       <head>
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="robots" content="max-image-preview:large, NOODP, NOYDIR" />
@@ -59,10 +57,17 @@ export default function RootLayout({
           href="/favicon/android-chrome-512x512.png"
         />
       </head>
-      <body className="font-outfit dark:bg-gray-900" suppressHydrationWarning>
+      <body
+        className={`${montserrat.className} dark:bg-gray-900`}
+        suppressHydrationWarning
+      >
         <NextTopLoader {...loadingIndicatorProperties} />
         <GoogleOAuthProvider clientId={config.googleClientId ?? ''}>
-          <Providers>{children}</Providers>
+          <Providers>
+            <NavbarTitleProvider>
+              <SidebarProvider>{children}</SidebarProvider>
+            </NavbarTitleProvider>
+          </Providers>
           <ToastContainer className="z-999999" />
         </GoogleOAuthProvider>
       </body>

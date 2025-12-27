@@ -95,7 +95,7 @@ export default function SignInForm() {
         </form>
         <Link
           href={'/teenagers/signup'}
-          className="flex dm-sans text-[#0F1C24] text-[15px] font-medium items-center justify-center"
+          className="flex dm-sans text-[#0F1C24] text-[15px] font-semibold items-center justify-center"
         >
           Already have an account?{' '}
           <span className="text-green-100 ml-1">Signup</span>

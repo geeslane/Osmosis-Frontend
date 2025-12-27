@@ -1,64 +1,55 @@
-import React, { ReactNode } from "react";
-
-// Props for Table
-interface TableProps {
-  children: ReactNode; // Table content (thead, tbody, etc.)
-  className?: string; // Optional className for styling
-}
-
-// Props for TableHeader
-interface TableHeaderProps {
-  children: ReactNode; // Header row(s)
-  className?: string; // Optional className for styling
-}
-
-// Props for TableBody
-interface TableBodyProps {
-  children: ReactNode; // Body row(s)
-  className?: string; // Optional className for styling
-}
-
-// Props for TableRow
-interface TableRowProps {
-  children: ReactNode; // Cells (th or td)
-  className?: string; // Optional className for styling
-}
-
-// Props for TableCell
-interface TableCellProps {
-  children: ReactNode; // Cell content
-  isHeader?: boolean; // If true, renders as <th>, otherwise <td>
-  className?: string; // Optional className for styling
-}
-
-// Table Component
-const Table: React.FC<TableProps> = ({ children, className }) => {
-  return <table className={`min-w-full  ${className}`}>{children}</table>;
+export type Column<T> = {
+  key: keyof T | 'actions';
+  label: React.ReactNode;
+  render?: (row: T) => React.ReactNode;
+  className?: string;
 };
+type DataTableProps<T> = { columns: Column<T>[]; data: T[] };
 
-// TableHeader Component
-const TableHeader: React.FC<TableHeaderProps> = ({ children, className }) => {
-  return <thead className={className}>{children}</thead>;
-};
+export function DataTable<T extends { id: string }>({
+  columns,
+  data,
+}: DataTableProps<T>) {
+  return (
+    <div className="relative w-full overflow-x-auto">
+      {/* Scroll container */}
+      <div className="min-w-full">
+        <table className="min-w-max w-full text-sm">
+          <thead className="bg-[#DCFFAD91] text-left">
+            <tr>
+              {columns.map((col) => (
+                <th
+                  key={String(col.key)}
+                  className="whitespace-nowrap px-4 py-3 text-xs text-[#667085]"
+                >
+                  {col.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
 
-// TableBody Component
-const TableBody: React.FC<TableBodyProps> = ({ children, className }) => {
-  return <tbody className={className}>{children}</tbody>;
-};
-
-// TableRow Component
-const TableRow: React.FC<TableRowProps> = ({ children, className }) => {
-  return <tr className={className}>{children}</tr>;
-};
-
-// TableCell Component
-const TableCell: React.FC<TableCellProps> = ({
-  children,
-  isHeader = false,
-  className,
-}) => {
-  const CellTag = isHeader ? "th" : "td";
-  return <CellTag className={` ${className}`}>{children}</CellTag>;
-};
-
-export { Table, TableHeader, TableBody, TableRow, TableCell };
+          <tbody>
+            {data.map((row) => (
+              <tr key={row.id} className="border-t">
+                {columns.map((col) => (
+                  <td
+                    key={String(col.key)}
+                    className={`whitespace-nowrap px-4 py-5 ${
+                      col.className ?? ''
+                    }`}
+                  >
+                    {col.render
+                      ? col.render(row)
+                      : col.key !== 'actions'
+                      ? String(row[col.key as keyof T])
+                      : null}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

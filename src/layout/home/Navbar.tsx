@@ -144,7 +144,7 @@ const Navbar = () => {
                   />
                 </Link>
                 <button
-                  className="text-white text-2xl"
+                  className="text-black text-2xl"
                   onClick={() => setMenuOpen(false)}
                 >
                   <CloseIcon />
@@ -156,7 +156,7 @@ const Navbar = () => {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="block text-base text-black-100 font-medium hover:text-gray-300 transition-colors duration-200"
+                      className="block text-base text-black-100 font-medium transition-colors duration-200"
                       onClick={() => setMenuOpen(false)}
                     >
                       {link.label}

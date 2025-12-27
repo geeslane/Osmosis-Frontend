@@ -7,7 +7,7 @@ import {
 } from 'react-hook-form';
 
 interface InputFormProps {
-  label?: string;
+  label?: ReactNode;
   name: string;
   type?: string;
   placeholder?: string;
