@@ -23,7 +23,7 @@ export default function DeleteModal({
   return (
     <div>
       {isOpen && (
-        <div className="fixed inset-0 h-[100vh] z-999 flex items-center justify-center bg-black/10 backdrop-blur-sm">
+        <div className="fixed inset-0 h-screen overflow-x-hidden z-999 flex items-center justify-center bg-black/10 backdrop-blur-sm">
           <div className="w-full mx-3 md:max-w-md rounded-lg bg-white border border-green-100 p-6">
             <h3 className="text-lg font-semibold text-green-100 mb-2">
               {title}
