@@ -40,7 +40,6 @@ export default function CallDetail({
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-green-200 text-3xl font-bold">Call Detail</h3>
         <button
-          onClick={onBack}
           className=" text-green-200 flex items-center  font-medium px-8 py-4 gap-2 bg-[#DCFFAD91] rounded-md"
         >
           <Printer />
