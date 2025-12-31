@@ -27,7 +27,10 @@ export const RegisterFormSchema = yup.object({
 
   parentFullName: yup.string().required('Parent full name is required'),
 
-  parentEmail: yup.string().email('Invalid email').required('Parent email is required'),
+  parentEmail: yup
+    .string()
+    .email('Invalid email')
+    .required('Parent email is required'),
 
   parentPhoneNumber: yup.string().required('Parent phone number is required'),
 
@@ -93,4 +96,11 @@ export const PasswordSettingsSchema = yup.object({
 export const DeleteAccountSchema = yup.object().shape({
   reason: yup.string().required('Reason is required'),
   password: yup.string().required('Password is required'),
+});
+
+export const AddAdminSchema = yup.object({
+  fullName: yup.string().required('Full name is required'),
+  email: yup.string().email('Invalid email').required('Email is required'),
+  phoneNumber: yup.string().nullable().notRequired(),
+  address: yup.string().nullable().notRequired(),
 });
