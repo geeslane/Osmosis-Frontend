@@ -13,7 +13,7 @@ const Footer = () => {
 
   return (
     <div className="bg-[#000000]">
-      <footer className="text-white px-6 md:px-20 pt-30 pb-6 text-sm relative z-0 max-w-[1512px] mx-auto">
+      <footer className="text-white px-8 md:px-20 pt-30 pb-6 text-sm relative z-0 max-w-[1512px] mx-auto">
         <div className="grid md:grid-cols-3 md:justify-center  mx-auto md:items-center gap-10">
           <div className="mb-8 flex items-start flex-col w-full text-center mx-auto md:text-left md:mx-0">
             <Link href="/">

@@ -1,6 +1,8 @@
+import { ArrowBackIcon } from '@/assets/icons';
 import { MentorSignupForm } from '@/components/Auth/MentorSignUpForm';
 import { generateMetadata } from '@/utils/metadata';
 import { Metadata } from 'next';
+import Link from 'next/link';
 import React from 'react';
 
 export const metadata: Metadata = generateMetadata({
@@ -9,8 +11,18 @@ export const metadata: Metadata = generateMetadata({
 });
 export default function page() {
   return (
-    <div className="flex justify-centers items-center mx-5 md:mx-[133px] overflow-y-scroll no-scrollbar my-[80px]  max-h-[85%] h-full">
-      <MentorSignupForm />
+    <div className="mx-5 md:mx-[133px] my-[80px] flex flex-col gap-10">
+      <Link
+        href={'/'}
+        className="flex  items-center font-montserrat montserrat font-medium"
+      >
+        <ArrowBackIcon className="w-5 h-5" />
+        Home
+      </Link>
+      <div className="flex justify-centers items-center overflow-y-scroll no-scrollbar   max-h-[85%] h-full">
+        {' '}
+        <MentorSignupForm />
+      </div>
     </div>
   );
 }

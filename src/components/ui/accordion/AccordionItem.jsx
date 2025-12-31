@@ -12,15 +12,15 @@ export default function AccordionItem({
 
   return (
     <div
-      className={`group ${className} border-b border-green-100 py-4 cursor-pointer `}
+      className={`group ${className} border-b border-green-100 py-8 cursor-pointer `}
     >
       {/* Header */}
       <div
         onClick={() => setOpen(!open)}
-        className="flex justify-between items-center select-none"
+        className="flex justify-between  select-none"
       >
         <h3
-          className={`${className} text-bases md:text-2xl font-semibold text-green-200`}
+          className={`${className} max-w-[300px] md:max-w-[659px]  text-bases md:text-2xl font-semibold text-green-200`}
         >
           {title}
         </h3>
@@ -30,7 +30,7 @@ export default function AccordionItem({
             
             ${
               open
-                ? '-rotate-90 md:-translate-x-[100px]'
+                ? '-rotate-90 md:-translate-x-[50px]'
                 : ' rotate-0 translate-x-0 '
             } `}
         />

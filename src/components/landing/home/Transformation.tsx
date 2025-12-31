@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function Transformation() {
   return (
-    <div className="max-w-[856px] mx-auto px-6 py-12 md:py-20">
+    <div className="max-w-[806px] mx-auto px-8 md:px-6 py-12 md:py-20">
       <div className="w-full  font-montserrat montserrat  flex flex-col justify-center gap-6 md:gap-8">
         <h3 className="text-green-200 text-[26px] leading-8 max-w-[555px]  md:leading-14 md:text-5xl font-bold">
           Your Teen&#39;s 3-Month Transformation Journey{' '}

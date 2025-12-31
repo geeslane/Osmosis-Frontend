@@ -5,17 +5,17 @@ import Link from 'next/link';
 
 export default function ContactHero() {
   return (
-    <div className="flex h-full flex-col ">
+    <div className="flex h-full flex-col montserrat  ">
       <div className="flex font-montserrat montserrat items-center pt-[48px] justify-between">
         <Image
           src={'/image/Oval.png'}
           alt="Oval"
-          width={250}
-          height={238}
+          width={150}
+          height={200}
           className="hidden lg:flex"
         />
-        <div className="w-full max-w-[1100px] px-2 mx-auto flex flex-col gap-4 md:gap-8">
-          <h3 className="font-montserrat text-green-200 montserrat text-[32px]  md:text-[72px] leading-9  font-bold md:leading-18 text-center">
+        <div className="w-full  max-w-[1250px] px-2 mx-auto flex flex-col gap-4 md:gap-8">
+          <h3 className="font-montserrat text-green-200 montserrat text-[32px]  md:text-[68px] leading-9  font-bold md:leading-18 text-center">
             The Future is Coming. Let&#39;s Help Them Design It.{' '}
           </h3>
           <p className="text-green-200 montserrat px-4  text-center  md:text-xl">
@@ -30,8 +30,8 @@ export default function ContactHero() {
         <Image
           src={'/image/Oval2.png'}
           alt="Oval"
-          width={250}
-          height={238}
+          width={200}
+          height={200}
           className="hidden lg:flex"
         />
       </div>

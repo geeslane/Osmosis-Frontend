@@ -1,6 +1,8 @@
+import { ArrowBackIcon } from '@/assets/icons';
 import SignInForm from '@/components/Auth/SignInForm';
 import { generateMetadata } from '@/utils/metadata';
 import { Metadata } from 'next';
+import Link from 'next/link';
 import React from 'react';
 
 export const metadata: Metadata = generateMetadata({
@@ -10,8 +12,17 @@ export const metadata: Metadata = generateMetadata({
 });
 export default function page() {
   return (
-    <div className="flex justify-centers items-center mx-5 md:mx-[133px] overflow-y-scroll no-scrollbar my-[100px] max-h-[80%] h-full">
-      <SignInForm />
+    <div className=" mx-5 md:mx-[133px] my-[80px]">
+      <Link
+        href={'/'}
+        className="flex mb-5  items-center font-montserrat montserrat font-medium"
+      >
+        <ArrowBackIcon className="w-5 h-5" />
+        Home
+      </Link>
+      <div className="flex flex-col gap-5 justify-center  overflow-y-scroll no-scrollbar  max-h-[80%] h-full">
+        <SignInForm />
+      </div>
     </div>
   );
 }

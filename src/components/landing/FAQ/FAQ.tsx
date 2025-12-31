@@ -13,7 +13,7 @@ export default function FAQ() {
           height={238}
           className="hidden lg:flex"
         />
-        <div className="w-full px-4 max-w-[1100px] mt-10 md:mt-24  mx-auto flex flex-col gap-4 md:gap-8">
+        <div className="w-full px-8 max-w-[1100px] my-10 md:mt-24  mx-auto flex flex-col gap-4 md:gap-8">
           <h3 className="font-montserrat text-green-200 montserrat text-[24px]  md:text-[40px] leading-9  font-bold md:leading-18 text-start">
             Questions we get the most{' '}
           </h3>

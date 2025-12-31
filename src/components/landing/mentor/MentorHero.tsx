@@ -23,7 +23,7 @@ export default function MentorHero() {
   return (
     <div>
       {' '}
-      <div className="flex flex-col md:px-10 items-center lg:px-[80px] py-3 md:pt-[90px] lg:flex-row h-full ">
+      <div className="flex flex-col md:px-10 items-center px-4 lg:px-[80px] py-3 md:pt-[90px] lg:flex-row h-full ">
         <div className="flex-1 font-montserrat montserrat  md:items-start pt-[48px] justify-between">
           <div className="w-full max-w-[879px] mx-auto flex flex-col gap-4 md:gap-8">
             <h3 className="font-montserrat text-green-200 montserrat text-[32px]  md:text-[72px] leading-9  font-bold md:leading-18 lg:text-start text-center  ">
