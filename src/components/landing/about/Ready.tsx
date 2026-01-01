@@ -18,7 +18,7 @@ export default function Ready() {
         <div className="mt-6">
           <Link
             href="/"
-            className="md:px-6 justify-center  max-w-[380px] text-sm md:text-base  px-2 flex items-center gap-1 py-2  border-0 rounded-xl text-white font-semibold transition-colors bg-green-100"
+            className="md:px-6 justify-center text-center  max-w-[380px] text-sm md:text-base  px-2 flex items-center gap-1 py-2  border-0 rounded-xl text-white font-semibold transition-colors bg-green-100"
           >
             Schedule a Free 20-Minute Call <ArrowUpIcon />
           </Link>

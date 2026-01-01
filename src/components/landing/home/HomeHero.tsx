@@ -20,17 +20,18 @@ export default function HomeHero() {
 
     return () => clearInterval(interval);
   }, []);
+  
   return (
-    <div className="flex h-full flex-col ">
-      <div className="flex font-montserrat   montserrat items-center  lg:px-0 justify-between">
+    <div className="flex h-full flex-col overflow-x-hidden">
+      <div className="relative flex font-montserrat   montserrat items-center  lg:px-0 justify-between">
         <Image
           src={'/image/Oval.png'}
           alt="Oval"
           width={250}
           height={238}
-          className="hidden lg:flex"
+          className="absolute -left-10 md:left-0"
         />
-        <div className="w-full max-w-[879px] mt-[100px] mx-auto flex flex-col gap-4 md:gap-8">
+        <div className="w-full max-w-[879px] mt-[100px] mx-auto flex flex-col gap-4 md:gap-8 relative z-10 overflow-y-hidden">
           <h3 className="font-montserrat montserrat text-green-200 text-[32px]  md:text-[72px] leading-9  font-bold md:leading-18 text-center">
             Navigate Your Now. Design Your Future
           </h3>
@@ -54,7 +55,7 @@ export default function HomeHero() {
           alt="Oval"
           width={250}
           height={238}
-          className="hidden lg:flex"
+          className="absolute -right-10 md:right-0"
         />
       </div>
       {/* 
@@ -193,8 +194,9 @@ export default function HomeHero() {
                   <Image
                     src={'/image/us.jpg'}
                     alt=""
-                    width={208}
-                    height={260}
+                    width={416}
+                    height={520}
+                    sizes="(max-width: 768px) 130px, 208px"
                     className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[200px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                       swap === 0
                         ? 'opacity-100 z-10'
@@ -204,8 +206,9 @@ export default function HomeHero() {
                   <Image
                     src={'/image/user2.jpg'}
                     alt=""
-                    width={200}
-                    height={260}
+                    width={400}
+                    height={520}
+                    sizes="(max-width: 768px) 130px, 200px"
                     className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[200px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                       swap === 1
                         ? 'opacity-100 z-10'
@@ -215,8 +218,9 @@ export default function HomeHero() {
                   <Image
                     src={'/image/user.png'}
                     alt=""
-                    width={208}
-                    height={260}
+                    width={416}
+                    height={520}
+                    sizes="(max-width: 768px) 130px, 208px"
                     className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[200px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                       swap === 2
                         ? 'opacity-100 z-10'
@@ -232,8 +236,9 @@ export default function HomeHero() {
                   <Image
                     src={'/image/user2.jpg'}
                     alt=""
-                    width={200}
-                    height={260}
+                    width={400}
+                    height={520}
+                    sizes="(max-width: 768px) 130px, 200px"
                     className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[190px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                       swap === 0
                         ? 'opacity-100 z-10'
@@ -243,8 +248,9 @@ export default function HomeHero() {
                   <Image
                     src={'/image/user.png'}
                     alt=""
-                    width={200}
-                    height={260}
+                    width={400}
+                    height={520}
+                    sizes="(max-width: 768px) 130px, 200px"
                     className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[190px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                       swap === 1
                         ? 'opacity-100 z-10'
@@ -254,8 +260,9 @@ export default function HomeHero() {
                   <Image
                     src={'/image/us.jpg'}
                     alt=""
-                    width={208}
-                    height={260}
+                    width={416}
+                    height={520}
+                    sizes="(max-width: 768px) 130px, 208px"
                     className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[190px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                       swap === 2
                         ? 'opacity-100 z-10'
@@ -280,8 +287,9 @@ export default function HomeHero() {
                 <Image
                   src={'/image/user.png'}
                   alt=""
-                  width={200}
-                  height={50}
+                  width={720}
+                  height={780}
+                  sizes="(max-width: 768px) 180px, 360px"
                   className={`
         rounded-xl w-[360px] h-[390px] mt-5 object-cover absolute 
         max-md:w-[180px] max-md:h-[280px]
@@ -293,8 +301,9 @@ export default function HomeHero() {
                 <Image
                   src={'/image/us.jpg'}
                   alt=""
-                  width={200}
-                  height={50}
+                  width={720}
+                  height={780}
+                  sizes="(max-width: 768px) 180px, 360px"
                   className={`
         rounded-xl w-[360px] h-[390px] mt-5 object-cover absolute
         max-md:w-[180px] max-md:h-[280px]
@@ -306,8 +315,9 @@ export default function HomeHero() {
                 <Image
                   src={'/image/user2.jpg'}
                   alt=""
-                  width={200}
-                  height={50}
+                  width={720}
+                  height={780}
+                  sizes="(max-width: 768px) 180px, 360px"
                   className={`
         rounded-xl w-[360px] h-[390px] mt-5 object-cover absolute
         max-md:w-[180px] max-md:h-[280px]

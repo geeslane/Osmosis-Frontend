@@ -60,8 +60,9 @@ export default function MentorHero() {
                     <Image
                       src={'/image/us.jpg'}
                       alt=""
-                      width={165}
-                      height={260}
+                      width={416}
+                      height={520}
+                      sizes="(max-width: 768px) 130px, 208px"
                       className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[160] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                         swap === 0
                           ? 'opacity-100 z-10'
@@ -71,8 +72,9 @@ export default function MentorHero() {
                     <Image
                       src={'/image/user2.jpg'}
                       alt=""
-                      width={200}
-                      height={260}
+                      width={400}
+                      height={520}
+                      sizes="(max-width: 768px) 130px, 200px"
                       className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[160] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                         swap === 1
                           ? 'opacity-100 z-10'
@@ -82,8 +84,9 @@ export default function MentorHero() {
                     <Image
                       src={'/image/user.png'}
                       alt=""
-                      width={208}
-                      height={260}
+                      width={416}
+                      height={520}
+                      sizes="(max-width: 768px) 130px, 208px"
                       className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[160] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                         swap === 2
                           ? 'opacity-100 z-10'
@@ -99,8 +102,9 @@ export default function MentorHero() {
                     <Image
                       src={'/image/user2.jpg'}
                       alt=""
-                      width={200}
-                      height={260}
+                      width={400}
+                      height={520}
+                      sizes="(max-width: 768px) 130px, 160px"
                       className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[130px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                         swap === 0
                           ? 'opacity-100 z-10'
@@ -110,8 +114,9 @@ export default function MentorHero() {
                     <Image
                       src={'/image/user.png'}
                       alt=""
-                      width={200}
-                      height={260}
+                      width={400}
+                      height={520}
+                      sizes="(max-width: 768px) 130px, 160px"
                       className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[130px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                         swap === 1
                           ? 'opacity-100 z-10'
@@ -121,8 +126,9 @@ export default function MentorHero() {
                     <Image
                       src={'/image/us.jpg'}
                       alt=""
-                      width={208}
-                      height={260}
+                      width={416}
+                      height={520}
+                      sizes="(max-width: 768px) 130px, 160px"
                       className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[130px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                         swap === 2
                           ? 'opacity-100 z-10'
@@ -147,8 +153,9 @@ export default function MentorHero() {
                   <Image
                     src={'/image/user.png'}
                     alt=""
-                    width={200}
-                    height={50}
+                    width={708}
+                    height={658}
+                    sizes="(max-width: 768px) 180px, 354px"
                     className={`
         rounded-xl w-[354px] h-[329px] mt-5 object-cover absolute 
         max-md:w-[180px] max-md:h-[280px]
@@ -160,8 +167,9 @@ export default function MentorHero() {
                   <Image
                     src={'/image/us.jpg'}
                     alt=""
-                    width={200}
-                    height={50}
+                    width={708}
+                    height={658}
+                    sizes="(max-width: 768px) 180px, 354px"
                     className={`
         rounded-xl w-[354px] h-[329px] mt-5 object-cover absolute
         max-md:w-[180px] max-md:h-[280px]
@@ -173,8 +181,9 @@ export default function MentorHero() {
                   <Image
                     src={'/image/user2.jpg'}
                     alt=""
-                    width={200}
-                    height={50}
+                    width={708}
+                    height={658}
+                    sizes="(max-width: 768px) 180px, 354px"
                     className={`
         rounded-xl w-[354px] h-[329px] mt-5 object-cover absolute
         max-md:w-[180px] max-md:h-[280px]

@@ -10,8 +10,7 @@ export default function Navigating() {
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-14">
           <div className="w-full flex-1 font-montserrat montserrat  flex flex-col justify-center gap-6 md:gap-8">
             <h3 className="text-green-200 text-[26px] leading-8 md:leading-14 md:text-5xl font-bold">
-              Is Your Teenager Navigating Their Future With a Map, or Just a
-              Guess?{' '}
+              Osmosis: Your Trusted Guide on Their Journey{' '}
             </h3>
             <h3 className="text-green-200 md:text-xl">
               In a world of constant noise and endless pressure, it’s easy for

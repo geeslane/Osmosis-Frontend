@@ -12,8 +12,9 @@ export default function Team() {
           <Image
             src={'/image/prod.jpg'}
             alt=""
-            width={300}
-            height={300}
+            width={600}
+            height={600}
+            sizes="(max-width: 768px) 150px, 300px"
             className="rounded-xl transition-all duration-700"
           />
           <div className="flex flex-col items-center">
@@ -27,8 +28,9 @@ export default function Team() {
           <Image
             src={'/image/prod.jpg'}
             alt=""
-            width={300}
-            height={300}
+            width={600}
+            height={600}
+            sizes="(max-width: 768px) 150px, 300px"
             className="rounded-xl transition-all duration-700"
           />
           <div className="flex flex-col items-center">
@@ -42,8 +44,9 @@ export default function Team() {
           <Image
             src={'/image/prod.jpg'}
             alt=""
-            width={300}
-            height={300}
+            width={600}
+            height={600}
+            sizes="(max-width: 768px) 150px, 300px"
             className="rounded-xl transition-all duration-700"
           />
           <div className="flex flex-col items-center">
@@ -57,8 +60,9 @@ export default function Team() {
           <Image
             src={'/image/prod.jpg'}
             alt=""
-            width={300}
-            height={300}
+            width={600}
+            height={600}
+            sizes="(max-width: 768px) 150px, 300px"
             className="rounded-xl transition-all duration-700"
           />
           <div className="flex flex-col items-center">
