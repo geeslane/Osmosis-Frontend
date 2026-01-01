@@ -22,7 +22,7 @@ export default function HomeHero() {
   }, []);
   
   return (
-    <div className="flex h-full flex-col overflow-x-hidden">
+    <div className="flex h-full flex-col overflow-x-hidden overflow-y-hidden">
       <div className="relative flex font-montserrat   montserrat items-center  lg:px-0 justify-between">
         <Image
           src={'/image/Oval.png'}
@@ -31,7 +31,7 @@ export default function HomeHero() {
           height={238}
           className="absolute -left-10 md:left-0"
         />
-        <div className="w-full max-w-[879px] mt-[100px] mx-auto flex flex-col gap-4 md:gap-8 relative z-10 overflow-y-hidden">
+        <div className="w-full max-w-[879px] mt-[100px] mx-auto flex flex-col gap-4 md:gap-8 relative z-10">
           <h3 className="font-montserrat montserrat text-green-200 text-[32px]  md:text-[72px] leading-9  font-bold md:leading-18 text-center">
             Navigate Your Now. Design Your Future
           </h3>
