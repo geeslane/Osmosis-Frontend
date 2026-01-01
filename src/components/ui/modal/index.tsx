@@ -78,7 +78,7 @@ export const Modal: React.FC<ModalProps> = ({
           </button>
         )}
         <div className="justify-center flex items-center h-full">
-          <div className="bg-white max-w-[400px] shadow-2xl p-6 w-full rounded-md">
+          <div className="bg-white max-w-[400px] md:max-w-[600px] shadow-2xl p-6 w-full rounded-md">
             {children}
           </div>
         </div>

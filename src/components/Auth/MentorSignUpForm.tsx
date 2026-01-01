@@ -116,7 +116,7 @@ export const MentorSignupForm = () => {
   };
 
   return (
-    <div className="w-full overflow-scroll max-h-[70vh] no-scrollbar font-montserrat montserrat">
+    <div className="w-full overflow-scroll max-h-[90vh] no-scrollbar font-montserrat montserrat">
       <Image src="/image/logo.png" alt="Logo" width={151} height={32} />
 
       <div className="flex flex-col mt-6 gap-7">
@@ -124,7 +124,7 @@ export const MentorSignupForm = () => {
           <h3 className="text-[40px] text-green-200 font-bold">
             Welcome Here!
           </h3>
-          <p className="text-[#37445D] font-medium text-xl">Sign up to start</p>
+          <p className="text-[#37445D] font-medium text-xl">Sign up to Join Osmosis as a Mentor</p>
         </div>
 
         {/* Progress */}
@@ -154,16 +154,8 @@ export const MentorSignupForm = () => {
               </div>
             ))}
           </div>
-          {/*   <div className="text-start mt-5">
-            <h2 className="text-sm font-bold text-green-200">
-              {currentStep === 1 && 'Personal Information'}
-              {currentStep === 2 && 'Parent Details'}
-              {currentStep === 3 && 'Personal Details'}
-              {currentStep === 4 && 'Contact & Location'}
-            </h2>
-          </div> */}
         </div>
-        <div className="bg-white rounded-2xl shadow-xl">
+        <div className="bg-white">
           <form
             onSubmit={handleSubmit(onSubmit)}
             noValidate
@@ -262,7 +254,7 @@ export const MentorSignupForm = () => {
             {currentStep === 3 && (
               <div className="space-y-6">
                 <InputForm
-                  label="Address/Location"
+                  label="Address"
                   name="address"
                   placeholder="Type Your Location"
                   register={register}
@@ -359,21 +351,20 @@ export const MentorSignupForm = () => {
                 </button>
               )}
             </div>
-
-            <div className="flex dm-sans text-[#0F1C24] text-[15px] font-medium items-center justify-center mt-4">
-              <span>Already have an account?</span>
-              <Link href="/signin" className="text-green-100 ml-1">
-                Sign in
-              </Link>
-            </div>
           </form>
+        </div>
+        <div className="flex dm-sans text-[#0F1C24] text-[15px] font-semibold items-center justify-center mt-6 pb-4">
+          <span>Already have an account?</span>
+          <Link href="/signin" className="text-green-100 ml-1 hover:text-green-200 transition-colors">
+            Sign in
+          </Link>
         </div>
       </div>
 
       <Modal isOpen={showSuccess} onClose={handleCloseModal}>
         <div className="flex justify-center items-center flex-col">
           <h3 className="text-center text-green-200 text-[32px] font-bold">
-            Congrats!
+            Registration Successful!
           </h3>
           <Image
             src={'/image/cong.jpg'}
@@ -382,13 +373,9 @@ export const MentorSignupForm = () => {
             height={100}
             className="object-cover"
           />
-          <h3 className="text-green-200 font-medium text-center">
-            We’ve got your details, our team will reach out soon. Get ready,
-            your dashboard is coming!
+         <h3 className="text-green-200 font-medium text-center">
+            Thank you for applying to join Osmosis as a Mentor. Kindly check your email inbox for more details regarding the onboarding process.
           </h3>
-          <Link href={'/'} className="mt-7 underline text-green-100">
-            View Our Pricing{' '}
-          </Link>
         </div>
       </Modal>
     </div>

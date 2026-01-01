@@ -17,7 +17,7 @@ export default function Impact() {
           </p>
         </div>
       </div>
-      <div className="grid  grid-cols-1  md:grid-cols-2 gap-4 md:gap-8">
+      <div className="grid  grid-cols-1  md:grid-cols-2 gap-4 md:gap-14">
         <div className="mt-8  flex flex-col gap-3">
           <div className=" bg-green-100 m h-14 w-14 text-3xl rounded-full text-white font-semibold justify-center items-center flex">
             1

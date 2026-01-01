@@ -9,16 +9,16 @@ import React from 'react';
 
 export default function HowItWorks() {
   return (
-    <div className="w-full max-w-[1300px] mx-auto  font-montserrat montserrat grid grid-cols-1 lg:grid-cols-3 gap-3 py-12 md:py-20 px-8 md:px-8 lg:px-[84px]">
+    <div className="w-full max-w-[1300px] mx-auto  font-montserrat montserrat grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-10 py-12 md:py-20 px-8 md:px-8 lg:px-[84px]">
       <div className="flex flex-col gap-8">
         <div>
           <span className="uppercase bg-[#94FF92] rounded-full text-green-200 px-10 py-2 font-medium">
-            How it works
+            Teenagers&apos; Benefits
           </span>
         </div>
-        <h3 className="text-green-200 lg:max-w-[341px]  text-[26px] leading-8 md:leading-14 md:text-5xl font-bold">
+        {/* <h3 className="text-green-200 lg:max-w-[341px]  text-[26px] leading-8 md:leading-14 md:text-5xl font-bold">
           Your Teen&#39;s 3-Month Transformation Journey{' '}
-        </h3>
+        </h3> */}
         <h2 className="font-semibold text-lg md:text-2xl ">
           The Osmosis Toolkit
           <span className="flex items-center gap-2">
@@ -29,7 +29,7 @@ export default function HowItWorks() {
           </span>
         </h2>
       </div>
-      <div className="lg:ml-10 h-full flex flex-col justify-between ">
+      <div className="h-full flex flex-col justify-between ">
         <div className=" py-4   flex flex-col gap-3 cursor-pointer">
           <OneToOneIcon
             className="
