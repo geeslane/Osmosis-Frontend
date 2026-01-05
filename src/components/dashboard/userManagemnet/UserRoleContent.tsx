@@ -4,6 +4,7 @@ import React from 'react';
 import { useSearchParams } from 'next/navigation';
 import Admin from './Admin/Admin';
 import Mentor from './mentor/Mentor';
+import Mentee from './mentee/Mentee';
 
 const AdminsView: React.FC = () => (
   <div className="mt-6 ">
@@ -18,11 +19,8 @@ const MentorView: React.FC = () => (
 );
 
 const MenteeView: React.FC = () => (
-  <div className="mt-6 rounded-md border border-gray-200 p-6">
-    <h3 className="text-lg font-medium">Mentees</h3>
-    <p className="mt-2 text-sm text-gray-600">
-      List of mentees will appear here.
-    </p>
+  <div className="mt-6">
+    <Mentee />
   </div>
 );
 

@@ -24,7 +24,7 @@ export default function Admin() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const view = searchParams.get('view') || 'list';
+  const view = searchParams.get('viewadmin') || 'listadmin';
   const selectedId = searchParams.get('id');
   const selectedAdmin = selectedId
     ? data.find((a) => a.id === selectedId)
@@ -32,17 +32,17 @@ export default function Admin() {
 
   const setParam = (newView: string, id?: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('view', newView);
+    params.set('viewadmin', newView);
     if (id) params.set('id', id);
     else params.delete('id');
     router.replace(`?${params.toString()}`);
   };
 
-  const handleBack = () => setParam('list');
+  const handleBack = () => setParam('listadmin');
 
   return (
-    <div>
-      {view === 'add' && (
+    <div className=" w-full max-w-[1092px]">
+      {view === 'addadmin' && (
         <div className="max-w-[745px]">
           <div className="flex flex-col gap-8 py-4">
             <div
@@ -60,7 +60,7 @@ export default function Admin() {
         </div>
       )}
 
-      {view === 'view' && selectedAdmin && (
+      {view === 'viewadmin' && selectedAdmin && (
         <div className="max-w-[745px]">
           <div className="flex flex-col gap-8 py-4">
             <div
@@ -75,7 +75,7 @@ export default function Admin() {
         </div>
       )}
 
-      {view === 'list' && (
+      {view === 'listadmin' && (
         <div className="rounded-md border border-green-400 py-5">
           <div className="flex justify-between px-6 items-center">
             <div className="flex items-center gap-2 text-green-200 text-2xl font-semibold">
@@ -106,8 +106,8 @@ export default function Admin() {
           ) : (
             <AdminListPage
               data={data}
-              onAddAdmin={() => setParam('add')}
-              onViewAdmin={(admin) => setParam('view', admin.id)}
+              onAddAdmin={() => setParam('addadmin')}
+              onViewAdmin={(admin) => setParam('viewadmin', admin.id)}
             />
           )}
         </div>

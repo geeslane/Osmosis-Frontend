@@ -20,7 +20,7 @@ export function DataTable<T extends { id: string }>({
               {columns.map((col) => (
                 <th
                   key={String(col.key)}
-                  className="whitespace-nowrap px-4 py-3 text-xs text-[#667085]"
+                  className="whitespace-nowrap px-4 py-3 text-xs text-[#667085] font-medium"
                 >
                   {col.label}
                 </th>

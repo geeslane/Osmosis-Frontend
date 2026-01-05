@@ -13,12 +13,14 @@ type TabsProps = {
   tabs: TabItem[];
   paramKey?: string;
   defaultValue?: string;
+  preserveSearchParams?: boolean;
 };
 
 const Tabs: React.FC<TabsProps> = ({
   tabs,
   paramKey = 'tab',
   defaultValue,
+  preserveSearchParams = false,
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -26,8 +28,14 @@ const Tabs: React.FC<TabsProps> = ({
   const activeTab = searchParams.get(paramKey) || defaultValue || tabs[0].value;
 
   const handleChange = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set(paramKey, value);
+    let params: URLSearchParams;
+    if (preserveSearchParams) {
+      params = new URLSearchParams(searchParams.toString());
+      params.set(paramKey, value);
+    } else {
+      params = new URLSearchParams();
+      params.set(paramKey, value);
+    }
     router.push(`?${params.toString()}`);
   };
 
