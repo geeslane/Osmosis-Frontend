@@ -7,6 +7,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { loadingIndicatorProperties } from '@/utils/constant';
 import './globals.css';
+import { SidebarProvider } from '@/context/SidebarContext';
+import { NavbarTitleProvider } from '@/context/NavbarTitleContsxt';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -61,7 +63,11 @@ export default function RootLayout({
       >
         <NextTopLoader {...loadingIndicatorProperties} />
         <GoogleOAuthProvider clientId={config.googleClientId ?? ''}>
-          <Providers>{children}</Providers>
+          <Providers>
+            <NavbarTitleProvider>
+              <SidebarProvider>{children}</SidebarProvider>
+            </NavbarTitleProvider>
+          </Providers>
           <ToastContainer className="z-999999" />
         </GoogleOAuthProvider>
       </body>

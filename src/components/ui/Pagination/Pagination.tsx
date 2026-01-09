@@ -1,43 +1,53 @@
-// components/ui/Pagination.tsx
-
+import { ArrowLeftIcon, ArrowRightIcon } from '@/assets/icons';
 import React from 'react';
 
 type PaginationProps = {
-  currentPage: number;
-  lastPage: number;
+  page: number;
+  totalPages: number;
   onPageChange: (page: number) => void;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
 };
 
-export default function Pagination({
-  currentPage,
-  lastPage,
+export const Pagination: React.FC<PaginationProps> = ({
+  page,
+  totalPages,
   onPageChange,
-  hasNextPage,
-  hasPrevPage,
-}: PaginationProps) {
+}) => {
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
   return (
-    <div className="flex justify-center items-center gap-4 mt-6">
+    <div className="flex items-center w-full border-t border-[#EAECF0] px-6 justify-between pt-4">
       <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={!hasPrevPage}
-        className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={page === 1}
+        onClick={() => onPageChange(page - 1)}
+        className="rounded-lg flex items-center border-[#D0D5DD] gap-2 border px-2 font-medium py-2 text-green-300 text-sm disabled:opacity-50"
       >
-        Previous
+        <ArrowLeftIcon /> Previous
       </button>
 
-      <span className="text-sm font-semibold">
-        Page {currentPage} of {lastPage}
-      </span>
+      <div className="flex items-center gap-2">
+        {pages.map((p) => (
+          <button
+            key={p}
+            onClick={() => onPageChange(p)}
+            className={`h-8 w-8 font-medium  text-sm ${
+              page === p
+                ? 'bg-[#DCFFAD91] text-green-200 rounded-lg'
+                : ' hover:bg-gray-50 '
+            }`}
+          >
+            {p}
+          </button>
+        ))}
+      </div>
 
       <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={!hasNextPage}
-        className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={page === totalPages}
+        onClick={() => onPageChange(page + 1)}
+        className="rounded-lg flex items-center border-[#D0D5DD] gap-2 border px-2 font-medium py-2 text-green-300 text-sm disabled:opacity-50"
       >
         Next
+        <ArrowRightIcon />
       </button>
     </div>
   );
-}
+};
