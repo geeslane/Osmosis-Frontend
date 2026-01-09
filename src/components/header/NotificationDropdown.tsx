@@ -2,21 +2,12 @@
 
 import React, { useState } from 'react';
 import { Dropdown } from '../ui/dropdown/Dropdown';
-import { notifications as allNotifications } from '../../utils/data';
-import {
-  RefreshIcon,
-  NotificationIcon,
-  NotificationsIcon,
-} from '../../assets/icons';
+import { RefreshIcon, NotificationsIcon } from '../../assets/icons';
 
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
-
-  const filteredNotifications = allNotifications.filter((n) =>
-    activeTab === 'all' ? true : activeTab === 'read' ? n.read : !n.read
-  );
 
   const handleClick = () => {
     setIsOpen(!isOpen);
@@ -71,56 +62,9 @@ export default function NotificationDropdown() {
           ))}
         </div>
         <ul className="flex flex-col gap-3">
-          {filteredNotifications.length === 0 ? (
-            <li className="text-center text-gray-500 text-sm">
-              No notifications
-            </li>
-          ) : (
-            filteredNotifications.map((item, idx) => {
-              const isOld =
-                item.time.includes('day') || item.time.includes('week');
-
-              return (
-                <li
-                  key={idx}
-                  className={`flex justify-between items-start p-3 rounded-xl transition ${
-                    isOld
-                      ? 'bg-gray-50 text-gray-400'
-                      : 'bg-white text-gray-800'
-                  }`}
-                >
-                  <div className={`p-2 rounded-full bg-gray-300`}>
-                    <NotificationIcon />
-                  </div>
-
-                  <div className="ml-3 flex-1">
-                    <h3
-                      className={`font-semibold text-[14px] font-open-sans ${
-                        isOld ? 'text-gray-500' : 'text-gray-800'
-                      }`}
-                    >
-                      {item.title}
-                    </h3>
-                    <p
-                      className={`text-[12px] font-open-sans ${
-                        isOld ? 'text-gray-400' : 'text-gray-600'
-                      }`}
-                    >
-                      {item.description}
-                    </p>
-                  </div>
-
-                  <span
-                    className={`text-xs whitespace-nowrap ${
-                      isOld ? 'text-gray-400' : 'text-gray-700'
-                    }`}
-                  >
-                    {item.time}
-                  </span>
-                </li>
-              );
-            })
-          )}
+          <li className="text-center text-gray-500 text-sm">
+            No notifications
+          </li>
         </ul>
         <button className="mt-4 w-full text-center text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg py-2 hover:bg-gray-100">
           View All Notifications
