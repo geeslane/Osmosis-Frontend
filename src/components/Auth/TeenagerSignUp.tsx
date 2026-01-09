@@ -41,6 +41,7 @@ type RegisterFormData = {
 export const TeenagerSignupForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [parentEmail, setParentEmail] = useState("");
   const router = useRouter();
   const { showToast } = useToastify();
   const [registerUser, { isLoading }] = useRegisterUserMutation();
@@ -85,6 +86,8 @@ export const TeenagerSignupForm = () => {
   };
 
   const onSubmit = async (data: RegisterFormData) => {
+    setParentEmail(data.parentEmail);
+
     try {
       const payload: any = {
         full_name: data.fullName,
@@ -113,15 +116,16 @@ export const TeenagerSignupForm = () => {
   };
 
   return (
-    <div className="w-full overflow-scroll max-h-[70vh] no-scrollbar font-montserrat montserrat">
-      <Image src="/image/logo.png" alt="Logo" width={151} height={32} />
-
-      <div className="flex flex-col mt-6 gap-5">
+    <div className="w-full overflow-scroll max-h-[90vh] no-scrollbar font-montserrat montserrat">
+      <Image className='my-[40px] mx-auto md:mx-0' src={'/image/logo.png'} alt="" width={151} height={32} />
+      <div className="flex flex-col mt-6 gap-7">
         <div>
-          <h3 className="text-[40px] text-green-200 font-bold">
+          <h3 className="text-[32px] md:text-[40px] text-center md:text-left text-green-200 font-bold">
             Welcome Here!
           </h3>
-          <p className="text-[#37445D] font-medium text-xl">Sign up to start</p>
+          <p className="text-[#37445D] font-medium text-xl text-center md:text-left">
+            Sign Up to join the Osmosis Teenager&apos;s Lab
+          </p>
         </div>
 
         {/* Progress */}
@@ -130,22 +134,20 @@ export const TeenagerSignupForm = () => {
             {[1, 2, 3, 4].map((step) => (
               <div key={step} className="flex w-full items-center">
                 <div
-                  className={`w-5 h-5 text-sm rounded-full flex items-center justify-center font-medium transition-all duration-300 ${
-                    step < currentStep
-                      ? 'bg-green-100 text-white'
-                      : step === currentStep
+                  className={`w-5 h-5 text-sm rounded-full flex items-center justify-center font-medium transition-all duration-300 ${step < currentStep
+                    ? 'bg-green-100 text-white'
+                    : step === currentStep
                       ? 'bg-green-300 text-white'
                       : 'bg-gray-200 px-2 text-gray-500'
-                  }`}
+                    }`}
                 >
                   {step < currentStep ? <CheckIcon /> : step}
                 </div>
 
                 {step < 4 && (
                   <div
-                    className={`h-1 flex-1 w-full mx-2 sm:mx-3 rounded-full ${
-                      step < currentStep ? 'bg-green-100' : 'bg-gray-200'
-                    }`}
+                    className={`h-1 flex-1 w-full mx-2 sm:mx-3 rounded-full ${step < currentStep ? 'bg-green-100' : 'bg-gray-200'
+                      }`}
                   />
                 )}
               </div>
@@ -153,14 +155,14 @@ export const TeenagerSignupForm = () => {
           </div>
           <div className="text-start mt-5">
             <h2 className="text-sm font-bold text-green-200">
-              {currentStep === 1 && 'Personal Information'}
-              {currentStep === 2 && 'Parent Details'}
-              {currentStep === 3 && 'Personal Details'}
-              {currentStep === 4 && 'Contact & Location'}
+              {currentStep === 1 && 'Teenager\'s Information'}
+              {currentStep === 2 && 'Parent /Guardian\'s Details'}
+              {currentStep === 3 && 'Teenager\'s Personal Details'}
+              {currentStep === 4 && 'Teenager\'s Contact & Location'}
             </h2>
           </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-xl">
+        <div className="bg-white">
           <form
             onSubmit={handleSubmit(onSubmit)}
             noValidate
@@ -171,7 +173,7 @@ export const TeenagerSignupForm = () => {
                 <InputForm
                   label="Full Name"
                   name="fullName"
-                  placeholder="Enter your full name"
+                  placeholder="Enter teenager's full name"
                   register={register}
                   error={errors.fullName}
                 />
@@ -180,7 +182,7 @@ export const TeenagerSignupForm = () => {
                   label="Email"
                   name="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Enter teenager's email address"
                   register={register}
                   error={errors.email}
                   icon={<EmailIcon />}
@@ -188,7 +190,7 @@ export const TeenagerSignupForm = () => {
                 <InputForm
                   label="Phone Number"
                   name="phoneNumber"
-                  placeholder="+234..."
+                  placeholder="Teenager's phone number"
                   register={register}
                   error={errors.phoneNumber}
                   icon={<PhoneIcon />}
@@ -198,26 +200,26 @@ export const TeenagerSignupForm = () => {
             {currentStep === 2 && (
               <div className="space-y-6">
                 <InputForm
-                  label="Parent Full Name"
+                  label="Parent/Guardian's Full Name"
                   name="parentFullName"
-                  placeholder="Enter parent's full name"
+                  placeholder="Enter full name"
                   register={register}
                   error={errors.parentFullName}
                 />
 
                 <InputForm
-                  label="Parent Email"
+                  label="Parent/Guardian's Email"
                   name="parentEmail"
                   type="email"
-                  placeholder="Enter parent's email"
+                  placeholder="Enter email address"
                   register={register}
                   error={errors.parentEmail}
                   icon={<EmailIcon />}
                 />
                 <InputForm
-                  label="Parent Phone Number"
+                  label="Parent/Guardian's Phone Number"
                   name="parentPhoneNumber"
-                  placeholder="+234..."
+                  placeholder="Enter phone nunber"
                   register={register}
                   error={errors.parentPhoneNumber}
                   icon={<PhoneIcon />}
@@ -227,7 +229,7 @@ export const TeenagerSignupForm = () => {
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div className="flex font-montserrat montserrat flex-col gap-1">
-                  <label className="text-green-300 font-medium">Date Of Birth</label>
+                  <label className="text-green-300 font-medium">Teenager&apos;s Date Of Birth</label>
                   <Controller
                     name="dateOfBirth"
                     control={control}
@@ -249,9 +251,8 @@ export const TeenagerSignupForm = () => {
                         showMonthDropdown
                         dropdownMode="select"
                         placeholderText="Select date of birth"
-                        className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 ${
-                          errors.dateOfBirth ? 'border-red-500' : 'border-green-300'
-                        }`}
+                        className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 ${errors.dateOfBirth ? 'border-red-500' : 'border-green-300'
+                          }`}
                       />
                     )}
                   />
@@ -264,7 +265,7 @@ export const TeenagerSignupForm = () => {
                   )}
                 </div>
                 <SelectForm
-                  label="Gender"
+                  label="Teenager's Gender"
                   name="gender"
                   placeholder="Select gender"
                   register={register}
@@ -277,7 +278,7 @@ export const TeenagerSignupForm = () => {
                   ]}
                 />
                 <FileUpload
-                  label="Picture"
+                  label="Teenager's Picture"
                   accept="image/png,image/jpeg"
                   widthHint="800×400px"
                   maxSizeMB={2}
@@ -288,25 +289,25 @@ export const TeenagerSignupForm = () => {
             {currentStep === 4 && (
               <div className="space-y-6">
                 <InputForm
-                  label="Address/Location"
+                  label="Teenager's Address"
                   name="address"
-                  placeholder="Type Your Location"
+                  placeholder="Enter address"
                   register={register}
                   error={errors.address}
                 />
 
                 <InputForm
-                  label="Hobbies"
+                  label="Teenager's Hobbies"
                   name="hobbies"
-                  placeholder="Enter Your Hobbies"
+                  placeholder="Enter hobbies"
                   register={register}
                   error={errors.hobbies}
                 />
 
                 <InputForm
-                  label="Class"
+                  label="Teenager's Class"
                   name="class"
-                  placeholder="Type Your Class"
+                  placeholder="Enter current class at school"
                   register={register}
                   error={errors.class}
                 />
@@ -347,21 +348,20 @@ export const TeenagerSignupForm = () => {
                 </button>
               )}
             </div>
-
-            <div className="flex dm-sans text-[#0F1C24] text-[15px] font-semibold items-center justify-center mt-4">
-              <span>Already have an account?</span>
-              <Link href="/signin" className="text-green-100 ml-1">
-                Sign in
-              </Link>
-            </div>
           </form>
+        </div>
+        <div className="flex dm-sans text-[#0F1C24] text-[15px] font-semibold items-center justify-center mt-6 pb-4">
+          <span>Already have an account?</span>
+          <Link href="/signin" className="text-green-100 ml-1 hover:text-green-200 transition-colors">
+            Sign in
+          </Link>
         </div>
       </div>
 
-      <Modal isOpen={showSuccess} onClose={handleCloseModal}>
+      <Modal isOpen={showSuccess} onClose={handleCloseModal} className="w-[600px]">
         <div className="flex justify-center items-center flex-col">
           <h3 className="text-center text-green-200 text-[32px] font-bold">
-            Congrats!
+            Registration Successful!
           </h3>
           <Image
             src={'/image/cong.jpg'}
@@ -371,11 +371,10 @@ export const TeenagerSignupForm = () => {
             className="object-cover"
           />
           <h3 className="text-green-200 font-medium text-center">
-            We’ve got your details, our team will reach out soon. Get ready,
-            your dashboard is coming!
+            Kindly check the registered Parent or Guardian&apos;s email ({parentEmail}) for more details regarding the onboarding process.
           </h3>
-          <Link href={'/'} className="mt-7 underline text-green-100">
-            View Our Pricing{' '}
+          <Link href={'/'} className="mt-7 underline text-green-100 text-center">
+            View Our Brochure & Pricing Here{' '}
           </Link>
         </div>
       </Modal>

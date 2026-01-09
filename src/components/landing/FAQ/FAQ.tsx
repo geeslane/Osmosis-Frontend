@@ -4,16 +4,16 @@ import Image from 'next/image';
 
 export default function FAQ() {
   return (
-    <div className="flex h-full flex-col ">
-      <div className="flex font-montserrat montserrat items-start pt-[48px] justify-between">
+    <div className="flex h-full flex-col overflow-x-hidden">
+      <div className="relative flex font-montserrat montserrat items-start pt-[48px] justify-between overflow-x-hidden">
         <Image
           src={'/image/Oval.png'}
           alt="Oval"
           width={250}
           height={238}
-          className="hidden lg:flex"
+          className="absolute -left-10 md:left-0 top-[48px] lg:relative lg:top-0"
         />
-        <div className="w-full px-8 max-w-[1100px] my-10 md:mt-24  mx-auto flex flex-col gap-4 md:gap-8">
+        <div className="w-full px-8 max-w-[1100px] my-10 md:mt-24  mx-auto flex flex-col gap-4 md:gap-8 relative z-10">
           <h3 className="font-montserrat text-green-200 montserrat text-[24px]  md:text-[40px] leading-9  font-bold md:leading-18 text-start">
             Questions we get the most{' '}
           </h3>
@@ -86,7 +86,7 @@ export default function FAQ() {
           alt="Oval"
           width={250}
           height={238}
-          className="hidden lg:flex"
+          className="absolute -right-10 md:right-0 top-[48px] lg:relative lg:top-0"
         />
       </div>
     </div>

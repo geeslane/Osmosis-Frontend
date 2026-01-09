@@ -19,21 +19,21 @@ export default function AboutHero() {
     return () => clearInterval(interval);
   }, []);
   return (
-    <div className="flex h-full flex-col ">
-      <div className="flex font-montserrat montserrat items-center pt-[48px] justify-between">
-        <Image
+    <div className="flex h-full flex-col overflow-x-hidden">
+      <div className="relative flex font-montserrat montserrat items-center pt-[80px] pb-[40px] md:pt-[120px] md:pb-[60px] justify-between">
+      <Image
           src={'/image/Oval.png'}
           alt="Oval"
           width={250}
           height={238}
-          className="hidden lg:flex"
+          className="absolute -left-16 md:left-0"
         />
-        <div className="w-full max-w-[879px] px-2 mx-auto flex flex-col gap-4 md:gap-8">
+        <div className="w-full max-w-[879px] px-2 mx-auto flex flex-col gap-4 md:gap-8 relative z-10">
           <h3 className="font-montserrat text-green-200 montserrat text-[32px]  md:text-[72px] leading-9  font-bold md:leading-18 text-center">
-            Unlock Your Potential. Find Your Path.
+            About Osmosis
           </h3>
           <p className="text-green-200 montserrat px-4  text-center  md:text-xl">
-             Osmosis is the launching pad for teenagers to absorb the clarity,
+             Osmosis is the launching pad for teenagers to absorb the clarity,
             confidence, and self-leadership skills to thrive in a complex world.
           </p>
         </div>
@@ -42,7 +42,7 @@ export default function AboutHero() {
           alt="Oval"
           width={250}
           height={238}
-          className="hidden lg:flex"
+          className="absolute -right-16 md:right-0"
         />
       </div>
 
@@ -149,8 +149,9 @@ export default function AboutHero() {
                   <Image
                     src={'/AboutImage/us.jpg'}
                     alt=""
-                    width={208}
-                    height={260}
+                    width={416}
+                    height={520}
+                    sizes="(max-width: 768px) 130px, 208px"
                     className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[200px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                       swap === 0
                         ? 'opacity-100 z-10'
@@ -160,8 +161,9 @@ export default function AboutHero() {
                   <Image
                     src={'/AboutImage/user2.jpg'}
                     alt=""
-                    width={200}
-                    height={260}
+                    width={400}
+                    height={520}
+                    sizes="(max-width: 768px) 130px, 200px"
                     className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[200px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                       swap === 1
                         ? 'opacity-100 z-10'
@@ -171,8 +173,9 @@ export default function AboutHero() {
                   <Image
                     src={'/AboutImage/user.jpg'}
                     alt=""
-                    width={208}
-                    height={260}
+                    width={416}
+                    height={520}
+                    sizes="(max-width: 768px) 130px, 208px"
                     className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[200px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                       swap === 2
                         ? 'opacity-100 z-10'
@@ -188,8 +191,9 @@ export default function AboutHero() {
                   <Image
                     src={'/AboutImage/user2.jpg'}
                     alt=""
-                    width={200}
-                    height={260}
+                    width={400}
+                    height={520}
+                    sizes="(max-width: 768px) 130px, 200px"
                     className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[190px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                       swap === 0
                         ? 'opacity-100 z-10'
@@ -199,8 +203,9 @@ export default function AboutHero() {
                   <Image
                     src={'/AboutImage/user.jpg'}
                     alt=""
-                    width={200}
-                    height={260}
+                    width={400}
+                    height={520}
+                    sizes="(max-width: 768px) 130px, 200px"
                     className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[190px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                       swap === 1
                         ? 'opacity-100 z-10'
@@ -210,8 +215,9 @@ export default function AboutHero() {
                   <Image
                     src={'/AboutImage/us.jpg'}
                     alt=""
-                    width={208}
-                    height={260}
+                    width={416}
+                    height={520}
+                    sizes="(max-width: 768px) 130px, 208px"
                     className={`rounded-xl absolute inset-0 w-full h-full max-md:w-[130px] max-md:h-[190px] object-cover transition-opacity duration-[1200ms] ease-in-out ${
                       swap === 2
                         ? 'opacity-100 z-10'
@@ -236,8 +242,9 @@ export default function AboutHero() {
                 <Image
                   src={'/AboutImage/user.jpg'}
                   alt=""
-                  width={200}
-                  height={50}
+                  width={720}
+                  height={780}
+                  sizes="(max-width: 768px) 180px, 360px"
                   className={`
         rounded-xl w-[360px] h-[390px] mt-5 object-cover absolute 
         max-md:w-[180px] max-md:h-[280px]
@@ -249,8 +256,9 @@ export default function AboutHero() {
                 <Image
                   src={'/AboutImage/us.jpg'}
                   alt=""
-                  width={200}
-                  height={50}
+                  width={720}
+                  height={780}
+                  sizes="(max-width: 768px) 180px, 360px"
                   className={`
         rounded-xl w-[360px] h-[390px] mt-5 object-cover absolute
         max-md:w-[180px] max-md:h-[280px]
@@ -262,8 +270,9 @@ export default function AboutHero() {
                 <Image
                   src={'/AboutImage/user2.jpg'}
                   alt=""
-                  width={200}
-                  height={50}
+                  width={720}
+                  height={780}
+                  sizes="(max-width: 768px) 180px, 360px"
                   className={`
         rounded-xl w-[360px] h-[390px] mt-5 object-cover absolute
         max-md:w-[180px] max-md:h-[280px]

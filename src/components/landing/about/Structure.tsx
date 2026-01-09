@@ -25,15 +25,17 @@ export default function Structure() {
           <Image
             src={positions[0]}
             alt="produc"
-            width={165}
-            height={167}
+            width={330}
+            height={334}
+            sizes="(max-width: 768px) 165px, 165px"
             className="rounded-xl transition-all duration-700"
           />
           <Image
             src={positions[1]}
             alt="program"
-            width={165}
-            height={167}
+            width={330}
+            height={334}
+            sizes="(max-width: 768px) 165px, 165px"
             className="rounded-xl transition-all duration-700"
           />
         </div>
@@ -44,8 +46,9 @@ export default function Structure() {
             <Image
               src={positions[2]}
               alt="program"
-              width={265}
-              height={267}
+              width={530}
+              height={534}
+              sizes="(max-width: 768px) 265px, 265px"
               className="rounded-xl transition-all duration-700"
             />
           </div>
@@ -64,7 +67,7 @@ export default function Structure() {
               <CheckedIcon />
             </div>
             <h3 className="text-green-200  md:text-xl ">
-              1 x 60-minute Expert-Led Masterclass (Full Cohort){' '}
+              Weekly 60-minute group workshop with industry experts{' '}
             </h3>
           </div>
           <div className="flex gap-3 ">
@@ -72,7 +75,7 @@ export default function Structure() {
               <CheckedIcon />
             </div>
             <h3 className="text-green-200  md:text-xl ">
-              1 x 30-minute 1-on-1 Mentorship session (weekly){' '}
+              Weekly 30-minute private session with a mentor{' '}
             </h3>
           </div>
           <div className="flex gap-3 ">
@@ -80,14 +83,13 @@ export default function Structure() {
               <CheckedIcon />
             </div>
             <h3 className="text-green-200  md:text-xl ">
-              1 x 45-minute Peer Mastermind Group session{' '}
+              Weekly 45-minute session with their peers{' '}
             </h3>
           </div>
         </div>
         <h3 className="text-green-200 md:text-xl">
-          Approximately 2.5 hours of scheduled sessions per week, plus personal
-          reflection and weekly deliverables.{' '}
-        </h3>
+          That&apos;s approximately 2.5 hours of scheduled sessions per week, plus time for personal
+          reflection and weekly assignments.        </h3>
       </div>
     </div>
   );

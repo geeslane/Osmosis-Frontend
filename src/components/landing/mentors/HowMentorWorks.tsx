@@ -15,7 +15,7 @@ export default function HowMentorWorks() {
           We assess your experience, passion, and fit for supporting teenagers.{' '}
         </AccordionItem>
         <AccordionItem title="Mentor Agreement">
-          mentors get to sign our mentor agreement to align with our code of
+          Mentors get to sign our mentor agreement to align with our code of
           conduct.{' '}
         </AccordionItem>
         <AccordionItem title="Onboarding">

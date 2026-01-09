@@ -14,7 +14,7 @@ export default function WhyJoinUs() {
           </h3>
         </div>
       </div>
-      <div className="grid  grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid  grid-cols-1 md:grid-cols-2 gap-8 md:gap-14">
         <div className="mt-8 group flex flex-col gap-3">
           <div className=" bg-green-100 h-14 w-14 text-3xl rounded-full text-white font-semibold justify-center items-center flex">
             1

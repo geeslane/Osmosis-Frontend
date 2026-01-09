@@ -20,7 +20,7 @@ export default function Process() {
           <LongArrowIcon />
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 h-full">
         <div className=" py-4  group flex h-full flex-col gap-3 cursor-pointer">
           <OneToOneIcon
             className="
@@ -80,9 +80,7 @@ export default function Process() {
               Peer Mastermind Groups:{' '}
             </h3>
             <h3 className="md:text-lg ">
-              Weekly deep-dive workshops on crucial topics like habit formation,
-              financial literacy, effective communication, and emotional
-              resilience, led by industry experts.{' '}
+              Small, curated groups of 4-6 peers who meet weekly to discuss challenges, share wins, and hold each other accountable in a professionally facilitated setting.{' '}
             </h3>
           </div>
         </div>

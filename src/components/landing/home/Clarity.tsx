@@ -1,5 +1,4 @@
-import { ArrowUpIcon, CheckedIcon } from '@/assets/icons';
-import Link from 'next/link';
+import { CheckedIcon } from '@/assets/icons';
 import React from 'react';
 
 export default function Clarity() {
@@ -7,7 +6,7 @@ export default function Clarity() {
     <div className="max-w-[856px] mx-auto pt-16  md:pt-24 px-8 lg:px-6">
       <div className="w-full  font-montserrat montserrat  flex flex-col justify-center gap-6 md:gap-8">
         <h3 className="text-green-200 text-[26px] leading-8 md:leading-14 md:text-5xl font-bold">
-          This is Osmosis. Where Clarity is Absorbed, Not Forced.{' '}
+          At Osmosis, Clarity is Absorbed, Not Forced.{' '}
         </h3>
         <h3 className="text-green-200 md:text-xl">
           Just like the biological process, our program creates the perfect
@@ -62,14 +61,14 @@ export default function Clarity() {
               </div>
             </div>
           </div>
-          <div className="w-full flex justify-start mt-8">
+          {/* <div className="w-full flex justify-start mt-8">
             <Link
               href="/"
               className="w-[375px] mb-20 mb:mb-0 montserrat flex items-center justify-center gap-2 py-2 border rounded-xl text-white font-semibold transition-colors bg-green-100"
             >
               See the 3-Month Program Outline <ArrowUpIcon />
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

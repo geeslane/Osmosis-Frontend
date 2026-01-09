@@ -12,10 +12,10 @@ export const metadata: Metadata = generateMetadata({
 });
 export default function page() {
   return (
-    <div className=" mx-5 md:mx-[133px] my-[80px]">
+    <div className=" mx-5 md:mx-[133px] my-[20px] md:my-[40px]">
       <Link
         href={'/'}
-        className="flex mb-5  items-center font-montserrat montserrat font-medium"
+        className="flex mb-5  items-center justify-end font-montserrat montserrat font-medium"
       >
         <ArrowBackIcon className="w-5 h-5" />
         Home

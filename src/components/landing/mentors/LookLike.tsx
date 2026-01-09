@@ -16,7 +16,7 @@ export default function LookLike() {
 
   return (
     <div className="lg:-mt-40 lg:mb-40 flex md:max-w-[1233px] md:mx-auto gap-12 montserrat px-2 md:px-10 items-center lg:px-[90px]">
-      <div className="md:flex-1/3 lg:flex hidden mr-10">
+      <div className="md:flex-1/3 lg:flex hidden">
         <div className="relative hidden md:flex items-center">
           <div className="bg-white flex flex-col gap-6 border-[#68624E] p-4 border-2 w-[301px] ml-6 absolute h-[695px] rounded-[40px] overflow-hidden">
             <div
@@ -31,8 +31,9 @@ export default function LookLike() {
                   <Image
                     src={m.image}
                     alt={m.name}
-                    width={200}
-                    height={100}
+                    width={400}
+                    height={200}
+                    sizes="(max-width: 768px) 200px, 200px"
                     className="rounded-3xl h-full w-full"
                   />
                   <div className="flex flex-col items-center">
