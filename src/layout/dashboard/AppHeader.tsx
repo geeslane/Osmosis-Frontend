@@ -44,9 +44,9 @@ const AppHeader: React.FC = () => {
 
   return (
     <>
-      <header className="sticky bg-white  font-montserrat montserrat top-0 h-[92px] font-sans flex w-full  z-999  ">
+      <header className="sticky bg-white  font-montserrat montserrat shadow-xs top-0 h-[70px] md:h-[92px] font-sans flex w-full  z-999  ">
         <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-3">
-          <div className="flex items-center justify-between w-full  px-3 py-3 lg:justify-normal  lg:px-0 lg:py-4">
+          <div className="flex items-center justify-between w-full h-full  px-3  lg:justify-normal  lg:px-0 lg:py-4">
             <button
               className="items-center justify-center w-10 h-10 z-10 "
               onClick={handleToggle}
@@ -62,23 +62,10 @@ const AppHeader: React.FC = () => {
               onClick={toggleApplicationMenu}
               className="flex items-center justify-center w-10 h-10    lg:hidden"
             >
-              <MenuIcon />
+              <NotificationDropdown />
             </button>
           </div>
-          <div
-            className={`${
-              isApplicationMenuOpen
-                ? 'flex bg-white  justify-between'
-                : 'hidden'
-            }
-               items-center justify-between w-full gap-4 px-5 py-4 
-               lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none
-               `}
-          >
-            <NotificationDropdown />
-          </div>
         </div>
-
         <Profile />
       </header>
     </>

@@ -104,3 +104,31 @@ export const AddAdminSchema = yup.object({
   phoneNumber: yup.string().nullable().notRequired(),
   address: yup.string().nullable().notRequired(),
 });
+
+export const AddLiveSessionSchema = yup.object({
+  topic: yup
+    .string()
+    .required('Live session topic is required')
+    .min(5, 'Topic must be at least 5 characters'),
+
+  date: yup.string().required('Date is required'),
+
+  time: yup.string().required('Time is required'),
+
+  url: yup
+    .string()
+    .url('Enter a valid URL')
+    .required('Live session URL is required'),
+
+  speakerName: yup.string().required('Guest speaker name is required'),
+
+  bio: yup
+    .string()
+    .min(20, 'Bio must be at least 20 characters')
+    .required('Bio is required'),
+
+  linkedinUrl: yup
+    .string()
+    .required('Linkedin Url is required')
+    .url('Enter a valid Linkedin  URL'),
+});
