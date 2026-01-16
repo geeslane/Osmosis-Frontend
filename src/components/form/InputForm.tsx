@@ -33,7 +33,7 @@ const InputForm: React.FC<InputFormProps> = ({
   const baseClasses = 'w-full text-sm focus:outline-none bg-transparent';
 
   return (
-    <div className="flex font-montserrat montserrat flex-col gap-1">
+    <div className="flex w-full font-montserrat montserrat flex-col gap-1">
       {label && <label className="text-green-300 font-medium">{label}</label>}
 
       <div
@@ -53,7 +53,7 @@ const InputForm: React.FC<InputFormProps> = ({
             type={type}
             {...register(name)}
             placeholder={placeholder}
-            className={`${baseClasses} h-full`}
+            className={`${baseClasses} h-full `}
           />
         )}
 

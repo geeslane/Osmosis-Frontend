@@ -16,7 +16,6 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import InputForm from '../form/InputForm';
 import {
-  RegisterFormSchema,
   RegisterMentorFormSchema,
 } from '@/validation/schema';
 import { useRegisterUserMutation } from '@/store/auth/auth.api';
