@@ -189,7 +189,7 @@ export default function MenteeDetail({
                 </div>
               </div>
             </div>
-            <div className="flex gap-4 ">
+            <div className="flex gap-4 flex-col md:flex-row ">
               <div className="flex-2/3  rounded-lg flex flex-col gap-4 border border-[#6CBB0180] p-5  space-y-2">
                 <h3 className="text-2xl text-green-300 font-semibold">
                   Modules

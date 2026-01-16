@@ -5,32 +5,31 @@ import Empty from '@/components/ui/NotFound/Empty';
 import React from 'react';
 import { data } from '@/utils/data';
 import { useSearchParams, useRouter } from 'next/navigation';
-import MenteeTable from './MenteeTable';
-import MenteeDetail from './MenteeDetail';
+import MentorTable from './MentorTable';
+import MentorDetail from './MentorDetails';
 
-export default function Mentee() {
+export default function Mentor() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const view = searchParams.get('viewmentee') || 'listmentee';
+  const view = searchParams.get('viewmentor') || 'listmentor';
   const selectedId = searchParams.get('id');
-  const menteeData = data || [];
-  const selectedMentee = selectedId
-    ? menteeData.find((a) => a.id === selectedId)
+  const selectedAdmin = selectedId
+    ? data.find((a) => a.id === selectedId)
     : null;
 
   const setParam = (newView: string, id?: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('viewmentee', newView);
+    params.set('viewmentor', newView);
     if (id) params.set('id', id);
     else params.delete('id');
     router.replace(`?${params.toString()}`);
   };
 
-  const handleBack = () => setParam('listmentee');
+  const handleBack = () => setParam('listmentor');
 
   return (
     <div className=" w-full max-w-full">
-      {view === 'addmentee' && (
+      {view === 'addmentor' && (
         <div className="max-w-[745px]">
           <div className="flex flex-col gap-8 py-4">
             <div
@@ -48,7 +47,7 @@ export default function Mentee() {
         </div>
       )}
 
-      {view === 'viewmentee' && selectedMentee && (
+      {view === 'viewmentor' && selectedAdmin && (
         <div className="w-full ">
           <div className="flex flex-col gap-8 py-4">
             <div
@@ -58,23 +57,23 @@ export default function Mentee() {
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
-            <MenteeDetail selectedMentee={selectedMentee} />
+            <MentorDetail selectedAdmin={selectedAdmin} />
           </div>
         </div>
       )}
 
-      {view === 'listmentee' && (
+      {view === 'listmentor' && (
         <div className="rounded-md border border-green-400 py-5">
           <div className="flex justify-between px-6 items-center">
             <div className="flex items-center gap-2 text-green-200 text-2xl font-semibold">
-              Mentees List
+              Pending Mentors List
               <span className="bg-[#DCFFAD91] w-[24px] h-[24px] flex justify-center items-center rounded-full text-green-100 text-xs">
-                {menteeData.length}
+                {data.length}
               </span>
             </div>
           </div>
 
-          {menteeData.length === 0 ? (
+          {data.length === 0 ? (
             <div className="max-w-[400px] mx-auto my-[65px]">
               <Empty
                 title="No Mentor for now."
@@ -82,10 +81,10 @@ export default function Mentee() {
               />
             </div>
           ) : (
-            <MenteeTable
-              data={menteeData}
-              onAddAdmin={() => setParam('addmentee')}
-              onViewMentee={(mentee) => setParam('viewmentee', mentee.id)}
+            <MentorTable
+              data={data}
+              onAddAdmin={() => setParam('addmentor')}
+              onViewAdmin={(admin) => setParam('viewmentor', admin.id)}
             />
           )}
         </div>

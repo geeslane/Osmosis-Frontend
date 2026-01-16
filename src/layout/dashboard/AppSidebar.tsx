@@ -13,6 +13,7 @@ import Image from 'next/image';
 import {
   ContentManagementIcon,
   DashboardIcon,
+  LiveSessionIcon,
   LogoutIcon,
   PendingRequestIcon,
   SettingsIcon,
@@ -73,12 +74,17 @@ const AppSidebar: React.FC = () => {
     {
       icon: PendingRequestIcon,
       name: 'Pending Requests',
-      path: '#',
+      path: '/dashboard/pending-request',
     },
     {
       icon: UserManagementIcon,
-      name: 'User Management',
-      path: '/dashboard/user-management',
+      name: 'Users',
+      path: '/dashboard/users',
+    },
+    {
+      icon: LiveSessionIcon,
+      name: 'Live Sessions',
+      path: '/dashboard/live-sessions',
     },
     {
       icon: ContentManagementIcon,
@@ -176,14 +182,16 @@ const AppSidebar: React.FC = () => {
           <div className="flex justify-center   items-center  py-5 ">
             <div className="flex items-center  justify-center w-full">
               {(isExpanded || isMobileOpen) && (
-                <div className="flex w-full">
-                  <Image
-                    src="/image/Avss.jpg"
-                    alt=""
-                    width={30}
-                    height={50}
-                    className="rounded-full"
-                  />
+                <div className="flex w-full gap-3">
+                  <div className="w-[36px] h-[36px]">
+                    <Image
+                      src="/image/Avss.jpg"
+                      alt=""
+                      width={50}
+                      height={50}
+                      className="rounded-full w-full h-full object-cover"
+                    />
+                  </div>
                   <div className="">
                     <h3 className="text-sm font-semibold  text-green-200">
                       {user?.full_name || 'User'}

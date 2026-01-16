@@ -29,7 +29,7 @@ export default function Mentor() {
   const handleBack = () => setParam('listmentor');
 
   return (
-    <div className=" w-full max-w-[1092px]">
+    <div className=" w-full max-w-full">
       {view === 'addmentor' && (
         <div className="max-w-[745px]">
           <div className="flex flex-col gap-8 py-4">
