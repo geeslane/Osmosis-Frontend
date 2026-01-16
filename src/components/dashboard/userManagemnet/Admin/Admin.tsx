@@ -26,8 +26,9 @@ export default function Admin() {
 
   const view = searchParams.get('viewadmin') || 'listadmin';
   const selectedId = searchParams.get('id');
+  const adminData = data || [];
   const selectedAdmin = selectedId
-    ? data.find((a) => a.id === selectedId)
+    ? adminData.find((a) => a.id === selectedId)
     : null;
 
   const setParam = (newView: string, id?: string) => {
@@ -81,10 +82,10 @@ export default function Admin() {
             <div className="flex items-center gap-2 text-green-200 text-2xl font-semibold">
               Admins List
               <span className="bg-[#DCFFAD91] w-[24px] h-[24px] flex justify-center items-center rounded-full text-green-100 text-xs">
-                {data.length}
+                {adminData.length}
               </span>
             </div>
-            {data.length == 0 && (
+            {adminData.length == 0 && (
               <Button
                 onClick={() => setParam('add')}
                 variant="primary"
@@ -96,7 +97,7 @@ export default function Admin() {
             )}
           </div>
 
-          {data.length === 0 ? (
+          {adminData.length === 0 ? (
             <div className="max-w-[400px] mx-auto my-[65px]">
               <Empty
                 title="No Admins for now."
@@ -105,7 +106,7 @@ export default function Admin() {
             </div>
           ) : (
             <AdminListPage
-              data={data}
+              data={adminData}
               onAddAdmin={() => setParam('addadmin')}
               onViewAdmin={(admin) => setParam('viewadmin', admin.id)}
             />

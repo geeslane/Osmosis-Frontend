@@ -65,7 +65,7 @@ export const ProfileApi = createApi({
   endpoints: (builder) => ({
     getMe: builder.query<MeResponse, void>({
       query: () => ({
-        url: '/api/me',
+        url: '/auth/me',
         method: 'GET',
       }),
       providesTags: ['profile'],

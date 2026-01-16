@@ -13,8 +13,9 @@ export default function Mentor() {
   const router = useRouter();
   const view = searchParams.get('viewmentor') || 'listmentor';
   const selectedId = searchParams.get('id');
+  const mentorData = data || [];
   const selectedAdmin = selectedId
-    ? data.find((a) => a.id === selectedId)
+    ? mentorData.find((a) => a.id === selectedId)
     : null;
 
   const setParam = (newView: string, id?: string) => {
@@ -68,12 +69,12 @@ export default function Mentor() {
             <div className="flex items-center gap-2 text-green-200 text-2xl font-semibold">
               Mentors List
               <span className="bg-[#DCFFAD91] w-[24px] h-[24px] flex justify-center items-center rounded-full text-green-100 text-xs">
-                {data.length}
+                {mentorData.length}
               </span>
             </div>
           </div>
 
-          {data.length === 0 ? (
+          {mentorData.length === 0 ? (
             <div className="max-w-[400px] mx-auto my-[65px]">
               <Empty
                 title="No Mentor for now."
@@ -82,7 +83,7 @@ export default function Mentor() {
             </div>
           ) : (
             <MentorTable
-              data={data}
+              data={mentorData}
               onAddAdmin={() => setParam('addmentor')}
               onViewAdmin={(admin) => setParam('viewmentor', admin.id)}
             />

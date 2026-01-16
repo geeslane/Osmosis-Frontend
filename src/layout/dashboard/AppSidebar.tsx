@@ -1,7 +1,13 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSidebar } from '../../context/SidebarContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/store';
+import { useLogoutMutation } from '@/store/auth/auth.api';
+import { clearSessionCookie } from '@/lib/session';
+import { clearUser } from '@/store/profile/profile.slice';
+import useToastify from '@/hooks/useToastify';
 
 import Image from 'next/image';
 import {
@@ -23,7 +29,40 @@ type NavItem = {
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered } = useSidebar();
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { showToast } = useToastify();
+  const user = useSelector((state: RootState) => state.profile.user);
+  const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
   const isActive = (path: string) => pathname === path;
+
+  const handleLogout = async () => {
+    try {
+      // Call logout endpoint
+      await logout().unwrap();
+      
+      // Clear session cookie
+      await clearSessionCookie();
+      
+      // Clear user from Redux
+      dispatch(clearUser());
+      
+      // Show success message
+      showToast('You have been logged out successfully', 'success');
+      
+      // Redirect to sign in
+      router.replace('/signin');
+    } catch (error: any) {
+      // Even if API call fails, clear local session
+      await clearSessionCookie();
+      dispatch(clearUser());
+      
+      const message =
+        error?.data?.message || error?.error || 'Logged out successfully';
+      showToast(message, 'success');
+      router.replace('/signin');
+    }
+  };
 
   const navItems: NavItem[] = [
     {
@@ -147,21 +186,23 @@ const AppSidebar: React.FC = () => {
                   />
                   <div className="">
                     <h3 className="text-sm font-semibold  text-green-200">
-                      Emmanuel Ade
+                      {user?.full_name || 'User'}
                     </h3>
-                    <h2 className="text-green-200 text-[10px]">emma@ade.ui</h2>
+                    <h2 className="text-green-200 text-[10px]">{user?.email || ''}</h2>
                   </div>
                 </div>
               )}
             </div>
-            <Link
-              href="#"
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
               className={`${
                 !isExpanded && !isHovered ? ' ' : ''
-              }  justify-center items-center flex`}
+              }  justify-center items-center flex hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
+              title="Logout"
             >
               <LogoutIcon />
-            </Link>
+            </button>
           </div>
         </div>
       </div>

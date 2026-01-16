@@ -14,7 +14,7 @@ export default function NotificationDropdown() {
   const [notifying, setNotifying] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
 
-  const filteredNotifications = allNotifications.filter((n) =>
+  const filteredNotifications = (allNotifications || []).filter((n) =>
     activeTab === 'all' ? true : activeTab === 'read' ? n.read : !n.read
   );
 

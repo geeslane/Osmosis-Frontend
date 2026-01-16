@@ -13,8 +13,9 @@ export default function Mentee() {
   const router = useRouter();
   const view = searchParams.get('viewmentee') || 'listmentee';
   const selectedId = searchParams.get('id');
+  const menteeData = data || [];
   const selectedMentee = selectedId
-    ? data.find((a) => a.id === selectedId)
+    ? menteeData.find((a) => a.id === selectedId)
     : null;
 
   const setParam = (newView: string, id?: string) => {
@@ -68,12 +69,12 @@ export default function Mentee() {
             <div className="flex items-center gap-2 text-green-200 text-2xl font-semibold">
               Mentees List
               <span className="bg-[#DCFFAD91] w-[24px] h-[24px] flex justify-center items-center rounded-full text-green-100 text-xs">
-                {data.length}
+                {menteeData.length}
               </span>
             </div>
           </div>
 
-          {data.length === 0 ? (
+          {menteeData.length === 0 ? (
             <div className="max-w-[400px] mx-auto my-[65px]">
               <Empty
                 title="No Mentor for now."
@@ -82,7 +83,7 @@ export default function Mentee() {
             </div>
           ) : (
             <MenteeTable
-              data={data}
+              data={menteeData}
               onAddAdmin={() => setParam('addmentee')}
               onViewMentee={(mentee) => setParam('viewmentee', mentee.id)}
             />
