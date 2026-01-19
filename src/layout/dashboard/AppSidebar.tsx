@@ -9,6 +9,7 @@ import {
   DashboardIcon,
   LiveSessionIcon,
   LogoutIcon,
+  ModulesIcon,
   PendingRequestIcon,
   SettingsIcon,
   UserManagementIcon,
@@ -41,6 +42,11 @@ const AppSidebar: React.FC = () => {
       icon: UserManagementIcon,
       name: 'Users',
       path: '/dashboard/users',
+    },
+    {
+      icon: ModulesIcon,
+      name: 'Modules',
+      path: '/dashboard/modules',
     },
     {
       icon: LiveSessionIcon,

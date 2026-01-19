@@ -149,3 +149,62 @@ export const data = [
     image: '/image/Av.jpg',
   },
 ];
+
+export const Modules = [
+  {
+    id: 'module-1',
+    title: 'Module 1',
+    description: 'Introduction to user research and persona creation.',
+    files: [
+      {
+        id: 'file-1-1',
+        name: 'Create a User Persona.pdf',
+        description: 'Workbook for crafting user personas.',
+      },
+      {
+        id: 'file-1-2',
+        name: 'Interview Guide.pdf',
+        description: 'Question templates for user interviews.',
+      },
+      {
+        id: 'file-1-3',
+        name: 'Persona Workshop.pdf',
+        description: 'Slides for running a persona workshop.',
+      },
+    ],
+  },
+  {
+    id: 'module-2',
+    title: 'Module 2',
+    description: 'Deep dive into behavioral analysis and segmentation.',
+    files: [
+      {
+        id: 'file-2-1',
+        name: 'Behavioral Segmentation.pdf',
+        description: 'Guide to segmenting users by behavior patterns.',
+      },
+      {
+        id: 'file-2-2',
+        name: 'Cohort Workbook.pdf',
+        description: 'Exercises for building and analyzing cohorts.',
+      },
+    ],
+  },
+  {
+    id: 'module-3',
+    title: 'Module 3',
+    description: 'Applying personas to real product decisions.',
+    files: [
+      {
+        id: 'file-3-1',
+        name: 'Persona Roadmap.pdf',
+        description: 'How to apply personas in roadmap planning.',
+      },
+      {
+        id: 'file-3-2',
+        name: 'Persona Validation Checklist.pdf',
+        description: 'Checklist to validate persona assumptions.',
+      },
+    ],
+  },
+];
