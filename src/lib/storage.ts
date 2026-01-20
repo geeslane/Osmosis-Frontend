@@ -1,25 +1,27 @@
 /**
  * Creates a storage adapter for redux-persist that works with Next.js SSR
- * Falls back to noop storage on the server side
+ * Falls back to noop storage on the server side to prevent hydration errors.
  */
-// const createNoopStorage = () => {
-//   return {
-//     getItem(_key: string) {
-//       return Promise.resolve(null);
-//     },
-//     setItem(_key: string, value: any) {
-//       return Promise.resolve(value);
-//     },
-//     removeItem(_key: string) {
-//       return Promise.resolve();
-//     },
-//   };
-// };
+import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
-// Use localStorage on client-side, noop storage on server-side
-// const storage =
-//   typeof window !== 'undefined'
-//     ? require('redux-persist/lib/storage').default
-//     : createNoopStorage();
+const createNoopStorage = () => {
+  return {
+    getItem() {
+      return Promise.resolve(null);
+    },
+    setItem(_: string, value: any) {
+      return Promise.resolve(value);
+    },
+    removeItem() {
+      return Promise.resolve();
+    },
+  };
+};
 
-// export default storage;
+// Standard storage initialization for Next.js
+const storage =
+  typeof window !== "undefined"
+    ? createWebStorage("local")
+    : createNoopStorage();
+
+export default storage;
