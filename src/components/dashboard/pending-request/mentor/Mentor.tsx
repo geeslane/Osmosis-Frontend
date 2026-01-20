@@ -54,7 +54,7 @@ export default function Mentor() {
   const mentorData =
     requestsResponse?.data?.map(mapMentorRequestFromApi) || [];
   const selectedAdmin = selectedId
-    ? mentorData.find((a) => a.id === selectedId)
+    ? mentorData.find((a: any) => a.id === selectedId)
     : null;
 
   const setParam = (newView: string, id?: string) => {
