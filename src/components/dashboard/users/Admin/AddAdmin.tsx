@@ -4,10 +4,12 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import InputForm from '@/components/form/InputForm';
 import Button from '@/components/ui/button/Button';
-import { EmailIcon, PhoneIcon, CameraIcon } from '@/assets/icons';
+import { EmailIcon, PhoneIcon, LocationIcon, CameraIcon, LoadingIcon } from '@/assets/icons';
 import useToastify from '@/hooks/useToastify';
 import Image from 'next/image';
 import { AddAdminSchema } from '@/validation/schema';
+import { useCreateAdminMutation } from '@/store/users/users.api';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface AddAdminFormInputs {
   fullName: string;
@@ -15,46 +17,28 @@ interface AddAdminFormInputs {
   phoneNumber?: string | null;
   address?: string | null;
 }
-interface EditDetailProps {
-  selectedAdmin: {
-    name: string;
-    email: string;
-    phone?: string | null;
-    address?: string | null;
-    image?: string | null;
-  };
-  setEdit: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-export default function EditDetail({
-  selectedAdmin,
-  setEdit,
-}: EditDetailProps) {
+export default function AddAdmin() {
   const { showToast } = useToastify();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [createAdmin, { isLoading }] = useCreateAdminMutation();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<AddAdminFormInputs>({
     resolver: yupResolver(AddAdminSchema) as any,
-    defaultValues: {
-      fullName: selectedAdmin.name,
-      email: selectedAdmin.email,
-      phoneNumber: selectedAdmin.phone || '',
-      address: selectedAdmin.address || '',
-    },
   });
 
-  const [preview, setPreview] = useState<string | null>(
-    selectedAdmin.image || null
-  );
+  const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const onFileChange = (f: File | null) => {
     if (!f) {
-      setPreview(selectedAdmin.image || null);
+      setPreview(null);
       setFile(null);
       return;
     }
@@ -62,10 +46,32 @@ export default function EditDetail({
     setFile(f);
   };
 
-  const onSubmit: SubmitHandler<AddAdminFormInputs> = (data) => {
-    console.log('Edit Admin payload', { ...data, file });
-    showToast('Admin updated successfully', 'success');
-    setEdit(false);
+  const onSubmit: SubmitHandler<AddAdminFormInputs> = async (data) => {
+    try {
+      await createAdmin({
+        data: {
+          fullName: data.fullName,
+          email: data.email,
+          phoneNumber: data.phoneNumber || undefined,
+          address: data.address || undefined,
+        },
+        picture: file || undefined,
+      }).unwrap();
+
+      showToast('Admin invited successfully', 'success');
+      reset();
+      setPreview(null);
+      setFile(null);
+      
+      // Navigate back to list
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('viewadmin', 'listadmin');
+      router.replace(`?${params.toString()}`);
+    } catch (error: any) {
+      const message =
+        error?.data?.message || error?.error || 'Failed to invite admin';
+      showToast(message, 'error');
+    }
   };
 
   return (
@@ -101,7 +107,7 @@ export default function EditDetail({
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="text-sm text-start text-green-100 font-medium mt-1"
+          className="text-sm  text-start text-green-100 font-medium mt-1"
         >
           Upload Photo
         </button>
@@ -153,6 +159,7 @@ export default function EditDetail({
           register={register}
           error={errors.address}
           type="text"
+          icon={<LocationIcon />}
         />
 
         <div className="pt-2">
@@ -161,8 +168,16 @@ export default function EditDetail({
             variant="primary"
             fullWidth
             className="py-4 font-medium"
+            disabled={isLoading}
           >
-            Update Admin
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <LoadingIcon width="20" height="20" />
+                Adding...
+              </span>
+            ) : (
+              'Invite Admin'
+            )}
           </Button>
         </div>
       </div>

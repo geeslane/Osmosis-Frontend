@@ -13,7 +13,7 @@ import storage from '@/lib/storage'; // SSR-safe storage
 import { AuthApi } from './auth/auth.api';
 import { ProfileApi } from './profile/profile.api';
 import { DashboardApi } from './dashboard/dashboard.api';
-import { UserManagementApi } from './user-management/userManagement.api';
+import { UsersApi } from './users/users.api';
 import profileReducer from './profile/profile.slice';
 
 const profilePersistConfig = {
@@ -33,7 +33,7 @@ export const store = configureStore({
     [DashboardApi.reducerPath]: DashboardApi.reducer,
     [AuthApi.reducerPath]: AuthApi.reducer,
     [ProfileApi.reducerPath]: ProfileApi.reducer,
-    [UserManagementApi.reducerPath]: UserManagementApi.reducer,
+    [UsersApi.reducerPath]: UsersApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -44,7 +44,7 @@ export const store = configureStore({
       AuthApi.middleware,
       ProfileApi.middleware,
       DashboardApi.middleware,
-      UserManagementApi.middleware
+      UsersApi.middleware
     ),
 });
 export const persistor = persistStore(store);

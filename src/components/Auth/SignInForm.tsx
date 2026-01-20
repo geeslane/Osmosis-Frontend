@@ -8,6 +8,8 @@ import { setSessionCookie } from '@/lib/session';
 import { useLoginMutation } from '@/store/auth/auth.api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useToastify from '@/hooks/useToastify';
+import { useDispatch } from 'react-redux';
+import { clearUser } from '@/store/profile/profile.slice';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { SignInFormSchema } from '@/validation/schema';
@@ -21,6 +23,7 @@ export default function SignInForm() {
   const { showToast } = useToastify();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const dispatch = useDispatch();
   const redirectPath = searchParams.get('redirect') || '/dashboard';
   const [UserSignIn, { isLoading }] = useLoginMutation();
   const [signupMenuOpen, setSignupMenuOpen] = useState(false);
@@ -78,7 +81,11 @@ export default function SignInForm() {
       if (loginData.requiresOtp && loginData.sessionId) {
         showToast(responseMessage || 'OTP code has been sent to your email', 'success');
         try {
-          router.push(`/auth/otp?sessionId=${loginData.sessionId}`);
+          // Pass redirect parameter to OTP page to preserve it through the flow
+          const otpPath = redirectPath && redirectPath !== '/dashboard'
+            ? `/auth/otp?sessionId=${loginData.sessionId}&redirect=${encodeURIComponent(redirectPath)}`
+            : `/auth/otp?sessionId=${loginData.sessionId}`;
+          router.push(otpPath);
         } catch (navError) {
           console.error('Navigation error:', navError);
         }
@@ -98,6 +105,9 @@ export default function SignInForm() {
 
       if (loginData.token && loginData.userType) {
         try {
+          // Clear old user data before setting new session
+          dispatch(clearUser());
+          
           await setSessionCookie({
             token: loginData.token,
             role: loginData.userType,
@@ -105,11 +115,18 @@ export default function SignInForm() {
           showToast(responseMessage || 'Login successful', 'success');
 
           try {
-            router.replace(redirectPath || '/auth/loading');
+            // Pass redirect parameter to loading page if it exists
+            const loadingPath = redirectPath 
+              ? `/auth/loading?redirect=${encodeURIComponent(redirectPath)}`
+              : '/auth/loading';
+            router.replace(loadingPath);
           } catch (navError) {
             console.error('Navigation error:', navError);
             // Fallback to push if replace fails
-            router.push(redirectPath || '/auth/loading');
+            const loadingPath = redirectPath 
+              ? `/auth/loading?redirect=${encodeURIComponent(redirectPath)}`
+              : '/auth/loading';
+            router.push(loadingPath);
           }
         } catch (cookieError) {
           console.error('Session cookie error:', cookieError);

@@ -53,7 +53,7 @@ interface OtpResponse {
 
 interface MagicLinkRequest {
   email: string;
-  userType: 'TEENAGER';
+  userType: 'ADMIN' | 'TEENAGER' | 'MENTOR'; // Required
 }
 
 interface MagicLinkVerifyRequest {
@@ -66,7 +66,8 @@ interface MagicLinkResponse {
   message: string;
   data?: {
     user: any;
-    token?: string;
+    userType?: 'ADMIN' | 'TEENAGER' | 'MENTOR';
+    token?: string; // JWT token for authentication
   };
 }
 

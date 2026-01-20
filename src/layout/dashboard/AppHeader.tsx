@@ -5,11 +5,10 @@ import NotificationDropdown from '@/components/header/NotificationDropdown';
 import Profile from '@/components/user-profile/profile';
 import { useSidebar } from '@/context/SidebarContext';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavbarTitle } from '@/context/NavbarTitleContsxt';
 
 const AppHeader: React.FC = () => {
-  const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const { title } = useNavbarTitle();
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
@@ -22,9 +21,6 @@ const AppHeader: React.FC = () => {
     }
   };
 
-  const toggleApplicationMenu = () => {
-    setApplicationMenuOpen(!isApplicationMenuOpen);
-  };
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -44,7 +40,7 @@ const AppHeader: React.FC = () => {
 
   return (
     <>
-      <header className="sticky bg-white  font-montserrat montserrat shadow-xs top-0 h-[70px] md:h-[92px] font-sans flex w-full  z-999  ">
+      <header className="sticky bg-white  font-montserrat montserrat shadow-xs top-0 pt-2 py-0 font-sans flex w-full  z-999  ">
         <div className="flex  items-center justify-between w-full  px-3">
           <div className="flex items-center justify-between w-full h-full  px-3  lg:justify-normal  lg:px-0 lg:py-4">
             <button
@@ -59,12 +55,9 @@ const AppHeader: React.FC = () => {
               {title}
             </div>
           </div>
-          <button
-            onClick={toggleApplicationMenu}
-            className="flex items-center justify-center w-10 h-10   "
-          >
+          <div className="flex items-center justify-center w-10 h-10">
             <NotificationDropdown />
-          </button>
+          </div>
         </div>
         <Profile />
       </header>

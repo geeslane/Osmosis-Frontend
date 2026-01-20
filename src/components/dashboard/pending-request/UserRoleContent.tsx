@@ -26,7 +26,6 @@ export default function UserRoleContent() {
       return <MentorView />;
     case 'mentee':
       return <MenteeView />;
-    case 'admins':
     default:
       return <MentorView />;
   }

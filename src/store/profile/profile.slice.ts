@@ -13,7 +13,7 @@ export interface Dashboard {
   };
 }
 export interface User {
-  id: number;
+  id: string | number;
   full_name: string;
   email: string;
   role: string;

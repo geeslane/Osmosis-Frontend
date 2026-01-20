@@ -1,3 +1,5 @@
+'use client';
+
 import {
   EmailIcon,
   LocationIcon,
@@ -6,12 +8,80 @@ import {
 } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import Image from 'next/image';
+import { useUpdateMentorRequestStatusMutation } from '@/store/users/users.api';
+import useToastify from '@/hooks/useToastify';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { normalizeImageUrl } from '@/utils/helper';
+import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
 
 export default function MentorDetail({
   selectedAdmin,
+  onRefetch,
 }: {
   selectedAdmin: any;
+  onRefetch?: () => void;
 }) {
+  const { showToast } = useToastify();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [declineModalOpen, setDeclineModalOpen] = useState(false);
+  const [updateRequestStatus] = useUpdateMentorRequestStatusMutation();
+
+  const navigateBackToList = () => {
+    // Preserve the role tab parameter when navigating back
+    const role = searchParams.get('role') || 'mentor';
+    const params = new URLSearchParams();
+    params.set('role', role);
+    params.set('viewmentor', 'listmentor');
+    router.replace(`/dashboard/pending-requests?${params.toString()}`);
+  };
+
+  const handleAccept = async () => {
+    if (!selectedAdmin?.id) return;
+    setIsProcessing(true);
+    try {
+      await updateRequestStatus({
+        id: selectedAdmin.id,
+        data: { status: 'APPROVED' },
+      }).unwrap();
+      showToast('Mentor request approved. They have been added to Osmosis and can be found in the Users section.', 'success');
+      // Refetch the list to update the UI
+      onRefetch?.();
+      navigateBackToList();
+    } catch (error: any) {
+      const message = error?.data?.message || 'Failed to approve request';
+      showToast(message, 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDeclineClick = () => {
+    setDeclineModalOpen(true);
+  };
+
+  const handleDeclineConfirm = async (reason: string) => {
+    if (!selectedAdmin?.id) return;
+    setIsProcessing(true);
+    setDeclineModalOpen(false);
+    try {
+      await updateRequestStatus({
+        id: selectedAdmin.id,
+        data: { status: 'REJECTED', reasonForRejection: reason },
+      }).unwrap();
+      showToast('Mentor request declined successfully', 'success');
+      // Refetch the list to update the UI
+      onRefetch?.();
+      navigateBackToList();
+    } catch (error: any) {
+      const message = error?.data?.message || 'Failed to decline request';
+      showToast(message, 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
   const statusStyles: Record<any['status'], string> = {
     Active: 'bg-green-50 text-green-600',
     Inactive: 'bg-[#FEF3F2] text-[#B42318]',
@@ -25,12 +95,25 @@ export default function MentorDetail({
         </div>
         <div className="rounded-lg flex flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 space-y-2">
           <div className="relative w-[140px] h-[120px] rounded-full overflow-hidden">
-            <Image
-              src={selectedAdmin.image}
-              alt="Admin image"
-              fill
-              className="object-cover"
-            />
+            {selectedAdmin.image ? (
+              <Image
+                src={normalizeImageUrl(selectedAdmin.image) || '/image/Avatar.png'}
+                alt="Mentor image"
+                fill
+                className="object-cover rounded-full"
+              />
+            ) : (
+              <div className="w-full h-full rounded-full bg-green-100 flex items-center justify-center">
+                <span className="text-white text-2xl font-semibold">
+                  {(selectedAdmin.name || selectedAdmin.email || 'U')
+                    .split(' ')
+                    .map((word: string) => word[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2)}
+                </span>
+              </div>
+            )}
           </div>
           <div className="w-full space-y-20 ">
             <div className="flex flex-col md:flex-row md:gap-10 w-full space-y-6">
@@ -72,7 +155,7 @@ export default function MentorDetail({
                     Address/Location
                   </p>
                   <p className="text-green-300  font-medium">
-                    {selectedAdmin.phone}
+                    {selectedAdmin.address || 'N/A'}
                   </p>
                 </div>
               </div>
@@ -163,15 +246,29 @@ export default function MentorDetail({
         <div className="rounded-lg flex max-w-[506px] flex-col  gap-4 border border-[#6CBB0180] px-8  py-8 ">
           <h3 className="text-green-300 font-medium">Request</h3>
           <div className="flex flex-row gap-4">
-            <Button className="bg-green-200 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl">
+            <Button
+              onClick={handleAccept}
+              disabled={isProcessing}
+              className="bg-green-200 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               Accept
             </Button>
-            <Button className="bg-red-100 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl">
+            <Button
+              onClick={handleDeclineClick}
+              disabled={isProcessing}
+              className="bg-red-100 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               Decline
             </Button>
           </div>
         </div>
       </div>
+      <DeclineModal
+        isOpen={declineModalOpen}
+        onConfirm={handleDeclineConfirm}
+        onCancel={() => setDeclineModalOpen(false)}
+        isLoading={isProcessing}
+      />
     </div>
   );
 }

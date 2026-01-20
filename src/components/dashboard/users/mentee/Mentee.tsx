@@ -1,21 +1,69 @@
 'use client';
 
-import { GoBackIcon } from '@/assets/icons';
+import { GoBackIcon, LoadingIcon } from '@/assets/icons';
 import Empty from '@/components/ui/NotFound/Empty';
 import React from 'react';
-import { data } from '@/utils/data';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MenteeTable from './MenteeTable';
 import MenteeDetail from './MenteeDetail';
+import {
+  useGetTeenagersQuery,
+  useGetTeenagerByIdQuery,
+} from '@/store/users/users.api';
+
+type Mentee = {
+  id: string;
+  name: string;
+  email: string;
+  address: string;
+  phone: string;
+  status: string;
+  image?: string;
+};
+
+function mapMenteeFromApi(apiMentee: any): Mentee {
+  const statusMap: Record<string, string> = {
+    ACTIVE: 'Active',
+    INACTIVE: 'Inactive',
+    DEACTIVATED: 'Inactive',
+    PENDING: 'Pending',
+  };
+  
+  return {
+    id: apiMentee.id,
+    name: apiMentee.teenagerFullName || '',
+    email: apiMentee.teenagerEmail || '',
+    address: apiMentee.address || '',
+    phone: apiMentee.teenagerPhoneNumber || '',
+    status: statusMap[apiMentee.status] || 'Active',
+    image: apiMentee.pictureUrl || undefined,
+  };
+}
 
 export default function Mentee() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const view = searchParams.get('viewmentee') || 'listmentee';
   const selectedId = searchParams.get('id');
-  const menteeData = data || [];
-  const selectedMentee = selectedId
-    ? menteeData.find((a) => a.id === selectedId)
+  
+  // Fetch teenagers/mentees list
+  const {
+    data: menteesResponse,
+    isLoading: isLoadingMentees,
+  } = useGetTeenagersQuery({ page: 1, limit: 100 });
+  
+  // Fetch selected mentee details
+  const {
+    data: menteeResponse,
+    isLoading: isLoadingMentee,
+  } = useGetTeenagerByIdQuery(selectedId || '', {
+    skip: !selectedId || view !== 'viewmentee',
+  });
+
+  const menteeData =
+    menteesResponse?.data?.map(mapMenteeFromApi) || [];
+  const selectedMentee = menteeResponse?.data
+    ? mapMenteeFromApi(menteeResponse.data)
     : null;
 
   const setParam = (newView: string, id?: string) => {
@@ -27,6 +75,22 @@ export default function Mentee() {
   };
 
   const handleBack = () => setParam('listmentee');
+
+  if (isLoadingMentees && view === 'listmentee') {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <LoadingIcon width="40" height="40" className="animate-spin text-green-100" />
+      </div>
+    );
+  }
+
+  if (isLoadingMentee && view === 'viewmentee') {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <LoadingIcon width="40" height="40" className="animate-spin text-green-100" />
+      </div>
+    );
+  }
 
   return (
     <div className=" w-full max-w-full">

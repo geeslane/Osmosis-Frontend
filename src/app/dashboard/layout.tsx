@@ -4,7 +4,6 @@ import { useSidebar } from '@/context/SidebarContext';
 import AppHeader from '@/layout/dashboard/AppHeader';
 import AppSidebar from '@/layout/dashboard/AppSidebar';
 import Backdrop from '@/layout/dashboard/Backdrop';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import React from 'react';
 
 export default function AdminLayout({
@@ -21,7 +20,6 @@ export default function AdminLayout({
     : 'lg:ml-[90px]';
 
   return (
-    <ProtectedRoute>
       <div className="min-h-screen xl:flex">
         <AppSidebar />
         <Backdrop />
@@ -35,6 +33,5 @@ export default function AdminLayout({
           <div className="p-6 mx-auto md:p-6">{children}</div>
         </div>
       </div>
-    </ProtectedRoute>
   );
 }

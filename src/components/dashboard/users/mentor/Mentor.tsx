@@ -1,21 +1,67 @@
 'use client';
 
-import { GoBackIcon } from '@/assets/icons';
+import { GoBackIcon, LoadingIcon } from '@/assets/icons';
 import Empty from '@/components/ui/NotFound/Empty';
 import React from 'react';
-import { data } from '@/utils/data';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MentorTable from './MentorTable';
 import MentorDetail from './MentorDetail';
+import {
+  useGetMentorsQuery,
+  useGetMentorByIdQuery,
+} from '@/store/users/users.api';
+
+type Mentor = {
+  id: string;
+  name: string;
+  email: string;
+  address: string;
+  phone: string;
+  status: string;
+  image?: string;
+};
+
+function mapMentorFromApi(apiMentor: any): Mentor {
+  const statusMap: Record<string, string> = {
+    ACTIVE: 'Active',
+    INACTIVE: 'Inactive',
+    DEACTIVATED: 'Inactive',
+    PENDING: 'Pending',
+  };
+  
+  return {
+    id: apiMentor.id,
+    name: apiMentor.fullName || '',
+    email: apiMentor.email || '',
+    address: apiMentor.address || '',
+    phone: apiMentor.phoneNumber || '',
+    status: statusMap[apiMentor.status] || 'Active',
+    image: apiMentor.pictureUrl || undefined,
+  };
+}
 
 export default function Mentor() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const view = searchParams.get('viewmentor') || 'listmentor';
   const selectedId = searchParams.get('id');
-  const mentorData = data || [];
-  const selectedAdmin = selectedId
-    ? mentorData.find((a) => a.id === selectedId)
+  
+  const {
+    data: mentorsResponse,
+    isLoading: isLoadingMentors,
+  } = useGetMentorsQuery({ page: 1, limit: 100 });
+  
+  const {
+    data: mentorResponse,
+    isLoading: isLoadingMentor,
+  } = useGetMentorByIdQuery(selectedId || '', {
+    skip: !selectedId || view !== 'viewmentor',
+  });
+
+  const mentorData =
+    mentorsResponse?.data?.map(mapMentorFromApi) || [];
+  const selectedAdmin = mentorResponse?.data
+    ? mapMentorFromApi(mentorResponse.data)
     : null;
 
   const setParam = (newView: string, id?: string) => {
@@ -27,6 +73,22 @@ export default function Mentor() {
   };
 
   const handleBack = () => setParam('listmentor');
+
+  if (isLoadingMentors && view === 'listmentor') {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <LoadingIcon width="40" height="40" className="animate-spin text-green-100" />
+      </div>
+    );
+  }
+
+  if (isLoadingMentor && view === 'viewmentor') {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <LoadingIcon width="40" height="40" className="animate-spin text-green-100" />
+      </div>
+    );
+  }
 
   return (
     <div className=" w-full max-w-full">

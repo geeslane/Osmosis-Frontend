@@ -5,8 +5,9 @@ import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { normalizeImageUrl } from '@/utils/helper';
 
-type Admin = {
+type Mentee = {
   id: string;
   name: string;
   email: string;
@@ -15,18 +16,18 @@ type Admin = {
   status: string;
   image?: string;
 };
-type AdminListPageProps = {
+type MenteeListPageProps = {
   onAddAdmin: () => void;
-  data: Admin[];
-  onViewAdmin: (admin: Admin) => void;
+  data: Mentee[];
+  onViewMentee: (mentee: Mentee) => void;
 };
-export default function MentorTable({
+export default function MenteeTable({
   data,
-  onViewAdmin,
-}: AdminListPageProps) {
+  onViewMentee,
+}: MenteeListPageProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'All' | Admin['status']>(
+  const [statusFilter, setStatusFilter] = useState<'All' | Mentee['status']>(
     'All'
   );
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
@@ -43,42 +44,63 @@ export default function MentorTable({
     }
   };
 
-  const statusStyles: Record<Admin['status'], string> = {
+  const statusStyles: Record<Mentee['status'], string> = {
     Active: 'bg-green-50 text-green-600',
     Inactive: 'bg-[#FEF3F2] text-[#B42318]',
     Pending: 'bg-[#F2F4F7] text-[#282F2E]',
   };
 
-  const columns: Column<Admin>[] = [
+  const columns: Column<Mentee>[] = [
     {
       key: 'id',
-      label: 'ID',
-      render: (row) => (
+      label: 'S/N',
+      render: (row, index) => (
         <div>
-          <p className="font-medium text-sm text-[#101828]">#{row.id}</p>
+          <p className="font-medium text-sm text-[#101828]">
+            {(page - 1) * perPage + (index ?? 0) + 1}
+          </p>
         </div>
       ),
     },
     {
       key: 'name',
       label: 'Name',
-      render: (row) => (
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full">
-            <Image
-              src={row.image ?? '/image/Avatar.png'}
-              alt={row.name}
-              width={40}
-              height={40}
-              className="rounded-full w-full h-full object-cover mr-3"
-            />
+      render: (row) => {
+        const normalizedImage = row.image ? normalizeImageUrl(row.image) : null;
+        const hasValidImage = normalizedImage && typeof normalizedImage === 'string';
+        const initials = (row.name || row.email || 'U')
+          .split(' ')
+          .map((word) => word[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2);
+
+        return (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full flex-shrink-0">
+              {hasValidImage ? (
+                <Image
+                  src={normalizedImage}
+                  alt={row.name}
+                  width={32}
+                  height={32}
+                  className="rounded-full w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                  <span className="text-white text-xs font-semibold">
+                    {initials}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div>
+              <p className="font-medium text-sm text-[#101828]">{row.name}</p>
+              <p className="text-sm text-[#667085]">{row.email}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-medium text-sm text-[#101828]">{row.name}</p>
-            <p className="text-sm text-[#667085]">{row.email}</p>
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: 'address',
@@ -127,7 +149,7 @@ export default function MentorTable({
                 type="button"
                 className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
                 onClick={() => {
-                  onViewAdmin(row);
+                  onViewMentee(row);
                   setOpenDropdownId(null);
                 }}
               >
@@ -170,22 +192,21 @@ export default function MentorTable({
   const paginated = filtered.slice(
     (page - 1) * perPage,
     page * perPage
-  ) as Admin[];
+  ) as Mentee[];
 
   return (
-    <div className="space-y-4 mt-4">
-      <div className="flex flex-col mx-6 md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex items-center gap-3 w-full">
-          <div className=" w-full flex flex-col md:flex-row gap-3 justify-between md:items-center ">
+    <div className="space-y-3 mt-2">
+      <div className="flex flex-col mx-4 md:flex-row md:items-center md:justify-between gap-2">
+        <div className="flex items-center gap-2 w-full">
+          <div className=" w-full flex flex-col md:flex-row gap-2 justify-between md:items-center ">
             <div className="relative inline-flex items-center">
-              <FilterIcon className="absolute left-3 text-gray-400 pointer-events-none" />
-
+              <FilterIcon className="absolute left-2 text-gray-400 pointer-events-none" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
                 aria-label="Filter by status"
                 className="
-                  pl-9 pr-8 py-2
+                  pl-8 pr-6 py-1.5
                   rounded-md border border-[#D0D5DD]
                   bg-white text-sm font-medium text-gray-700
                   hover:bg-gray-50
@@ -199,9 +220,9 @@ export default function MentorTable({
                 <option value="Pending">Pending</option>
               </select>
             </div>
-            <div className="w-full flex gap-3 items-center justify-end">
-              <div className="relative flex items-center py-3 rounded-lg gap-2 bg-[#DCFFAD91] px-2 max-w-[369px] w-full">
-                <SearchIcon className=" left-3 top-2.5 text-gray-400 pointer-events-none" />
+            <div className="w-full flex gap-2 items-center justify-end">
+              <div className="relative flex items-center py-2 rounded-lg gap-2 bg-[#DCFFAD91] px-2 max-w-[369px] w-full">
+                <SearchIcon className=" left-2 top-2 text-gray-400 pointer-events-none" />
                 <input
                   type="search"
                   value={search}
@@ -210,14 +231,6 @@ export default function MentorTable({
                   className="w-full text-sm h-full  focus:outline-none"
                 />
               </div>
-              {/*   <Button
-                onClick={onAddAdmin}
-                variant="primary"
-                className="font-medium flex gap-1"
-              >
-                <AddsIcon />
-                <h3 className="hidden md:flex">Add Mentor</h3>
-              </Button> */}
             </div>
           </div>
         </div>
@@ -227,7 +240,7 @@ export default function MentorTable({
         onCancel={() => setOpen(false)}
         onConfirm={handleDelete}
         //isLoading={loading}
-        title="Delete Admin"
+        title="Delete Mentee"
         description="Deleting this admin will permanently remove access."
       />
       <DataTable columns={columns} data={paginated} />

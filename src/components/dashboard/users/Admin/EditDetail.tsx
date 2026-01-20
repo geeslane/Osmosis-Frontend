@@ -4,10 +4,11 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import InputForm from '@/components/form/InputForm';
 import Button from '@/components/ui/button/Button';
-import { EmailIcon, PhoneIcon, LocationIcon, CameraIcon } from '@/assets/icons';
+import { EmailIcon, PhoneIcon, CameraIcon, LoadingIcon } from '@/assets/icons';
 import useToastify from '@/hooks/useToastify';
 import Image from 'next/image';
 import { AddAdminSchema } from '@/validation/schema';
+import { useUpdateAdminProfileMutation } from '@/store/users/users.api';
 
 interface AddAdminFormInputs {
   fullName: string;
@@ -15,25 +16,48 @@ interface AddAdminFormInputs {
   phoneNumber?: string | null;
   address?: string | null;
 }
-export default function AddAdmin() {
+interface EditDetailProps {
+  selectedAdmin: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string | null;
+    address?: string | null;
+    image?: string | null;
+  };
+  setEdit: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export default function EditDetail({
+  selectedAdmin,
+  setEdit,
+}: EditDetailProps) {
   const { showToast } = useToastify();
+  const [updateAdmin, { isLoading }] = useUpdateAdminProfileMutation();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<AddAdminFormInputs>({
     resolver: yupResolver(AddAdminSchema) as any,
+    defaultValues: {
+      fullName: selectedAdmin.name,
+      email: selectedAdmin.email,
+      phoneNumber: selectedAdmin.phone || '',
+      address: selectedAdmin.address || '',
+    },
   });
 
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(
+    selectedAdmin.image || null
+  );
   const [file, setFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const onFileChange = (f: File | null) => {
     if (!f) {
-      setPreview(null);
+      setPreview(selectedAdmin.image || null);
       setFile(null);
       return;
     }
@@ -41,12 +65,26 @@ export default function AddAdmin() {
     setFile(f);
   };
 
-  const onSubmit: SubmitHandler<AddAdminFormInputs> = (data) => {
-    console.log('Add Admin payload', { ...data, file });
-    showToast('Admin added successfully', 'success');
-    reset();
-    setPreview(null);
-    setFile(null);
+  const onSubmit: SubmitHandler<AddAdminFormInputs> = async (data) => {
+    try {
+      await updateAdmin({
+        id: selectedAdmin.id,
+        data: {
+          fullName: data.fullName,
+          email: data.email,
+          phoneNumber: data.phoneNumber || undefined,
+          address: data.address || undefined,
+          picture: file || undefined,
+        },
+      }).unwrap();
+
+      showToast('Admin updated successfully', 'success');
+      setEdit(false);
+    } catch (error: any) {
+      const message =
+        error?.data?.message || error?.error || 'Failed to update admin';
+      showToast(message, 'error');
+    }
   };
 
   return (
@@ -82,7 +120,7 @@ export default function AddAdmin() {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="text-sm  text-start text-green-100 font-medium mt-1"
+          className="text-sm text-start text-green-100 font-medium mt-1"
         >
           Upload Photo
         </button>
@@ -134,7 +172,6 @@ export default function AddAdmin() {
           register={register}
           error={errors.address}
           type="text"
-          icon={<LocationIcon />}
         />
 
         <div className="pt-2">
@@ -143,8 +180,16 @@ export default function AddAdmin() {
             variant="primary"
             fullWidth
             className="py-4 font-medium"
+            disabled={isLoading}
           >
-            Add Admin
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <LoadingIcon width="20" height="20" />
+                Updating...
+              </span>
+            ) : (
+              'Update Admin'
+            )}
           </Button>
         </div>
       </div>

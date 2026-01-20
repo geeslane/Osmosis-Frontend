@@ -31,7 +31,20 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
       },
+      {
+        protocol: 'http',
+        hostname: 'res.cloudinary.com',
+      },
     ],
+  },
+  // Optimize dev server performance
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'react-icons'],
+  },
+  // Reduce TypeScript checking in dev mode
+  typescript: {
+    // Type checking is handled by ESLint in CI/CD
+    ignoreBuildErrors: false,
   },
 };
 

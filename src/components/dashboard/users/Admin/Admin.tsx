@@ -1,14 +1,17 @@
 'use client';
 
-import { AddsIcon, GoBackIcon } from '@/assets/icons';
+import { AddsIcon, GoBackIcon, LoadingIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import Empty from '@/components/ui/NotFound/Empty';
 import React from 'react';
 import AddAdmin from './AddAdmin';
 import AdminListPage from './AdminTable';
 import AdminDetail from './AdminDetail';
-import { data } from '@/utils/data';
 import { useSearchParams, useRouter } from 'next/navigation';
+import {
+  useGetAdminsQuery,
+  useGetAdminByIdQuery,
+} from '@/store/users/users.api';
 
 type Admin = {
   id: string;
@@ -18,7 +21,28 @@ type Admin = {
   phone: string;
   status: string;
   image?: string;
+  role?: string;
 };
+
+function mapAdminFromApi(apiAdmin: any): Admin {
+  const statusMap: Record<string, string> = {
+    ACTIVE: 'Active',
+    INACTIVE: 'Inactive',
+    DEACTIVATED: 'Inactive',
+    PENDING: 'Pending',
+  };
+  
+  return {
+    id: apiAdmin.id,
+    name: apiAdmin.fullName || '',
+    email: apiAdmin.email || '',
+    address: apiAdmin.address || '',
+    phone: apiAdmin.phoneNumber || '',
+    status: statusMap[apiAdmin.status] || 'Active',
+    image: apiAdmin.pictureUrl || undefined,
+    role: apiAdmin.role || undefined,
+  };
+}
 
 export default function Admin() {
   const searchParams = useSearchParams();
@@ -26,9 +50,25 @@ export default function Admin() {
 
   const view = searchParams.get('viewadmin') || 'listadmin';
   const selectedId = searchParams.get('id');
-  const adminData = data || [];
-  const selectedAdmin = selectedId
-    ? adminData.find((a) => a.id === selectedId)
+  
+  // Fetch admins list
+  const {
+    data: adminsResponse,
+    isLoading: isLoadingAdmins,
+  } = useGetAdminsQuery({ page: 1, limit: 100 });
+  
+  // Fetch selected admin details
+  const {
+    data: adminResponse,
+    isLoading: isLoadingAdmin,
+  } = useGetAdminByIdQuery(selectedId || '', {
+    skip: !selectedId || view !== 'viewadmin',
+  });
+
+  const adminData =
+    adminsResponse?.data?.map(mapAdminFromApi) || [];
+  const selectedAdmin = adminResponse?.data
+    ? mapAdminFromApi(adminResponse.data)
     : null;
 
   const setParam = (newView: string, id?: string) => {
@@ -40,6 +80,22 @@ export default function Admin() {
   };
 
   const handleBack = () => setParam('listadmin');
+
+  if (isLoadingAdmins && view === 'listadmin') {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <LoadingIcon width="40" height="40" className="animate-spin text-green-100" />
+      </div>
+    );
+  }
+
+  if (isLoadingAdmin && view === 'viewadmin') {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <LoadingIcon width="40" height="40" className="animate-spin text-green-100" />
+      </div>
+    );
+  }
 
   return (
     <div className=" w-full max-w-full">
@@ -53,7 +109,7 @@ export default function Admin() {
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
-            <h3 className="text-green-200 text-2xl font-bold">Add Admin</h3>
+            <h3 className="text-green-200 text-2xl font-bold">Invite Admin</h3>
             <div className="rounded-md border px-4 md:px-[64px] border-green-400 py-5 w-full">
               <AddAdmin />
             </div>
@@ -87,12 +143,12 @@ export default function Admin() {
             </div>
             {adminData.length == 0 && (
               <Button
-                onClick={() => setParam('add')}
+                onClick={() => setParam('addadmin')}
                 variant="primary"
                 className="font-medium flex gap-1"
               >
                 <AddsIcon />
-                <span className="hidden md:flex">Add Admin</span>
+                <span className="hidden md:flex">Invite Admin</span>
               </Button>
             )}
           </div>
@@ -101,7 +157,7 @@ export default function Admin() {
             <div className="max-w-[400px] mx-auto my-[65px]">
               <Empty
                 title="No Admins for now."
-                description="Click Add Admins to have a list."
+                description="Click Invite Admin to have a list."
               />
             </div>
           ) : (

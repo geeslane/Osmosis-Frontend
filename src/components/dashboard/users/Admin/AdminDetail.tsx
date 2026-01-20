@@ -44,13 +44,19 @@ export default function AdminDetail({ selectedAdmin }: { selectedAdmin: any }) {
           </div>
           <div className="rounded-lg flex flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 space-y-2">
             <div className="w-[90px] h-[90px] rounded-full">
-              <Image
-                src={selectedAdmin.image}
-                alt="Adminimage"
-                width={100}
-                height={100}
-                className="rounded-full w-full h-full object-cover mr-3"
-              />
+              {selectedAdmin.image ? (
+                <Image
+                  src={selectedAdmin.image}
+                  alt="Adminimage"
+                  width={100}
+                  height={100}
+                  className="rounded-full w-full h-full object-cover mr-3"
+                />
+              ) : (
+                <div className="w-full h-full rounded-full bg-green-100 flex items-center justify-center text-white font-bold text-2xl">
+                  {selectedAdmin.name?.charAt(0)?.toUpperCase() || 'A'}
+                </div>
+              )}
             </div>
             <div className="space-y-6">
               <div className="flex gap-4">

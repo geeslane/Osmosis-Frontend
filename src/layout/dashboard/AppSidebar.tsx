@@ -39,22 +39,16 @@ const AppSidebar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      // Call logout endpoint
       await logout().unwrap();
       
-      // Clear session cookie
       await clearSessionCookie();
       
-      // Clear user from Redux
       dispatch(clearUser());
       
-      // Show success message
       showToast('You have been logged out successfully', 'success');
       
-      // Redirect to sign in
       router.replace('/signin');
     } catch (error: any) {
-      // Even if API call fails, clear local session
       await clearSessionCookie();
       dispatch(clearUser());
       
@@ -74,7 +68,7 @@ const AppSidebar: React.FC = () => {
     {
       icon: PendingRequestIcon,
       name: 'Pending Requests',
-      path: '/dashboard/pending-request',
+      path: '/dashboard/pending-requests',
     },
     {
       icon: UserManagementIcon,
@@ -183,20 +177,35 @@ const AppSidebar: React.FC = () => {
             <div className="flex items-center  justify-center w-full">
               {(isExpanded || isMobileOpen) && (
                 <div className="flex w-full gap-3">
-                  <div className="w-[36px] h-[36px]">
-                    <Image
-                      src="/image/Avss.jpg"
-                      alt=""
-                      width={50}
-                      height={50}
-                      className="rounded-full w-full h-full object-cover"
-                    />
+                  <div className="w-[36px] h-[36px] flex-shrink-0">
+                    {user?.avatar ? (
+                      <Image
+                        src={user.avatar}
+                        alt={user.full_name || user?.email || 'User'}
+                        width={36}
+                        height={36}
+                        className="rounded-full w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center">
+                        <span className="text-white text-xs font-semibold">
+                          {(user?.full_name || user?.email || 'U')
+                            .split(' ')
+                            .map((word) => word[0])
+                            .join('')
+                            .toUpperCase()
+                            .slice(0, 2)}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <div className="">
-                    <h3 className="text-sm font-semibold  text-green-200">
-                      {user?.full_name || 'User'}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-semibold text-green-200 truncate">
+                      {user?.full_name || user?.email || 'User'}
                     </h3>
-                    <h2 className="text-green-200 text-[10px]">{user?.email || ''}</h2>
+                    {user?.email && (
+                      <h2 className="text-green-200 text-[10px] truncate">{user.email}</h2>
+                    )}
                   </div>
                 </div>
               )}

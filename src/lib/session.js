@@ -1,24 +1,52 @@
 'use server';
-import { cookieConfig } from '@/utils/constant';
+
 import { cookies } from 'next/headers';
 
-export async function getSessionCookie() {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('SESSION_COOKIE');
+const COOKIE_NAME = 'SESSION_COOKIE';
 
-  if (!sessionCookie) return null;
+const DEFAULT_CONFIG = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  path: '/',
+  maxAge: 60 * 60 * 24 * 7, // 1 week
+};
+
+export async function getSessionCookie() {
   try {
-    return JSON.parse(sessionCookie.value);
-  } catch{
-    return sessionCookie.value || null;
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get(COOKIE_NAME);
+
+    if (!sessionCookie || !sessionCookie.value) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(sessionCookie.value);
+      // Ensure we return an object with a token property
+      return parsed && typeof parsed === 'object' ? parsed : { token: sessionCookie.value };
+    } catch {
+      return { token: sessionCookie.value };
+    }
+  } catch (error) {
+    console.error("Session retrieval error:", error);
+    return null;
   }
 }
+
 export async function setSessionCookie(session) {
   const cookieStore = await cookies();
-  const sessionValue = JSON.stringify(session);
-  cookieStore.set('SESSION_COOKIE', sessionValue, cookieConfig);
+  
+  const sessionValue = typeof session === 'string' 
+    ? session 
+    : JSON.stringify(session);
+
+  cookieStore.set(COOKIE_NAME, sessionValue, DEFAULT_CONFIG);
 }
+
 export async function clearSessionCookie() {
   const cookieStore = await cookies();
-  cookieStore.delete('SESSION_COOKIE', cookieConfig);
+  // It's safer to set an expired cookie with the same config than just calling delete()
+  // to ensure all browsers and paths clear it correctly.
+  cookieStore.set(COOKIE_NAME, '', { ...DEFAULT_CONFIG, maxAge: 0 });
 }
