@@ -53,7 +53,7 @@ interface OtpResponse {
 
 interface MagicLinkRequest {
   email: string;
-  userType: 'ADMIN' | 'TEENAGER' | 'MENTOR'; // Required
+  userType: 'ADMIN' | 'TEENAGER' | 'MENTOR';
 }
 
 interface MagicLinkVerifyRequest {
@@ -65,9 +65,13 @@ interface MagicLinkResponse {
   success: boolean;
   message: string;
   data?: {
-    user: any;
-    userType?: 'ADMIN' | 'TEENAGER' | 'MENTOR';
-    token?: string; // JWT token for authentication
+    message: string;
+    data: {
+      user: any;
+      userType?: 'ADMIN' | 'TEENAGER' | 'MENTOR';
+      userId?: string;
+      requiresPasswordChange?: boolean;
+    };
   };
 }
 
@@ -181,22 +185,12 @@ export const AuthApi = createApi({
         data,
       }),
     }),
-    changeAdminPassword: builder.mutation<
+    changePassword: builder.mutation<
       { success: boolean; message: string },
       { id: string; data: ChangePasswordRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/auth/admin/${id}/change-password`,
-        method: 'POST',
-        data,
-      }),
-    }),
-    changeMentorPassword: builder.mutation<
-      { success: boolean; message: string },
-      { id: string; data: ChangePasswordRequest }
-    >({
-      query: ({ id, data }) => ({
-        url: `/auth/mentor/${id}/change-password`,
+        url: `/auth/change-password/${id}`,
         method: 'POST',
         data,
       }),
@@ -318,8 +312,7 @@ export const {
   useResendOtpMutation,
   useRequestMagicLinkMutation,
   useVerifyMagicLinkMutation,
-  useChangeAdminPasswordMutation,
-  useChangeMentorPasswordMutation,
+  useChangePasswordMutation,
   useRegisterUserMutation,
   useRegisterTeenagerMutation,
   useRegisterMentorMutation,

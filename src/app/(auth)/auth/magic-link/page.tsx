@@ -6,7 +6,6 @@ import React, { useState } from 'react';
 import InputForm from '@/components/form/InputForm';
 import SelectForm from '@/components/form/SelectForm';
 import { useRequestMagicLinkMutation } from '@/store/auth/auth.api';
-import { useRouter } from 'next/navigation';
 import useToastify from '@/hooks/useToastify';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -29,7 +28,6 @@ type MagicLinkFormInputs = {
 
 export default function MagicLinkPage() {
   const { showToast } = useToastify();
-  const router = useRouter();
   const [requestMagicLink, { isLoading }] = useRequestMagicLinkMutation();
   const [success, setSuccess] = useState(false);
 

@@ -15,18 +15,16 @@ export default function LoadingPage() {
   const dispatch = useDispatch();
   const { showToast } = useToastify();
   
-  // Clear old user data and invalidate cache when component mounts
   useEffect(() => {
     dispatch(clearUser());
     dispatch(ProfileApi.util.invalidateTags(['profile']));
   }, [dispatch]);
   
-  const { data, error, isLoading, isSuccess, isError } = useGetMeQuery();
+  const { data, error, isSuccess, isError } = useGetMeQuery();
 
   useEffect(() => {
     if (isSuccess && data?.data?.data) {
       const apiData = data.data.data;
-      // Transform API response to Redux User format
       const userData = {
         id: apiData.id,
         full_name: apiData.fullName,
@@ -45,25 +43,20 @@ export default function LoadingPage() {
       };
       dispatch(setUser(userData));
       
-      // Get redirect parameter from URL or default to /dashboard/users
-      const redirectPath = searchParams.get('redirect') || '/dashboard/users';
+      const redirectPath = searchParams.get('redirect') || '/dashboard';
       
-      // Navigate to the intended destination or default dashboard
       router.replace(redirectPath);
     }
   }, [isSuccess, data, dispatch, router, searchParams]);
 
   useEffect(() => {
     if (isError) {
-      const errorMessage =
-        error && 'data' in error
-          ? (error.data as any)?.message || 'Failed to fetch user details'
-          : 'Failed to fetch user details';
-      
+      let errorMessage = 'Failed to fetch user details';
+      if (error && typeof error === 'object' && error !== null && 'data' in error) {
+        errorMessage =
+          (error as any).data?.message || 'Failed to fetch user details';
+      }
       showToast(errorMessage, 'error');
-      
-      // Middleware will handle redirect if needed
-      // Trust middleware to redirect if user is not authenticated
     }
   }, [isError, error, showToast]);
 

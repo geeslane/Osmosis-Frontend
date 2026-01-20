@@ -27,7 +27,6 @@ export default function OtpPage() {
       setSessionId(sessionIdParam);
     } else {
       showToast('Invalid session. Please login again.', 'error');
-      // Middleware will handle redirect if needed
     }
   }, [searchParams, showToast]);
 
@@ -73,7 +72,6 @@ export default function OtpPage() {
     e.preventDefault();
     if (!sessionId) {
       showToast('Invalid session. Please login again.', 'error');
-      // Middleware will handle redirect if needed
       return;
     }
 
@@ -89,10 +87,7 @@ export default function OtpPage() {
         otpCode,
       }).unwrap();
 
-      console.log('OTP Verification Response:', response);
-
-      // Handle nested response structure (response.data.data) similar to login
-      const otpData = response.data?.data || response.data;
+      const otpData = response.data?.data;
 
       if (otpData?.token) {
         try {
@@ -101,15 +96,20 @@ export default function OtpPage() {
             role: otpData.userType,
           });
 
-          if (otpData.requiresPasswordChange && otpData.userId && otpData.userType) {
+          const userId = otpData.user?.id
+
+          const userType =
+            otpData.userType
+
+          if (otpData?.requiresPasswordChange) {
             showToast('OTP verified! Please change your password.', 'success');
             router.replace(
-              `/auth/change-password?userType=${otpData.userType}&userId=${otpData.userId}`
+              `/auth/change-password?userType=${userType}&userId=${userId}`
             );
           } else {
             showToast('OTP verified successfully!', 'success');
             const redirectParam = searchParams.get('redirect');
-            const loadingPath = redirectParam 
+            const loadingPath = redirectParam
               ? `/auth/loading?redirect=${encodeURIComponent(redirectParam)}`
               : '/auth/loading';
             router.replace(loadingPath);
@@ -124,7 +124,7 @@ export default function OtpPage() {
       }
     } catch (error: any) {
       let message = 'OTP verification failed';
-      
+
       if (error instanceof Error) {
         message = error.message;
       } else if (error?.data?.message) {
@@ -154,7 +154,6 @@ export default function OtpPage() {
   const handleResend = async () => {
     if (!sessionId) {
       showToast('Invalid session. Please login again.', 'error');
-      // Middleware will handle redirect if needed
       return;
     }
 
@@ -166,7 +165,7 @@ export default function OtpPage() {
       inputRefs.current[0]?.focus();
     } catch (error: any) {
       let message = 'Failed to resend OTP';
-      
+
       if (error instanceof Error) {
         message = error.message;
       } else if (error?.data?.message) {
@@ -178,7 +177,7 @@ export default function OtpPage() {
       } else if (error?.message) {
         message = error.message;
       }
-      
+
       showToast(message, 'error');
     }
   };
@@ -262,8 +261,8 @@ export default function OtpPage() {
                   {isResending
                     ? 'Sending...'
                     : countdown > 0
-                    ? `Resend OTP in ${countdown}s`
-                    : 'Resend OTP'}
+                      ? `Resend OTP in ${countdown}s`
+                      : 'Resend OTP'}
                 </button>
               </div>
             </form>

@@ -5,7 +5,6 @@ import Image from 'next/image';
 import React, { useState, useEffect, useRef } from 'react';
 import { useVerifyMagicLinkMutation } from '@/store/auth/auth.api';
 import { useRouter, useSearchParams } from 'next/navigation';
-import useToastify from '@/hooks/useToastify';
 import Link from 'next/link';
 import { setSessionCookie } from '@/lib/session';
 
@@ -19,16 +18,12 @@ export default function VerifyPage() {
 
   useEffect(() => {
     const verifyMagicLinkFlow = async () => {
-      // Prevent multiple verifications
       if (hasVerified.current) return;
-      
-      // Extract token and email from URL
+
       const token = searchParams.get('token');
       const email = searchParams.get('email');
 
-      console.log('Magic link verification started', { token: token?.substring(0, 20) + '...', email });
 
-      // Validate required parameters
       if (!token || !email) {
         console.error('Missing token or email', { token: !!token, email: !!email });
         setStatus('error');
@@ -38,34 +33,36 @@ export default function VerifyPage() {
       }
 
       try {
-        // Call backend API to verify magic link
         const response = await verifyMagicLink({
           token,
-          email: decodeURIComponent(email), // Decode URL-encoded email
+          email: decodeURIComponent(email),
         }).unwrap();
 
-        console.log('Magic link verification response', response);
+        const verifyData = response.data?.data;
 
-        // Handle nested response structure (response.data.data) similar to OTP verification
-        const verifyData = response.data?.data || response.data;
-
-        
-        if (verifyData?.token) {
+        if (response.success) {
           try {
-            // Store authentication token
             await setSessionCookie({
-              token: verifyData.token,
-              role: verifyData.userType || verifyData.user?.role,
+              token,
+              role: verifyData?.user?.role,
             });
 
-            console.log('Session cookie set, redirecting...');
             setStatus('success');
             hasVerified.current = true;
 
-            // Redirect to loading page which will fetch user profile and redirect appropriately
-            setTimeout(() => {
-              router.replace('/auth/loading');
-            }, 1500); // Show success message for 1.5 seconds
+            if (
+              verifyData?.requiresPasswordChange
+            ) {
+              setTimeout(() => {
+                router.replace(
+                  `/auth/change-password?userType=${verifyData.userType}&userId=${verifyData.userId}`
+                );
+              }, 1500);
+            } else {
+              setTimeout(() => {
+                router.replace('/auth/loading');
+              }, 1500);
+            }
           } catch (cookieError) {
             console.error('Session cookie error:', cookieError);
             setStatus('error');
@@ -81,7 +78,7 @@ export default function VerifyPage() {
       } catch (error: any) {
         console.error('Magic link verification error', error);
         let message = 'Failed to verify magic link';
-        
+
         if (error?.data?.message) {
           message = error.data.message;
         } else if (error?.error) {
@@ -90,7 +87,6 @@ export default function VerifyPage() {
           message = error.message;
         }
 
-        // Provide user-friendly error messages
         if (message.toLowerCase().includes('expired')) {
           message = 'This magic link has expired. Please request a new one.';
         } else if (message.toLowerCase().includes('invalid')) {
@@ -110,7 +106,6 @@ export default function VerifyPage() {
     verifyMagicLinkFlow();
   }, [searchParams, verifyMagicLink, router]);
 
-  // Render UI based on status
   if (status === 'verifying') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white">

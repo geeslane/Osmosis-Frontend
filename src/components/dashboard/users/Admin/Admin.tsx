@@ -10,7 +10,6 @@ import AdminDetail from './AdminDetail';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   useGetAdminsQuery,
-  useGetAdminByIdQuery,
 } from '@/store/users/users.api';
 
 type Admin = {
@@ -49,27 +48,15 @@ export default function Admin() {
   const router = useRouter();
 
   const view = searchParams.get('viewadmin') || 'listadmin';
-  const selectedId = searchParams.get('id');
   
-  // Fetch admins list
   const {
     data: adminsResponse,
     isLoading: isLoadingAdmins,
   } = useGetAdminsQuery({ page: 1, limit: 100 });
-  
-  // Fetch selected admin details
-  const {
-    data: adminResponse,
-    isLoading: isLoadingAdmin,
-  } = useGetAdminByIdQuery(selectedId || '', {
-    skip: !selectedId || view !== 'viewadmin',
-  });
+
 
   const adminData =
     adminsResponse?.data?.map(mapAdminFromApi) || [];
-  const selectedAdmin = adminResponse?.data
-    ? mapAdminFromApi(adminResponse.data)
-    : null;
 
   const setParam = (newView: string, id?: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -89,7 +76,7 @@ export default function Admin() {
     );
   }
 
-  if (isLoadingAdmin && view === 'viewadmin') {
+  if (view === 'viewadmin') {
     return (
       <div className="flex justify-center items-center py-20">
         <LoadingIcon width="40" height="40" className="animate-spin text-green-100" />
@@ -117,7 +104,7 @@ export default function Admin() {
         </div>
       )}
 
-      {view === 'viewadmin' && selectedAdmin && (
+      {view === 'viewadmin' && (
         <div className="max-w-[745px]">
           <div className="flex flex-col gap-8 py-4">
             <div
@@ -127,7 +114,7 @@ export default function Admin() {
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
-            <AdminDetail selectedAdmin={selectedAdmin} />
+            <AdminDetail selectedAdmin={{}} />
           </div>
         </div>
       )}

@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
   // 1. If user has a token and tries to go to signin -> move to dashboard
   if (token && isAuthPage) {
     console.log("-> Redirecting logged-in user to dashboard");
-    return NextResponse.redirect(new URL('/dashboard/users', request.url));
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   // 2. If NO token and trying to access dashboard -> move to signin

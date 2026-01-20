@@ -81,11 +81,19 @@ export default function SignInForm() {
       if (loginData.requiresOtp && loginData.sessionId) {
         showToast(responseMessage || 'OTP code has been sent to your email', 'success');
         try {
-          // Pass redirect parameter to OTP page to preserve it through the flow
-          const otpPath = redirectPath && redirectPath !== '/dashboard'
-            ? `/auth/otp?sessionId=${loginData.sessionId}&redirect=${encodeURIComponent(redirectPath)}`
-            : `/auth/otp?sessionId=${loginData.sessionId}`;
-          router.push(otpPath);
+          // Pass redirect parameter and password change requirement to OTP page
+          const params = new URLSearchParams();
+          params.set('sessionId', loginData.sessionId);
+          if (redirectPath && redirectPath !== '/dashboard') {
+            params.set('redirect', redirectPath);
+          }
+          // Pass password change requirement if present (for cases where backend doesn't return it in OTP response)
+          if (loginData.requiresPasswordChange && loginData.userId && loginData.userType) {
+            params.set('requiresPasswordChange', 'true');
+            params.set('userId', loginData.userId);
+            params.set('userType', loginData.userType);
+          }
+          router.push(`/auth/otp?${params.toString()}`);
         } catch (navError) {
           console.error('Navigation error:', navError);
         }

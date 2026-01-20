@@ -44,16 +44,18 @@ export default function Mentee() {
   const view = searchParams.get('viewmentor') || 'listmentor';
   const selectedId = searchParams.get('id');
   
-  // Fetch pending teenager requests
+  // 1. Destructure 'refetch' and rename it to 'refetchRequests'
   const {
     data: requestsResponse,
     isLoading: isLoadingRequests,
+    refetch: refetchRequests, 
   } = useGetTeenagerRequestsQuery({ page: 1, limit: 100, status: 'PENDING' });
   
   const menteeData =
     requestsResponse?.data?.map(mapMenteeRequestFromApi) || [];
+
   const selectedAdmin = selectedId
-    ? menteeData.find((a) => a.id === selectedId)
+    ? menteeData.find((a: MenteePending) => a.id === selectedId)
     : null;
 
   const setParam = (newView: string, id?: string) => {
@@ -81,7 +83,7 @@ export default function Mentee() {
           <div className="flex flex-col gap-8 py-4">
             <div
               onClick={handleBack}
-              className="flex  w-20  cursor-pointer  items-center gap-1"
+              className="flex w-20 cursor-pointer items-center gap-1"
             >
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
@@ -99,11 +101,12 @@ export default function Mentee() {
           <div className="flex flex-col gap-8 py-4">
             <div
               onClick={handleBack}
-              className="flex cursor-pointer w-20  items-center gap-1"
+              className="flex cursor-pointer w-20 items-center gap-1"
             >
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
+            {/* refetchRequests is now defined and passed here */}
             <MenteeDetail selectedAdmin={selectedAdmin} onRefetch={refetchRequests} />
           </div>
         </div>
@@ -132,6 +135,7 @@ export default function Mentee() {
               data={menteeData}
               onAddAdmin={() => setParam('addmentor')}
               onViewAdmin={(admin) => setParam('viewmentor', admin.id)}
+              /* refetchRequests is now defined and passed here */
               onRefetch={refetchRequests}
             />
           )}

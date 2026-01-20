@@ -158,7 +158,6 @@ export const UsersApi = createApi({
         data,
       }),
       invalidatesTags: (result, error, { data: requestData }) => {
-        // If approved, also invalidate Mentor list since they're now a user
         if (requestData.status === 'APPROVED') {
           return ['MentorRequest', 'Mentor'];
         }

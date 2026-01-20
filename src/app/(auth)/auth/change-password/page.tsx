@@ -5,8 +5,7 @@ import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
 import PasswordInputForm from '@/components/form/PasswordInputForm';
 import {
-  useChangeAdminPasswordMutation,
-  useChangeMentorPasswordMutation,
+  useChangePasswordMutation,
 } from '@/store/auth/auth.api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useToastify from '@/hooks/useToastify';
@@ -47,10 +46,8 @@ export default function ChangePasswordPage() {
   const searchParams = useSearchParams();
   const [userType, setUserType] = useState<'ADMIN' | 'MENTOR' | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [changeAdminPassword, { isLoading: isChangingAdmin }] =
-    useChangeAdminPasswordMutation();
-  const [changeMentorPassword, { isLoading: isChangingMentor }] =
-    useChangeMentorPasswordMutation();
+  const [changePassword, { isLoading }] =
+    useChangePasswordMutation();
 
   useEffect(() => {
     const userTypeParam = searchParams.get('userType') as 'ADMIN' | 'MENTOR';
@@ -60,7 +57,6 @@ export default function ChangePasswordPage() {
       setUserId(userIdParam);
     } else {
       showToast('Invalid request. Please login again.', 'error');
-      // Middleware will handle redirect if needed
     }
   }, [searchParams, showToast]);
 
@@ -72,12 +68,9 @@ export default function ChangePasswordPage() {
     resolver: yupResolver(passwordSchema),
   });
 
-  const isLoading = isChangingAdmin || isChangingMentor;
-
   const onSubmit = async (formData: ChangePasswordFormInputs) => {
     if (!userType || !userId) {
       showToast('Invalid request. Please login again.', 'error');
-      // Middleware will handle redirect if needed
       return;
     }
 
@@ -91,14 +84,13 @@ export default function ChangePasswordPage() {
       };
 
       if (userType === 'ADMIN') {
-        await changeAdminPassword(payload).unwrap();
+        await changePassword(payload).unwrap();
       } else if (userType === 'MENTOR') {
-        await changeMentorPassword(payload).unwrap();
+        await changePassword(payload).unwrap();
       }
 
       showToast('Password changed successfully!', 'success');
-      const dashboardPath =
-        userType === 'ADMIN' ? '/admin/requests' : '/mentor/profile';
+      const dashboardPath = '/dashboard';
       router.push(dashboardPath);
     } catch (error: any) {
       let message = 'Failed to change password';

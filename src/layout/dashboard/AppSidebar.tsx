@@ -40,18 +40,18 @@ const AppSidebar: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout().unwrap();
-      
+
       await clearSessionCookie();
-      
-      dispatch(clearUser());
-      
-      showToast('You have been logged out successfully', 'success');
-      
+
       router.replace('/signin');
+
+      dispatch(clearUser());
+
+      showToast('You have been logged out successfully', 'success');
     } catch (error: any) {
       await clearSessionCookie();
       dispatch(clearUser());
-      
+
       const message =
         error?.data?.message || error?.error || 'Logged out successfully';
       showToast(message, 'success');
@@ -97,17 +97,15 @@ const AppSidebar: React.FC = () => {
           <li key={item.name}>
             <Link
               href={item.path}
-              className={`group flex montserrat  font-medium text-green-200  items-center gap-3 px-4 py-2 text-sm transition-colors ${
-                active ? ' rounded-lg bg-green-100 text-white' : ''
-              }`}
+              className={`group flex montserrat  font-medium text-green-200  items-center gap-3 px-4 py-2 text-sm transition-colors ${active ? ' rounded-lg bg-green-100 text-white' : ''
+                }`}
             >
               {Icon && (
                 <Icon
-                  className={`transition-colors ${
-                    active
+                  className={`transition-colors ${active
                       ? 'text-white '
                       : 'text-white-300 text-green-100 group-hover:text-white-100'
-                  }`}
+                    }`}
                   active={active}
                 />
               )}
@@ -124,16 +122,14 @@ const AppSidebar: React.FC = () => {
     <aside
       className={`fixed max-w-[1600px] bg-white font-montserrat montserrat  mx-auto mt-16 flex flex-col lg:mt-0 top-0  left-0   text-gray-900 md:h-screen transition-all duration-300 ease-in-out z-50 
     ${isExpanded || isMobileOpen ? 'w-[290px] z-999' : 'w-[90px]'}
-    ${
-      isMobileOpen ? 'translate-x-0 bg-white h-full pb-10' : '-translate-x-full'
-    } lg:translate-x-0`}
+    ${isMobileOpen ? 'translate-x-0 bg-white h-full pb-10' : '-translate-x-full'
+        } lg:translate-x-0`}
     >
       <div className="flex flex-col pb-4 justify-between   h-full">
         <div>
           <div
-            className={`pt-[32.7px] pb-5   flex px-5    ${
-              !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
-            }`}
+            className={`pt-[32.7px] pb-5   flex px-5    ${!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
+              }`}
           >
             <Link href="/">
               {isExpanded || isMobileOpen ? (
@@ -213,9 +209,8 @@ const AppSidebar: React.FC = () => {
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className={`${
-                !isExpanded && !isHovered ? ' ' : ''
-              }  justify-center items-center flex hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={`${!isExpanded && !isHovered ? ' ' : ''
+                }  justify-center items-center flex hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
               title="Logout"
             >
               <LogoutIcon />
