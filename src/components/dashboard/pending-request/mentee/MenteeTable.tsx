@@ -46,7 +46,6 @@ export default function MenteeTable({ data, onViewAdmin, onRefetch }: AdminListP
         data: { status: 'APPROVED' },
       }).unwrap();
       showToast('Mentee request approved. They have been added to Osmosis and can be found in the Users section.', 'success');
-      // Refetch the list to update the UI
       onRefetch?.();
     } catch (error: any) {
       const message = error?.data?.message || 'Failed to approve request';
@@ -71,7 +70,6 @@ export default function MenteeTable({ data, onViewAdmin, onRefetch }: AdminListP
         data: { status: 'REJECTED', reasonForRejection: reason },
       }).unwrap();
       showToast('Mentee request declined successfully', 'success');
-      // Refetch the list to update the UI
       onRefetch?.();
     } catch (error: any) {
       const message = error?.data?.message || 'Failed to decline request';

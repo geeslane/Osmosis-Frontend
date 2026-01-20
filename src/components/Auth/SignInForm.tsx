@@ -63,13 +63,13 @@ export default function SignInForm() {
 
       const loginData = response.data?.data as
         | {
-            sessionId?: string;
-            requiresOtp?: boolean;
-            requiresPasswordChange?: boolean;
-            userType?: 'ADMIN' | 'MENTOR' | 'TEENAGER';
-            userId?: string;
-            token?: string;
-          }
+          sessionId?: string;
+          requiresOtp?: boolean;
+          requiresPasswordChange?: boolean;
+          userType?: 'ADMIN' | 'MENTOR' | 'TEENAGER';
+          userId?: string;
+          token?: string;
+        }
         | undefined;
       const responseMessage = response.data?.message;
 
@@ -81,13 +81,12 @@ export default function SignInForm() {
       if (loginData.requiresOtp && loginData.sessionId) {
         showToast(responseMessage || 'OTP code has been sent to your email', 'success');
         try {
-          // Pass redirect parameter and password change requirement to OTP page
           const params = new URLSearchParams();
           params.set('sessionId', loginData.sessionId);
           if (redirectPath && redirectPath !== '/dashboard') {
             params.set('redirect', redirectPath);
           }
-          // Pass password change requirement if present (for cases where backend doesn't return it in OTP response)
+
           if (loginData.requiresPasswordChange && loginData.userId && loginData.userType) {
             params.set('requiresPasswordChange', 'true');
             params.set('userId', loginData.userId);
@@ -113,9 +112,8 @@ export default function SignInForm() {
 
       if (loginData.token && loginData.userType) {
         try {
-          // Clear old user data before setting new session
           dispatch(clearUser());
-          
+
           await setSessionCookie({
             token: loginData.token,
             role: loginData.userType,
@@ -123,15 +121,13 @@ export default function SignInForm() {
           showToast(responseMessage || 'Login successful', 'success');
 
           try {
-            // Pass redirect parameter to loading page if it exists
-            const loadingPath = redirectPath 
+            const loadingPath = redirectPath
               ? `/auth/loading?redirect=${encodeURIComponent(redirectPath)}`
               : '/auth/loading';
             router.replace(loadingPath);
           } catch (navError) {
             console.error('Navigation error:', navError);
-            // Fallback to push if replace fails
-            const loadingPath = redirectPath 
+            const loadingPath = redirectPath
               ? `/auth/loading?redirect=${encodeURIComponent(redirectPath)}`
               : '/auth/loading';
             router.push(loadingPath);
@@ -144,9 +140,8 @@ export default function SignInForm() {
         showToast('Login successful but no token received', 'error');
       }
     } catch (error: any) {
-      // Handle different error types
       let message = 'Login failed';
-      
+
       if (error instanceof Error) {
         message = error.message;
       } else if (error?.data?.message) {
@@ -158,7 +153,7 @@ export default function SignInForm() {
       } else if (error?.message) {
         message = error.message;
       }
-      
+
       showToast(message, 'error');
     }
   };
@@ -221,9 +216,8 @@ export default function SignInForm() {
               >
                 Sign Up
                 <svg
-                  className={`w-4 h-4 transition-transform duration-200 ${
-                    signupMenuOpen ? 'rotate-180' : ''
-                  }`}
+                  className={`w-4 h-4 transition-transform duration-200 ${signupMenuOpen ? 'rotate-180' : ''
+                    }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

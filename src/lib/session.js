@@ -23,7 +23,6 @@ export async function getSessionCookie() {
 
     try {
       const parsed = JSON.parse(sessionCookie.value);
-      // Ensure we return an object with a token property
       return parsed && typeof parsed === 'object' ? parsed : { token: sessionCookie.value };
     } catch {
       return { token: sessionCookie.value };
@@ -46,7 +45,5 @@ export async function setSessionCookie(session) {
 
 export async function clearSessionCookie() {
   const cookieStore = await cookies();
-  // It's safer to set an expired cookie with the same config than just calling delete()
-  // to ensure all browsers and paths clear it correctly.
   cookieStore.set(COOKIE_NAME, '', { ...DEFAULT_CONFIG, maxAge: 0 });
 }

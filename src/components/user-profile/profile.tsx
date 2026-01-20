@@ -9,12 +9,10 @@ import type { User } from '@/store/profile/profile.slice';
 export default function Profile() {
   const dispatch = useDispatch();
   const { data, isLoading } = useGetMeQuery();
-  
+
   useEffect(() => {
-    // Only update Redux when data is available and not loading
     if (!isLoading && data?.data?.data) {
       const apiData = data.data.data;
-      // Transform API response to Redux User format
       const userData: User = {
         id: apiData.id,
         full_name: apiData.fullName,

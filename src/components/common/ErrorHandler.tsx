@@ -29,7 +29,7 @@ export default function ErrorHandler() {
         } else if (typeof reason === 'object') {
           try {
             errorMessage = JSON.stringify(reason);
-            console.log(errorMessage)
+            console.error(errorMessage)
           } catch {
             console.error('An error occurred');
           }

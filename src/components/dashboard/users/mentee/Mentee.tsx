@@ -46,13 +46,11 @@ export default function Mentee() {
   const view = searchParams.get('viewmentee') || 'listmentee';
   const selectedId = searchParams.get('id');
   
-  // Fetch teenagers/mentees list
   const {
     data: menteesResponse,
     isLoading: isLoadingMentees,
   } = useGetTeenagersQuery({ page: 1, limit: 100 });
   
-  // Fetch selected mentee details
   const {
     data: menteeResponse,
     isLoading: isLoadingMentee,
