@@ -9,16 +9,6 @@ interface AuthResponse {
   };
 }
 
-interface Dashboard {
-  ongoing_course: number;
-  completed_course: number;
-  hours_spent: number;
-  current_ongoing_course: {
-    title: string;
-  };
-  certificate: number;
-}
-
 interface MeResponse {
   success: boolean;
   data: {
