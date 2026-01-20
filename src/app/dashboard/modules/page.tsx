@@ -1,4 +1,3 @@
-import { Module } from '@/assets/icons';
 import Modules from '@/components/dashboard/modules/Modules';
 import PageTitle from '@/components/PageTitle';
 import { generateMetadata } from '@/utils/metadata';
@@ -15,10 +14,6 @@ export default function page() {
   return (
     <div>
       <PageTitle title="Modules" />
-      <div className="border-b-2 w-[141px] flex gap-2 items-center pb-3 border-green-100">
-        <Module />
-        <h3 className="text-green-300 font-medium">Module</h3>
-      </div>
       <Modules />
     </div>
   );

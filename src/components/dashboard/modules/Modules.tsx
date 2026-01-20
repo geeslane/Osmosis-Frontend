@@ -1,5 +1,4 @@
 'use client';
-
 import { AddsIcon, GoBackIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import Empty from '@/components/ui/NotFound/Empty';
