@@ -40,7 +40,7 @@ const Tabs: React.FC<TabsProps> = ({
   return (
     <div
       className={clsx(
-        'flex gap-8 border-b border-gray-200',
+        'flex gap-6 border-b border-gray-200 overflow-x-auto scrollbar-hide overflow-y-hidden',
         containerClassName
       )}
     >
@@ -52,7 +52,7 @@ const Tabs: React.FC<TabsProps> = ({
             key={tab.value}
             onClick={() => handleChange(tab.value)}
             className={clsx(
-              'relative flex items-center gap-2 pb-3 text-base font-medium transition-colors',
+              'relative flex shrink-0 items-center gap-2 pb-3  font-medium transition-colors whitespace-nowrap',
               isActive ? 'text-green-100' : 'text-green-200'
             )}
           >

@@ -3,12 +3,14 @@ export type Column<T> = {
   label: React.ReactNode;
   render?: (row: T) => React.ReactNode;
   className?: string;
+  onRowClick?: (row: T) => void;
 };
-type DataTableProps<T> = { columns: Column<T>[]; data: T[] };
+type DataTableProps<T> = { columns: Column<T>[]; data: T[]; onRowClick?: (row: T) => void };
 
 export function DataTable<T extends { id: string }>({
   columns,
   data,
+  onRowClick,
 }: DataTableProps<T>) {
   return (
     <div className="relative w-full overflow-x-auto">
@@ -30,7 +32,11 @@ export function DataTable<T extends { id: string }>({
 
           <tbody>
             {data.map((row) => (
-              <tr key={row.id} className="border-t">
+              <tr
+                onClick={() => onRowClick?.(row)}
+                key={row.id}
+                className="border- cursor-pointer"
+              >
                 {columns.map((col) => (
                   <td
                     key={String(col.key)}
@@ -41,8 +47,8 @@ export function DataTable<T extends { id: string }>({
                     {col.render
                       ? col.render(row)
                       : col.key !== 'actions'
-                      ? String(row[col.key as keyof T])
-                      : null}
+                        ? String(row[col.key as keyof T])
+                        : null}
                   </td>
                 ))}
               </tr>

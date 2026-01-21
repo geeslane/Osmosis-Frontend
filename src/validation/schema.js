@@ -129,8 +129,9 @@ export const AddLiveSessionSchema = yup.object({
 
   linkedinUrl: yup
     .string()
-    .required('Linkedin Url is required')
-    .url('Enter a valid Linkedin  URL'),
+    .nullable()
+    .notRequired()
+    .url('Enter a valid LinkedIn URL'),
 });
 
 export const AddModuleSchema = yup.object({

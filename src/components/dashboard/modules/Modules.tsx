@@ -1,5 +1,5 @@
 'use client';
-import { AddsIcon, GoBackIcon } from '@/assets/icons';
+import { AddsIcon, GoBackIcon, SearchIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import Empty from '@/components/ui/NotFound/Empty';
 import React, { useState } from 'react';
@@ -11,7 +11,7 @@ export default function Modules() {
   const [addLiveSession, setAddLiveSession] = useState(false);
 
   return (
-    <div className="my-10">
+    <div className="mb-10 mt-5">
       {addLiveSession ? (
         <div className="space-y-9">
           <div className="flex cursor-pointer items-center gap-1">
@@ -43,6 +43,18 @@ export default function Modules() {
               <h3 className="hidden md:flex">Add Module</h3>
             </Button>
           </div>
+          <div className="w-full flex justify-end items-end mt-6 ">
+            <div className="relative flex items-center py-3  rounded-lg gap-2 bg-[#DCFFAD91] px-2 max-w-[269px] w-full">
+              <SearchIcon className=" left-3 top-2.5 text-gray-400 pointer-events-none" />
+              <input
+                type="search"
+                value="search"
+                readOnly
+                placeholder="Search by Module"
+                className="w-full text-sm h-full  focus:outline-none"
+              />
+            </div>
+          </div>
 
           {!hasLiveSession ? (
             <Empty
@@ -54,7 +66,7 @@ export default function Modules() {
               imageHeight={320}
             />
           ) : (
-            <div className="mt-6">
+            <div className="mt-2">
               <ModuleList />
             </div>
           )}

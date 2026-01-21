@@ -12,10 +12,13 @@ export default function Live() {
   const [addLiveSession, setAddLiveSession] = useState(false);
 
   return (
-    <div className="my-10">
+    <div className="mb-10 mt-5">
       {addLiveSession ? (
         <div className="space-y-9">
-          <div className="flex cursor-pointer items-center gap-1">
+          <div
+            onClick={() => setAddLiveSession(false)}
+            className="flex cursor-pointer items-center gap-1"
+          >
             <GoBackIcon />
             <h3 className="text-sm text-green-200 font-medium">Back</h3>{' '}
           </div>

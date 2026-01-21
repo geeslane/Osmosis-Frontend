@@ -45,7 +45,7 @@ const AppHeader: React.FC = () => {
   return (
     <>
       <header className="sticky bg-white  font-montserrat montserrat shadow-xs top-0 h-[70px] md:h-[92px] font-sans flex w-full  z-999  ">
-        <div className="flex  items-center justify-between w-full  px-3">
+        <div className="flex  items-center justify-between w-full px-3  md:px-6 ">
           <div className="flex items-center justify-between w-full h-full  px-3  lg:justify-normal  lg:px-0 lg:py-4">
             <button
               className="items-center justify-center w-10 h-10 z-10 "

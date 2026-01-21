@@ -6,13 +6,13 @@ import Note from './Note';
 import Workbook from './Workbook';
 
 const NoteView: React.FC = () => (
-  <div className=" ">
+  <div className=" w-full ">
     <Note />
   </div>
 );
 
 const WorkbookView: React.FC = () => (
-  <div className="mt-6">
+  <div className="w-full">
     <Workbook />
   </div>
 );

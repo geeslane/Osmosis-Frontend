@@ -14,7 +14,7 @@ export default function ModuleDetails() {
   return (
     <div>
       <Tabs
-        containerClassName="max-w-[550px]"
+        containerClassName="w-full  md:max-w-[550px]"
         paramKey="content"
         defaultValue="Note"
         tabs={[
@@ -51,7 +51,7 @@ export default function ModuleDetails() {
         <div className="space-y-[37px] mt-[37px]">
           <PageTitle title="Modules 1" />
 
-          <div className="rounded-lg flex max-w-[639px]  flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 space-y-2">
+          <div className="rounded-lg flex max-w-[639px] w-full flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 space-y-2">
             <ModuleContent />
           </div>
           {fileIdFromUrl}

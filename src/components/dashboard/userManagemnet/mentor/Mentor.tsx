@@ -84,7 +84,7 @@ export default function Mentor() {
             <MentorTable
               data={data}
               onAddAdmin={() => setParam('addmentor')}
-              onViewAdmin={(admin) => setParam('viewmentor', admin.id)}
+              onViewMentor={(admin) => setParam('viewmentor', admin.id)}
             />
           )}
         </div>

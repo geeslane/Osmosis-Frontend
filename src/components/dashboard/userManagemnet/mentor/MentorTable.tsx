@@ -18,11 +18,11 @@ type Admin = {
 type AdminListPageProps = {
   onAddAdmin: () => void;
   data: Admin[];
-  onViewAdmin: (admin: Admin) => void;
+  onViewMentor: (admin: Admin) => void;
 };
 export default function MentorTable({
   data,
-  onViewAdmin,
+  onViewMentor,
 }: AdminListPageProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -111,7 +111,10 @@ export default function MentorTable({
       key: 'actions',
       label: 'Action',
       render: (row) => (
-        <div className="relative flex items-center space-x-2">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="relative flex items-center space-x-2"
+        >
           <div
             onClick={() =>
               setOpenDropdownId((prev) => (prev === row.id ? null : row.id))
@@ -127,7 +130,7 @@ export default function MentorTable({
                 type="button"
                 className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
                 onClick={() => {
-                  onViewAdmin(row);
+                  onViewMentor(row);
                   setOpenDropdownId(null);
                 }}
               >
@@ -196,7 +199,6 @@ export default function MentorTable({
                 <option value="All">All statuses</option>
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
-                <option value="Pending">Pending</option>
               </select>
             </div>
             <div className="w-full flex gap-3 items-center justify-end">
@@ -230,7 +232,11 @@ export default function MentorTable({
         title="Delete Admin"
         description="Deleting this admin will permanently remove access."
       />
-      <DataTable columns={columns} data={paginated} />
+      <DataTable
+        onRowClick={(row) => onViewMentor(row)}
+        columns={columns}
+        data={paginated}
+      />
       <div className="flex items-center justify-between">
         <Pagination
           page={page}
