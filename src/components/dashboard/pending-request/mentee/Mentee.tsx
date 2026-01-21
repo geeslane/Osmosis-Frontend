@@ -6,7 +6,8 @@ import React from 'react';
 import { data } from '@/utils/data';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MenteeTable from './MenteeTable';
-import MenteeDetail from './MenteeDetails';
+import MenteeDetail from '@/components/common/Details/MenteeDetails';
+import Button from '@/components/ui/button/Button';
 
 export default function Mentee() {
   const searchParams = useSearchParams();
@@ -58,6 +59,17 @@ export default function Mentee() {
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
             <MenteeDetail selectedAdmin={selectedAdmin} />
+            <div className="rounded-lg flex max-w-[506px] flex-col  gap-4 border border-[#6CBB0180] px-8  py-8 ">
+              <h3 className="text-green-300 font-medium">Request</h3>
+              <div className="flex flex-row gap-4">
+                <Button className="bg-green-200 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl">
+                  Accept
+                </Button>
+                <Button className="bg-red-100 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl">
+                  Decline
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}

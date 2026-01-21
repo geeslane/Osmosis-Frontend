@@ -5,7 +5,6 @@ import { useSidebar } from '../../context/SidebarContext';
 
 import Image from 'next/image';
 import {
-  ContentManagementIcon,
   DashboardIcon,
   LiveSessionIcon,
   LogoutIcon,
@@ -52,11 +51,6 @@ const AppSidebar: React.FC = () => {
       icon: LiveSessionIcon,
       name: 'Live Sessions',
       path: '/dashboard/live-sessions',
-    },
-    {
-      icon: ContentManagementIcon,
-      name: 'Content Management',
-      path: '#',
     },
   ];
 

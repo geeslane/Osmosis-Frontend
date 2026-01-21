@@ -4,7 +4,6 @@ import {
   PhoneIcon,
   UserAddIcon,
 } from '@/assets/icons';
-import Button from '@/components/ui/button/Button';
 import Image from 'next/image';
 
 export default function MentorDetail({
@@ -158,17 +157,6 @@ export default function MentorDetail({
                 </a>
               </div>
             </div>
-          </div>
-        </div>
-        <div className="rounded-lg flex max-w-[506px] flex-col  gap-4 border border-[#6CBB0180] px-8  py-8 ">
-          <h3 className="text-green-300 font-medium">Request</h3>
-          <div className="flex flex-row gap-4">
-            <Button className="bg-green-200 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl">
-              Accept
-            </Button>
-            <Button className="bg-red-100 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl">
-              Decline
-            </Button>
           </div>
         </div>
       </div>

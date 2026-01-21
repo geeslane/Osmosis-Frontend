@@ -147,7 +147,8 @@ export default function MenteeDetail({
                       sharing wisdom, making a real impact, and strengthening
                       their own leadership skills. Many feel a deep sense of
                       satisfaction in helping someone navigate challenges and
-                      reach their potential, creating a positive ripple effect. {' '}
+                      reach their potential, creating a positive ripple
+                      effect. {' '}
                     </p>
                   </div>
                 </div>

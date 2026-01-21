@@ -16,7 +16,6 @@ export default function page() {
   return (
     <div>
       <PageTitle title="Pending Request" />
-
       <Tabs
         paramKey="role"
         defaultValue="mentor"
