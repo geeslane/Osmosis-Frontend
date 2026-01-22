@@ -155,3 +155,25 @@ export const AddModuleSchema = yup.object({
       return value[0]?.size <= 10 * 1024 * 1024; // 10MB
     }),
 });
+
+export const changePasswordSchema = yup.object({
+  currentPassword: yup.string().required('Current password is required'),
+
+  newPassword: yup
+    .string()
+    .required('New password is required')
+    .min(8, 'Password must be at least 8 characters')
+    .matches(/[a-z]/, 'Must contain at least one lowercase letter')
+    .matches(/[A-Z]/, 'Must contain at least one uppercase letter')
+    .matches(/[0-9]/, 'Must contain at least one number')
+    .matches(/[@$!%*?&#]/, 'Must contain at least one special character')
+    .notOneOf(
+      [yup.ref('currentPassword')],
+      'New password must be different from current password'
+    ),
+
+  confirmPassword: yup
+    .string()
+    .required('Please confirm your new password')
+    .oneOf([yup.ref('newPassword')], 'Passwords do not match'),
+});

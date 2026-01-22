@@ -14,7 +14,10 @@ export default function Modules() {
     <div className="mb-10 mt-5">
       {addLiveSession ? (
         <div className="space-y-9">
-          <div className="flex cursor-pointer items-center gap-1">
+          <div
+            onClick={() => setAddLiveSession(false)}
+            className="flex cursor-pointer items-center gap-1"
+          >
             <GoBackIcon />
             <h3 className="text-sm text-green-200 font-medium">Back</h3>{' '}
           </div>
@@ -43,8 +46,8 @@ export default function Modules() {
               <h3 className="hidden md:flex">Add Module</h3>
             </Button>
           </div>
-          <div className="w-full flex justify-end items-end mt-6 ">
-            <div className="relative flex items-center py-3  rounded-lg gap-2 bg-[#DCFFAD91] px-2 max-w-[269px] w-full">
+          <div className="w-full flex  mt-6 ">
+            <div className="relative flex items-center py-3  rounded-lg gap-2 bg-[#DCFFAD91] px-2 max-w-[469px] w-full">
               <SearchIcon className=" left-3 top-2.5 text-gray-400 pointer-events-none" />
               <input
                 type="search"
