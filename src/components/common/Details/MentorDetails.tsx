@@ -7,9 +7,9 @@ import {
 import Image from 'next/image';
 
 export default function MentorDetail({
-  selectedAdmin,
+  selectedDetails,
 }: {
-  selectedAdmin: any;
+  selectedDetails: any;
 }) {
   const statusStyles: Record<any['status'], string> = {
     Active: 'bg-green-50 text-green-600',
@@ -25,7 +25,7 @@ export default function MentorDetail({
         <div className="rounded-lg flex flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 space-y-2">
           <div className="relative w-[140px] h-[120px] rounded-full overflow-hidden">
             <Image
-              src={selectedAdmin.image}
+              src={selectedDetails.image}
               alt="Admin image"
               fill
               className="object-cover"
@@ -40,7 +40,7 @@ export default function MentorDetail({
                     Full Name
                   </p>
                   <p className="text-green-200  font-medium">
-                    {selectedAdmin.name}
+                    {selectedDetails.name}
                   </p>
                 </div>
               </div>
@@ -49,7 +49,7 @@ export default function MentorDetail({
                 <div className="flex flex-col gap-1">
                   <p className="text-green-300 text-sm font-medium">Email</p>
                   <p className="text-green-300  font-medium  truncate">
-                    {selectedAdmin.email}
+                    {selectedDetails.email}
                   </p>
                 </div>
               </div>
@@ -60,7 +60,7 @@ export default function MentorDetail({
                     Phone Number
                   </p>
                   <p className="text-green-300  font-medium">
-                    {selectedAdmin.phone}
+                    {selectedDetails.phone}
                   </p>
                 </div>
               </div>
@@ -71,7 +71,7 @@ export default function MentorDetail({
                     Address/Location
                   </p>
                   <p className="text-green-300  font-medium">
-                    {selectedAdmin.phone}
+                    {selectedDetails.phone}
                   </p>
                 </div>
               </div>
@@ -98,10 +98,10 @@ export default function MentorDetail({
                 <p className="text-green-300 font-medium text-sm">Status</p>{' '}
                 <span
                   className={`rounded-full max-w-[100px] px-3 py-1 text-xs font-medium ${
-                    statusStyles[selectedAdmin.status]
+                    statusStyles[selectedDetails.status]
                   }`}
                 >
-                  {selectedAdmin.status}
+                  {selectedDetails.status}
                 </span>
               </div>
             </div>

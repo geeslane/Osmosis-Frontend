@@ -14,7 +14,7 @@ export default function Mentor() {
   const router = useRouter();
   const view = searchParams.get('viewmentor') || 'listmentor';
   const selectedId = searchParams.get('id');
-  const selectedAdmin = selectedId
+  const selectedMentor = selectedId
     ? data.find((a) => a.id === selectedId)
     : null;
 
@@ -48,7 +48,7 @@ export default function Mentor() {
         </div>
       )}
 
-      {view === 'viewmentor' && selectedAdmin && (
+      {view === 'viewmentor' && selectedMentor && (
         <div className="w-full ">
           <div className="flex flex-col gap-8 py-4">
             <div
@@ -58,7 +58,7 @@ export default function Mentor() {
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
-            <MentorDetail selectedAdmin={selectedAdmin} />
+            <MentorDetail selectedDetails={selectedMentor} />
             <div className="rounded-lg flex max-w-[506px] flex-col  gap-4 border border-[#6CBB0180] px-8  py-8 ">
               <h3 className="text-green-300 font-medium">Request</h3>
               <div className="flex flex-row gap-4">

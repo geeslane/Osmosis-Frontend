@@ -6,7 +6,9 @@ import React from 'react';
 import { data } from '@/utils/data';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MenteeTable from './MenteeTable';
-import MenteeDetail from './MenteeDetail';
+import MenteeDetail from '@/components/common/Details/MenteeDetails';
+import ModulesTable from './ModulesTable';
+import ProgressGauge from '@/components/ui/Progress/ProgressGauge';
 
 export default function Mentee() {
   const searchParams = useSearchParams();
@@ -57,7 +59,22 @@ export default function Mentee() {
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
-            <MenteeDetail selectedMentee={selectedMentee} />
+            <MenteeDetail selectedDetails={selectedMentee} />
+            <div className="flex gap-4 flex-col md:flex-row ">
+              <div className="flex-2/3  rounded-lg flex flex-col gap-4 border border-[#6CBB0180] p-5  space-y-2">
+                <h3 className="text-2xl text-green-300 font-semibold">
+                  Modules
+                </h3>
+                <ModulesTable />
+              </div>
+              <div className=" flex-1/3 rounded-lg flex flex-col md:flex-row gap-10 border border-[#6CBB0180] p-5 space-y-2">
+                <ProgressGauge
+                  percentage={25}
+                  currentWeek={4}
+                  totalWeeks={16}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}

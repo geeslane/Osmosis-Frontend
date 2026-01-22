@@ -6,14 +6,14 @@ import React from 'react';
 import { data } from '@/utils/data';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MentorTable from './MentorTable';
-import MentorDetail from './MentorDetail';
+import MentorDetail from '@/components/common/Details/MentorDetails';
 
 export default function Mentor() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const view = searchParams.get('viewmentor') || 'listmentor';
   const selectedId = searchParams.get('id');
-  const selectedAdmin = selectedId
+  const selectedMetor = selectedId
     ? data.find((a) => a.id === selectedId)
     : null;
 
@@ -47,7 +47,7 @@ export default function Mentor() {
         </div>
       )}
 
-      {view === 'viewmentor' && selectedAdmin && (
+      {view === 'viewmentor' && selectedMetor && (
         <div className="w-full ">
           <div className="flex flex-col gap-8 py-4">
             <div
@@ -57,7 +57,7 @@ export default function Mentor() {
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
-            <MentorDetail selectedAdmin={selectedAdmin} />
+            <MentorDetail selectedDetails={selectedMetor} />
           </div>
         </div>
       )}
