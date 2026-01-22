@@ -1,7 +1,13 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSidebar } from '../../context/SidebarContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/store';
+import { useLogoutMutation } from '@/store/auth/auth.api';
+import { clearSessionCookie } from '@/lib/session';
+import { clearUser } from '@/store/profile/profile.slice';
+import useToastify from '@/hooks/useToastify';
 
 import Image from 'next/image';
 import {
@@ -24,7 +30,34 @@ type NavItem = {
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered } = useSidebar();
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { showToast } = useToastify();
+  const user = useSelector((state: RootState) => state.profile.user);
+  const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
   const isActive = (path: string) => pathname === path;
+
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+
+      await clearSessionCookie();
+
+      router.replace('/signin');
+
+      dispatch(clearUser());
+
+      showToast('You have been logged out successfully', 'success');
+    } catch (error: any) {
+      await clearSessionCookie();
+      dispatch(clearUser());
+
+      const message =
+        error?.data?.message || error?.error || 'Logged out successfully';
+      showToast(message, 'success');
+      router.replace('/signin');
+    }
+  };
 
   const navItems: NavItem[] = [
     {
@@ -35,7 +68,7 @@ const AppSidebar: React.FC = () => {
     {
       icon: PendingRequestIcon,
       name: 'Pending Requests',
-      path: '/dashboard/pending-request',
+      path: '/dashboard/pending-requests',
     },
     {
       icon: UserManagementIcon,
@@ -64,17 +97,15 @@ const AppSidebar: React.FC = () => {
           <li key={item.name}>
             <Link
               href={item.path}
-              className={`group flex montserrat  font-medium text-green-200  items-center gap-3 px-4 py-2 text-sm transition-colors ${
-                active ? ' rounded-lg bg-green-100 text-white' : ''
-              }`}
+              className={`group flex montserrat  font-medium text-green-200  items-center gap-3 px-4 py-2 text-sm transition-colors ${active ? ' rounded-lg bg-green-100 text-white' : ''
+                }`}
             >
               {Icon && (
                 <Icon
-                  className={`transition-colors ${
-                    active
+                  className={`transition-colors ${active
                       ? 'text-white '
                       : 'text-white-300 text-green-100 group-hover:text-white-100'
-                  }`}
+                    }`}
                   active={active}
                 />
               )}
@@ -91,16 +122,14 @@ const AppSidebar: React.FC = () => {
     <aside
       className={`fixed max-w-[1600px] bg-white font-montserrat montserrat  mx-auto mt-16 flex flex-col lg:mt-0 top-0  left-0   text-gray-900 md:h-screen transition-all duration-300 ease-in-out z-50 
     ${isExpanded || isMobileOpen ? 'w-[290px] z-999' : 'w-[90px]'}
-    ${
-      isMobileOpen ? 'translate-x-0 bg-white h-full pb-10' : '-translate-x-full'
-    } lg:translate-x-0`}
+    ${isMobileOpen ? 'translate-x-0 bg-white h-full pb-10' : '-translate-x-full'
+        } lg:translate-x-0`}
     >
       <div className="flex flex-col pb-4 justify-between   h-full">
         <div>
           <div
-            className={`pt-[32.7px] pb-5   flex px-5    ${
-              !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
-            }`}
+            className={`pt-[32.7px] pb-5   flex px-5    ${!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
+              }`}
           >
             <Link href="/">
               {isExpanded || isMobileOpen ? (
@@ -144,32 +173,48 @@ const AppSidebar: React.FC = () => {
             <div className="flex items-center  justify-center w-full">
               {(isExpanded || isMobileOpen) && (
                 <div className="flex w-full gap-3">
-                  <div className="w-[36px] h-[36px]">
-                    <Image
-                      src="/image/Avss.jpg"
-                      alt=""
-                      width={50}
-                      height={50}
-                      className="rounded-full w-full h-full object-cover"
-                    />
+                  <div className="w-[36px] h-[36px] flex-shrink-0">
+                    {user?.avatar ? (
+                      <Image
+                        src={user.avatar}
+                        alt={user.full_name || user?.email || 'User'}
+                        width={36}
+                        height={36}
+                        className="rounded-full w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center">
+                        <span className="text-white text-xs font-semibold">
+                          {(user?.full_name || user?.email || 'U')
+                            .split(' ')
+                            .map((word) => word[0])
+                            .join('')
+                            .toUpperCase()
+                            .slice(0, 2)}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <div className="">
-                    <h3 className="text-sm font-semibold  text-green-200">
-                      Emmanuel Ade
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-semibold text-green-200 truncate">
+                      {user?.full_name || user?.email || 'User'}
                     </h3>
-                    <h2 className="text-green-200 text-[10px]">emma@ade.ui</h2>
+                    {user?.email && (
+                      <h2 className="text-green-200 text-[10px] truncate">{user.email}</h2>
+                    )}
                   </div>
                 </div>
               )}
             </div>
-            <Link
-              href="#"
-              className={`${
-                !isExpanded && !isHovered ? ' ' : ''
-              }  justify-center items-center flex`}
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className={`${!isExpanded && !isHovered ? ' ' : ''
+                }  justify-center items-center flex hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
+              title="Logout"
             >
               <LogoutIcon />
-            </Link>
+            </button>
           </div>
         </div>
       </div>

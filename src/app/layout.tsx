@@ -9,6 +9,7 @@ import { loadingIndicatorProperties } from '@/utils/constant';
 import './globals.css';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { NavbarTitleProvider } from '@/context/NavbarTitleContsxt';
+import ErrorHandler from '@/components/common/ErrorHandler';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -62,6 +63,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <NextTopLoader {...loadingIndicatorProperties} />
+        <ErrorHandler />
         <GoogleOAuthProvider clientId={config.googleClientId ?? ''}>
           <Providers>
             <NavbarTitleProvider>

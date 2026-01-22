@@ -8,6 +8,8 @@ import { setSessionCookie } from '@/lib/session';
 import { useLoginMutation } from '@/store/auth/auth.api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useToastify from '@/hooks/useToastify';
+import { useDispatch } from 'react-redux';
+import { clearUser } from '@/store/profile/profile.slice';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { SignInFormSchema } from '@/validation/schema';
@@ -21,6 +23,7 @@ export default function SignInForm() {
   const { showToast } = useToastify();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const dispatch = useDispatch();
   const redirectPath = searchParams.get('redirect') || '/dashboard';
   const [UserSignIn, { isLoading }] = useLoginMutation();
   const [signupMenuOpen, setSignupMenuOpen] = useState(false);
@@ -57,13 +60,100 @@ export default function SignInForm() {
         password: formData.password,
       };
       const response = await UserSignIn(apiData).unwrap();
-      const token = response?.data?.token;
-      const userRole = (response?.data as { role?: string })?.role;
-      await setSessionCookie({ token, role: userRole });
-      showToast(response.message, 'success');
-      router.replace(redirectPath);
+
+      const loginData = response.data?.data as
+        | {
+          sessionId?: string;
+          requiresOtp?: boolean;
+          requiresPasswordChange?: boolean;
+          userType?: 'ADMIN' | 'MENTOR' | 'TEENAGER';
+          userId?: string;
+          token?: string;
+        }
+        | undefined;
+      const responseMessage = response.data?.message;
+
+      if (!loginData) {
+        showToast(responseMessage || 'Login failed', 'error');
+        return;
+      }
+
+      if (loginData.requiresOtp && loginData.sessionId) {
+        showToast(responseMessage || 'OTP code has been sent to your email', 'success');
+        try {
+          const params = new URLSearchParams();
+          params.set('sessionId', loginData.sessionId);
+          if (redirectPath && redirectPath !== '/dashboard') {
+            params.set('redirect', redirectPath);
+          }
+
+          if (loginData.requiresPasswordChange && loginData.userId && loginData.userType) {
+            params.set('requiresPasswordChange', 'true');
+            params.set('userId', loginData.userId);
+            params.set('userType', loginData.userType);
+          }
+          router.push(`/auth/otp?${params.toString()}`);
+        } catch (navError) {
+          console.error('Navigation error:', navError);
+        }
+        return;
+      }
+
+      if (loginData.requiresPasswordChange && loginData.userId && loginData.userType) {
+        try {
+          router.push(
+            `/auth/change-password?userType=${loginData.userType}&userId=${loginData.userId}`
+          );
+        } catch (navError) {
+          console.error('Navigation error:', navError);
+        }
+        return;
+      }
+
+      if (loginData.token && loginData.userType) {
+        try {
+          dispatch(clearUser());
+
+          await setSessionCookie({
+            token: loginData.token,
+            role: loginData.userType,
+          });
+          showToast(responseMessage || 'Login successful', 'success');
+
+          try {
+            const loadingPath = redirectPath
+              ? `/auth/loading?redirect=${encodeURIComponent(redirectPath)}`
+              : '/auth/loading';
+            router.replace(loadingPath);
+          } catch (navError) {
+            console.error('Navigation error:', navError);
+            const loadingPath = redirectPath
+              ? `/auth/loading?redirect=${encodeURIComponent(redirectPath)}`
+              : '/auth/loading';
+            router.push(loadingPath);
+          }
+        } catch (cookieError) {
+          console.error('Session cookie error:', cookieError);
+          showToast('Login successful but failed to save session', 'error');
+        }
+      } else {
+        showToast('Login successful but no token received', 'error');
+      }
     } catch (error: any) {
-      const message = error?.data.message || error?.error || '';
+      let message = 'Login failed';
+
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (error?.data?.message) {
+        message = error.data.message;
+      } else if (error?.error) {
+        message = typeof error.error === 'string' ? error.error : 'Login failed';
+      } else if (typeof error === 'string') {
+        message = error;
+      } else if (error?.message) {
+        message = error.message;
+      }
+
       showToast(message, 'error');
     }
   };
@@ -112,52 +202,61 @@ export default function SignInForm() {
             </div>
           </div>
         </form>
-        <div className="flex dm-sans text-[#0F1C24] text-[15px] font-semibold items-center justify-center">
-          <span>Don&apos;t have an account yet?{' '}</span>
-          <div className="relative inline-block" ref={menuRef}>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                setSignupMenuOpen(!signupMenuOpen);
-              }}
-              className="text-green-100 ml-1 flex items-center gap-1 hover:text-green-200 transition-colors"
-            >
-              Sign Up
-              <svg
-                className={`w-4 h-4 transition-transform duration-200 ${
-                  signupMenuOpen ? 'rotate-180' : ''
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+        <div className="flex flex-col gap-3 font-montserrat montserrat text-[#0F1C24] text-[15px] font-bold items-center justify-center">
+          <div className="flex items-center">
+            <span>Don&apos;t have an account yet?{' '}</span>
+            <div className="relative inline-block" ref={menuRef}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSignupMenuOpen(!signupMenuOpen);
+                }}
+                className="text-green-100 ml-1 flex items-center gap-1 hover:text-green-200 transition-colors font-bold"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-            {signupMenuOpen && (
-              <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[9999]">
-                <Link
-                  href="/teenagers/signup"
-                  className="block px-4 py-2 text-sm text-[#0F1C24] hover:bg-green-50 transition-colors"
-                  onClick={() => setSignupMenuOpen(false)}
+                Sign Up
+                <svg
+                  className={`w-4 h-4 transition-transform duration-200 ${signupMenuOpen ? 'rotate-180' : ''
+                    }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  Teenager Sign Up
-                </Link>
-                <Link
-                  href="/mentor/signup"
-                  className="block px-4 py-2 text-sm text-[#0F1C24] hover:bg-green-50 transition-colors"
-                  onClick={() => setSignupMenuOpen(false)}
-                >
-                  Mentor Sign Up
-                </Link>
-              </div>
-            )}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {signupMenuOpen && (
+                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[9999]">
+                  <Link
+                    href="/teenagers/signup"
+                    className="block px-4 py-2 text-sm text-[#0F1C24] hover:bg-green-50 transition-colors font-montserrat montserrat font-bold"
+                    onClick={() => setSignupMenuOpen(false)}
+                  >
+                    Teenager Sign Up
+                  </Link>
+                  <Link
+                    href="/mentor/signup"
+                    className="block px-4 py-2 text-sm text-[#0F1C24] hover:bg-green-50 transition-colors font-montserrat montserrat font-bold"
+                    onClick={() => setSignupMenuOpen(false)}
+                  >
+                    Mentor Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="text-center">
+            <Link
+              href="/auth/magic-link"
+              className="text-green-100 hover:text-green-200 transition-colors font-bold"
+            >
+              Teenager? Sign in with Magic Link
+            </Link>
           </div>
         </div>
       </div>

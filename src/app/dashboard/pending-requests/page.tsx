@@ -7,7 +7,7 @@ import { Metadata } from 'next';
 import React from 'react';
 
 export const metadata: Metadata = generateMetadata({
-  title: 'Osmosis | Pending Request',
+  title: 'Osmosis | Pending Requests',
   description:
     'Review and manage pending requests awaiting approval on the Osmosis platform.',
 });
@@ -15,7 +15,8 @@ export const metadata: Metadata = generateMetadata({
 export default function page() {
   return (
     <div>
-      <PageTitle title="Pending Request" />
+      <PageTitle title="Pending Requests" />
+
       <Tabs
         paramKey="role"
         defaultValue="mentor"

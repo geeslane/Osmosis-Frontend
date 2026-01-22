@@ -1,7 +1,7 @@
 export type Column<T> = {
   key: keyof T | 'actions';
   label: React.ReactNode;
-  render?: (row: T) => React.ReactNode;
+  render?: (row: T, index?: number) => React.ReactNode;
   className?: string;
   onRowClick?: (row: T) => void;
 };
@@ -22,7 +22,7 @@ export function DataTable<T extends { id: string }>({
               {columns.map((col) => (
                 <th
                   key={String(col.key)}
-                  className="whitespace-nowrap px-4 py-3 text-xs text-[#667085] font-medium"
+                  className="whitespace-nowrap px-3 py-2 text-xs text-[#667085] font-medium"
                 >
                   {col.label}
                 </th>
@@ -31,21 +31,19 @@ export function DataTable<T extends { id: string }>({
           </thead>
 
           <tbody>
-            {data.map((row) => (
+            {data.map((row, rowIndex) => (
               <tr
-                onClick={() => onRowClick?.(row)}
                 key={row.id}
-                className="border- cursor-pointer"
+                onClick={() => onRowClick?.(row)}
+                className={onRowClick ? 'border-t cursor-pointer' : 'border-t'}
               >
                 {columns.map((col) => (
                   <td
                     key={String(col.key)}
-                    className={`whitespace-nowrap px-4 py-5 ${
-                      col.className ?? ''
-                    }`}
+                    className={`whitespace-nowrap px-3 py-3 ${col.className ?? ''}`}
                   >
                     {col.render
-                      ? col.render(row)
+                      ? col.render(row, rowIndex)
                       : col.key !== 'actions'
                         ? String(row[col.key as keyof T])
                         : null}

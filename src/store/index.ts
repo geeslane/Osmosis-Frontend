@@ -9,10 +9,11 @@ import {
   PURGE,
   REGISTER,
 } from 'redux-persist';
-import storage from 'redux-persist/lib/storage'; // defaults to localStorage
+import storage from '@/lib/storage'; // SSR-safe storage
 import { AuthApi } from './auth/auth.api';
 import { ProfileApi } from './profile/profile.api';
 import { DashboardApi } from './dashboard/dashboard.api';
+import { UsersApi } from './users/users.api';
 import profileReducer from './profile/profile.slice';
 
 const profilePersistConfig = {
@@ -32,6 +33,7 @@ export const store = configureStore({
     [DashboardApi.reducerPath]: DashboardApi.reducer,
     [AuthApi.reducerPath]: AuthApi.reducer,
     [ProfileApi.reducerPath]: ProfileApi.reducer,
+    [UsersApi.reducerPath]: UsersApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -41,7 +43,8 @@ export const store = configureStore({
     }).concat(
       AuthApi.middleware,
       ProfileApi.middleware,
-      DashboardApi.middleware
+      DashboardApi.middleware,
+      UsersApi.middleware
     ),
 });
 export const persistor = persistStore(store);

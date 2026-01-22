@@ -5,11 +5,10 @@ import NotificationDropdown from '@/components/header/NotificationDropdown';
 import Profile from '@/components/user-profile/profile';
 import { useSidebar } from '@/context/SidebarContext';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavbarTitle } from '@/context/NavbarTitleContsxt';
 
 const AppHeader: React.FC = () => {
-  const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const { title } = useNavbarTitle();
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
@@ -22,9 +21,6 @@ const AppHeader: React.FC = () => {
     }
   };
 
-  const toggleApplicationMenu = () => {
-    setApplicationMenuOpen(!isApplicationMenuOpen);
-  };
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -59,12 +55,9 @@ const AppHeader: React.FC = () => {
               {title}
             </div>
           </div>
-          <button
-            onClick={toggleApplicationMenu}
-            className="flex items-center justify-center w-10 h-10   "
-          >
+          <div className="flex items-center justify-center w-10 h-10">
             <NotificationDropdown />
-          </button>
+          </div>
         </div>
         <Profile />
       </header>

@@ -7,6 +7,7 @@ import {
   EmailIcon,
   LoadingIcon,
   PhoneIcon,
+  CalendarIcon,
 } from '@/assets/icons';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -16,7 +17,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import InputForm from '../form/InputForm';
 import { RegisterFormSchema } from '@/validation/schema';
-import { useRegisterUserMutation } from '@/store/auth/auth.api';
+import { useRegisterTeenagerMutation } from '@/store/auth/auth.api';
 import useToastify from '@/hooks/useToastify';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -42,9 +43,10 @@ export const TeenagerSignupForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
   const [parentEmail, setParentEmail] = useState("");
+  const [pictureFile, setPictureFile] = useState<File | null>(null);
   const router = useRouter();
   const { showToast } = useToastify();
-  const [registerUser, { isLoading }] = useRegisterUserMutation();
+  const [registerTeenager, { isLoading }] = useRegisterTeenagerMutation();
 
   const {
     register,
@@ -89,10 +91,10 @@ export const TeenagerSignupForm = () => {
     setParentEmail(data.parentEmail);
 
     try {
-      const payload: any = {
-        full_name: data.fullName,
-        email: data.email,
-        phoneNumber: data.phoneNumber,
+      const payload = {
+        teenagerFullName: data.fullName,
+        teenagerEmail: data.email,
+        teenagerPhoneNumber: data.phoneNumber,
         parentFullName: data.parentFullName,
         parentEmail: data.parentEmail,
         parentPhoneNumber: data.parentPhoneNumber,
@@ -101,16 +103,18 @@ export const TeenagerSignupForm = () => {
         class: data.class,
         hobbies: data.hobbies,
         address: data.address,
+        picture: pictureFile || undefined,
       };
 
-      console.log('Form Data:', data);
-      console.log('Payload:', payload);
-      //const response = await registerUser(payload).unwrap();
-      //showToast(response.message, 'success');
+      const response = await registerTeenager(payload).unwrap();
+      showToast(response.message || 'Registration successful!', 'success');
       setShowSuccess(true);
-      // router.replace('/signin');
     } catch (error: any) {
-      const message = error?.data?.message || error?.error || 'Signup failed';
+      const message =
+        error?.data?.message ||
+        error?.error ||
+        error?.data?.errors?.[0]?.msg ||
+        'Signup failed';
       showToast(message, 'error');
     }
   };
@@ -230,32 +234,38 @@ export const TeenagerSignupForm = () => {
               <div className="space-y-6">
                 <div className="flex font-montserrat montserrat flex-col gap-1">
                   <label className="text-green-300 font-medium">Teenager&apos;s Date Of Birth</label>
-                  <Controller
-                    name="dateOfBirth"
-                    control={control}
-                    render={({ field }) => (
-                      <DatePicker
-                        selected={field.value ? new Date(field.value) : null}
-                        onChange={(date: Date | null) => {
-                          if (date) {
-                            const formattedDate = date.toISOString().split('T')[0];
-                            field.onChange(formattedDate);
-                            setValue('dateOfBirth', formattedDate, {
-                              shouldValidate: true,
-                            });
-                          }
-                        }}
-                        dateFormat="yyyy-MM-dd"
-                        maxDate={new Date()}
-                        showYearDropdown
-                        showMonthDropdown
-                        dropdownMode="select"
-                        placeholderText="Select date of birth"
-                        className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 ${errors.dateOfBirth ? 'border-red-500' : 'border-green-300'
-                          }`}
-                      />
-                    )}
-                  />
+                  <div className="relative">
+                    <Controller
+                      name="dateOfBirth"
+                      control={control}
+                      render={({ field }) => (
+                        <DatePicker
+                          selected={field.value ? new Date(field.value) : null}
+                          onChange={(date: Date | null) => {
+                            if (date) {
+                              const formattedDate = date.toISOString().split('T')[0];
+                              field.onChange(formattedDate);
+                              setValue('dateOfBirth', formattedDate, {
+                                shouldValidate: true,
+                              });
+                            }
+                          }}
+                          dateFormat="MMMM dd, yyyy"
+                          maxDate={new Date()}
+                          showYearDropdown
+                          showMonthDropdown
+                          dropdownMode="select"
+                          placeholderText="Select date of birth"
+                          className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 pr-10 ${errors.dateOfBirth ? 'border-red-500' : 'border-green-300'
+                            }`}
+                          popperClassName="react-datepicker-popper-modern"
+                        />
+                      )}
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-green-300">
+                      <CalendarIcon />
+                    </div>
+                  </div>
                   {errors.dateOfBirth && (
                     <p className="text-red-500 text-xs mt-1">
                       {typeof errors.dateOfBirth.message === 'string'
@@ -282,7 +292,7 @@ export const TeenagerSignupForm = () => {
                   accept="image/png,image/jpeg"
                   widthHint="800×400px"
                   maxSizeMB={2}
-                  onFileSelect={(file) => console.log(file)}
+                  onFileSelect={(file) => setPictureFile(file)}
                 />
               </div>
             )}
@@ -350,9 +360,9 @@ export const TeenagerSignupForm = () => {
             </div>
           </form>
         </div>
-        <div className="flex dm-sans text-[#0F1C24] text-[15px] font-semibold items-center justify-center mt-6 pb-4">
+        <div className="flex font-montserrat montserrat text-[#0F1C24] text-[15px] font-bold items-center justify-center mt-6 pb-4">
           <span>Already have an account?</span>
-          <Link href="/signin" className="text-green-100 ml-1 hover:text-green-200 transition-colors">
+          <Link href="/signin" className="text-green-100 ml-1 hover:text-green-200 transition-colors font-bold">
             Sign in
           </Link>
         </div>

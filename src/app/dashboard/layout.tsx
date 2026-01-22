@@ -20,18 +20,18 @@ export default function AdminLayout({
     : 'lg:ml-[90px]';
 
   return (
-    <div className="min-h-screen xl:flex">
-      <AppSidebar />
-      <Backdrop />
-      {/* Main Content Area */}
-      <div
-        className={`flex-1 transition-all  duration-300 ease-in-out ${mainContentMargin}`}
-      >
-        {/* Header */}
-        <AppHeader />
-        {/* Page Content */}
-        <div className="p-6 mx-auto md:p-6">{children}</div>
+      <div className="min-h-screen xl:flex">
+        <AppSidebar />
+        <Backdrop />
+        {/* Main Content Area */}
+        <div
+          className={`flex-1 transition-all  duration-300 ease-in-out ${mainContentMargin}`}
+        >
+          {/* Header */}
+          <AppHeader />
+          {/* Page Content */}
+          <div className="p-6 mx-auto md:p-6">{children}</div>
+        </div>
       </div>
-    </div>
   );
 }

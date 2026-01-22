@@ -10,13 +10,41 @@ const nextConfig: NextConfig = {
     return config;
   },
   images: {
-    domains: [
-      'i.pravatar.cc',
-      'www.gstatic.com',
-      'lh3.googleusercontent.com',
-      'via.placeholder.com',
-      'res.cloudinary.com',
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.pravatar.cc',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.gstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'res.cloudinary.com',
+      },
     ],
+  },
+  // Optimize dev server performance
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'react-icons'],
+  },
+  // Reduce TypeScript checking in dev mode
+  typescript: {
+    // Type checking is handled by ESLint in CI/CD
+    ignoreBuildErrors: false,
   },
 };
 

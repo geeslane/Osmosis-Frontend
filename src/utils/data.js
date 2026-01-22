@@ -57,23 +57,35 @@ export const AboutimageSources = [
   '/AboutImage/user2.jpg',
 ];
 
-export const data = [
+export const notifications = [
   {
-    id: '0001',
-    name: 'Liam Harper',
-    email: 'liam@untitledui.com',
-    address: '123 Main St, Apt 4',
-    phone: '+1 202 555 0111',
-    status: 'Active',
-    image: '/image/Avatar1.png',
+    title: 'New message',
+    description: 'You have a new message from John Doe',
+    time: '2 minutes ago',
+    read: false,
   },
   {
-    id: '0002',
-    name: 'Olivia Rhye',
-    email: 'olivia@untitledui.com',
-    address: '456 Business Blvd, Ste 100',
-    phone: '+234 801 234 5678',
-    status: 'Inactive',
+    title: 'Task completed',
+    description: 'Your task has been completed successfully',
+    time: '1 hour ago',
+    read: false,
+  },
+  {
+    title: 'System update',
+    description: 'System maintenance scheduled for tonight',
+    time: '3 days ago',
+    read: true,
+  },
+];
+
+export const data = [
+  {
+    id: '1',
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    address: '123 Main St, City, State',
+    phone: '+1 (555) 123-4567',
+    status: 'Active',
     image: '/image/Avatar.png',
   },
   {
@@ -200,7 +212,6 @@ export const Modules = [
     description: 'Applying personas to real product decisions.',
     name: 'Persona Roadmap.pdf',
     fileid: 'file-3-1',
-
     files: [
       {
         id: 'file-3-1',

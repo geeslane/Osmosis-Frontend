@@ -123,3 +123,43 @@ export function getGreeting() {
     return 'Good Evening';
   }
 }
+
+/**
+ * Normalizes image URLs, converting HTTP to HTTPS for Cloudinary URLs
+ * and prepending API base URL for relative paths
+ * Treats old "uploads/..." paths as empty (returns undefined)
+ * @param {string | undefined} url - The image URL to normalize
+ * @returns {string | undefined} - The normalized URL, or undefined for old uploads
+ */
+export function normalizeImageUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  
+  // Treat old uploads/... paths as empty (show initials instead)
+  if (url.startsWith('uploads/')) {
+    return undefined;
+  }
+  
+  // Convert HTTP Cloudinary URLs to HTTPS
+  if (url.startsWith('http://res.cloudinary.com')) {
+    return url.replace('http://', 'https://');
+  }
+  
+  // If it's already an absolute URL (http:// or https://), return as is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // If it's a relative path (starts with /), prepend API base URL
+  if (url.startsWith('/')) {
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 
+                      process.env.NEXT_PUBLIC_API_BASE_URL || 
+                      'https://osmosis-backend.onrender.com';
+    return `${apiBaseUrl}${url}`;
+  }
+  
+  // If it's a relative path without leading slash, prepend API base URL with /
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 
+                    process.env.NEXT_PUBLIC_API_BASE_URL || 
+                    'https://osmosis-backend.onrender.com';
+  return `${apiBaseUrl}/${url}`;
+}

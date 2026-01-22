@@ -8,6 +8,11 @@ export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const [notifications] = useState<any[]>([]); // TODO: Integrate with notifications API when available
+
+  const filteredNotifications = notifications.filter((n) =>
+    activeTab === 'all' ? true : activeTab === 'read' ? n.read : !n.read
+  );
 
   const handleClick = () => {
     setIsOpen(!isOpen);
@@ -62,9 +67,31 @@ export default function NotificationDropdown() {
           ))}
         </div>
         <ul className="flex flex-col gap-3">
-          <li className="text-center text-gray-500 text-sm">
-            No notifications
-          </li>
+          {filteredNotifications.length === 0 ? (
+            <li className="text-center text-gray-500 text-sm py-4">
+              No notifications
+            </li>
+          ) : (
+            filteredNotifications.map((notification, index) => (
+              <li
+                key={index}
+                className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
+              >
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">
+                    {notification.title}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {notification.description}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">{notification.time}</p>
+                </div>
+                {!notification.read && (
+                  <span className="h-2 w-2 rounded-full bg-green-100 mt-1"></span>
+                )}
+              </li>
+            ))
+          )}
         </ul>
         <button className="mt-4 w-full text-center text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg py-2 hover:bg-gray-100">
           View All Notifications

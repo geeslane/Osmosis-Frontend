@@ -13,7 +13,7 @@ export interface Dashboard {
   };
 }
 export interface User {
-  id: number;
+  id: string | number;
   full_name: string;
   email: string;
   role: string;
@@ -39,12 +39,16 @@ const profileSlice = createSlice({
   name: 'profile',
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<User>) => {
+    setUser: (state, action: PayloadAction<User | null>) => {
       state.user = action.payload;
-      state.isLoggedIn = !!action.payload.id;
+      state.isLoggedIn = !!action.payload?.id;
+    },
+    clearUser: (state) => {
+      state.user = null;
+      state.isLoggedIn = false;
     },
   },
 });
 
-export const { setUser } = profileSlice.actions;
+export const { setUser, clearUser } = profileSlice.actions;
 export default profileSlice.reducer;

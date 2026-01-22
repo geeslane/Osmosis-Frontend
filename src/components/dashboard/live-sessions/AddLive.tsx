@@ -25,8 +25,7 @@ export default function AddLive() {
     resolver: yupResolver(AddLiveSessionSchema) as any,
   });
 
-  const onSubmit: SubmitHandler<AddLiveSessionFormInputs> = (data) => {
-    console.log('Live Session Payload:', data);
+  const onSubmit: SubmitHandler<AddLiveSessionFormInputs> = () => {
     showToast('Live session added successfully', 'success');
     reset();
   };

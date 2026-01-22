@@ -9,31 +9,25 @@ interface AuthResponse {
   };
 }
 
-interface Dashboard {
-  ongoing_course: number;
-  completed_course: number;
-  hours_spent: number;
-  current_ongoing_course: {
-    title: string;
-  };
-  certificate: number;
-}
-
 interface MeResponse {
-  status: boolean;
-  message: string;
+  success: boolean;
   data: {
-    id: number;
-    full_name: string;
-    email: string;
-    role: string;
-    provider?: string;
-    avatar?: string;
-    dashboard: Dashboard;
-    deleted_at: string | null;
-    created_at: string;
-    updated_at: string;
+    message: string;
+    data: {
+      id: string;
+      fullName: string;
+      email: string;
+      phoneNumber?: string | null;
+      address?: string | null;
+      pictureUrl?: string | null;
+      role: string;
+      isPasswordTemporary?: boolean;
+      createdAt: string;
+      updatedAt: string;
+    };
+    userType?: string;
   };
+  timestamp?: string;
 }
 interface UpdateProfileRequest {
   full_name: string;
@@ -65,10 +59,37 @@ export const ProfileApi = createApi({
   endpoints: (builder) => ({
     getMe: builder.query<MeResponse, void>({
       query: () => ({
-        url: '/api/me',
+        url: '/auth/me',
         method: 'GET',
       }),
       providesTags: ['profile'],
+      transformResponse: (response: any): MeResponse => {
+        // Transform the API response to match the expected format
+        if (response?.success && response?.data?.data) {
+          const apiData = response.data.data;
+          return {
+            success: response.success,
+            data: {
+              message: response.data.message || '',
+              userType: response.data.userType,
+              data: {
+                id: apiData.id,
+                fullName: apiData.fullName,
+                email: apiData.email,
+                role: apiData.role,
+                pictureUrl: apiData.pictureUrl || null,
+                phoneNumber: apiData.phoneNumber || null,
+                address: apiData.address || null,
+                isPasswordTemporary: apiData.isPasswordTemporary || false,
+                createdAt: apiData.createdAt,
+                updatedAt: apiData.updatedAt,
+              },
+            },
+            timestamp: response.timestamp,
+          };
+        }
+        return response;
+      },
     }),
     updateUserProfileImage: builder.mutation<MeResponse, FormData>({
       query: (formData) => ({

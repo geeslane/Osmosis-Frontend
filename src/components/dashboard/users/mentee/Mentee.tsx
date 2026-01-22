@@ -1,22 +1,70 @@
 'use client';
 
-import { GoBackIcon } from '@/assets/icons';
+import { GoBackIcon, LoadingIcon } from '@/assets/icons';
 import Empty from '@/components/ui/NotFound/Empty';
 import React from 'react';
-import { data } from '@/utils/data';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MenteeTable from './MenteeTable';
 import MenteeDetail from '@/components/common/Details/MenteeDetails';
 import ModulesTable from './ModulesTable';
 import ProgressGauge from '@/components/ui/Progress/ProgressGauge';
+import {
+  useGetTeenagersQuery,
+  useGetTeenagerByIdQuery,
+} from '@/store/users/users.api';
+
+type Mentee = {
+  id: string;
+  name: string;
+  email: string;
+  address: string;
+  phone: string;
+  status: string;
+  image?: string;
+};
+
+function mapMenteeFromApi(apiMentee: any): Mentee {
+  const statusMap: Record<string, string> = {
+    ACTIVE: 'Active',
+    INACTIVE: 'Inactive',
+    DEACTIVATED: 'Inactive',
+    PENDING: 'Pending',
+  };
+  
+  return {
+    id: apiMentee.id,
+    name: apiMentee.teenagerFullName || '',
+    email: apiMentee.teenagerEmail || '',
+    address: apiMentee.address || '',
+    phone: apiMentee.teenagerPhoneNumber || '',
+    status: statusMap[apiMentee.status] || 'Active',
+    image: apiMentee.pictureUrl || undefined,
+  };
+}
+
 
 export default function Mentee() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const view = searchParams.get('viewmentee') || 'listmentee';
   const selectedId = searchParams.get('id');
-  const selectedMentee = selectedId
-    ? data.find((a) => a.id === selectedId)
+  
+  const {
+    data: menteesResponse,
+    isLoading: isLoadingMentees,
+  } = useGetTeenagersQuery({ page: 1, limit: 100 });
+  
+  const {
+    data: menteeResponse,
+    isLoading: isLoadingMentee,
+  } = useGetTeenagerByIdQuery(selectedId || '', {
+    skip: !selectedId || view !== 'viewmentee',
+  });
+
+  const menteeData =
+    menteesResponse?.data?.map(mapMenteeFromApi) || [];
+  const selectedMentee = menteeResponse?.data
+    ? mapMenteeFromApi(menteeResponse.data)
     : null;
 
   const setParam = (newView: string, id?: string) => {
@@ -28,6 +76,22 @@ export default function Mentee() {
   };
 
   const handleBack = () => setParam('listmentee');
+
+  if (isLoadingMentees && view === 'listmentee') {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <LoadingIcon width="40" height="40" className="animate-spin text-green-100" />
+      </div>
+    );
+  }
+
+  if (isLoadingMentee && view === 'viewmentee') {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <LoadingIcon width="40" height="40" className="animate-spin text-green-100" />
+      </div>
+    );
+  }
 
   return (
     <div className=" w-full max-w-full">
@@ -85,12 +149,12 @@ export default function Mentee() {
             <div className="flex items-center gap-2 text-green-200 text-2xl font-semibold">
               Mentees List
               <span className="bg-[#DCFFAD91] w-[24px] h-[24px] flex justify-center items-center rounded-full text-green-100 text-xs">
-                {data.length}
+                {menteeData.length}
               </span>
             </div>
           </div>
 
-          {data.length === 0 ? (
+          {menteeData.length === 0 ? (
             <div className="max-w-[400px] mx-auto my-[65px]">
               <Empty
                 title="No Mentor for now."
@@ -99,7 +163,7 @@ export default function Mentee() {
             </div>
           ) : (
             <MenteeTable
-              data={data}
+              data={menteeData}
               onAddAdmin={() => setParam('addmentee')}
               onViewMentee={(mentee) => setParam('viewmentee', mentee.id)}
             />
