@@ -8,8 +8,10 @@ import Image from 'next/image';
 
 export default function MentorDetail({
   selectedDetails,
+  className = '',
 }: {
   selectedDetails: any;
+  className?: string;
 }) {
   const statusStyles: Record<any['status'], string> = {
     Active: 'bg-green-50 text-green-600',
@@ -19,7 +21,7 @@ export default function MentorDetail({
   return (
     <div className=" w-full">
       <div className="flex gap-[37px]  flex-col">
-        <div className="flex justify-between ">
+        <div className={`flex justify-between ${className}`}>
           <h3 className="text-green-200 text-3xl font-bold">Mentor Details</h3>
         </div>
         <div className="rounded-lg flex flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 space-y-2">
@@ -40,7 +42,7 @@ export default function MentorDetail({
                     Full Name
                   </p>
                   <p className="text-green-200  font-medium">
-                    {selectedDetails.name}
+                    {selectedDetails.name || '-'}
                   </p>
                 </div>
               </div>
