@@ -5,10 +5,10 @@ import { useSidebar } from '../../context/SidebarContext';
 
 import Image from 'next/image';
 import {
-  ContentManagementIcon,
   DashboardIcon,
   LiveSessionIcon,
   LogoutIcon,
+  ModulesIcon,
   PendingRequestIcon,
   SettingsIcon,
   UserManagementIcon,
@@ -43,14 +43,14 @@ const AppSidebar: React.FC = () => {
       path: '/dashboard/users',
     },
     {
+      icon: ModulesIcon,
+      name: 'Modules',
+      path: '/dashboard/modules',
+    },
+    {
       icon: LiveSessionIcon,
       name: 'Live Sessions',
       path: '/dashboard/live-sessions',
-    },
-    {
-      icon: ContentManagementIcon,
-      name: 'Content Management',
-      path: '#',
     },
   ];
 

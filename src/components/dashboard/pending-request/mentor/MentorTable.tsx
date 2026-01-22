@@ -142,7 +142,6 @@ export default function MentorTable({ data, onViewAdmin }: AdminListPageProps) {
                 <option value="All">All statuses</option>
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
-                <option value="Pending">Pending</option>
               </select>
             </div>
             <div className="w-full flex gap-3 items-center justify-end">

@@ -16,7 +16,7 @@ export default function NotificationDropdown() {
 
   return (
     <div className="relative">
-      <button
+      <div
         className="relative bg-black-100-100 dropdown-toggle flex items-center justify-center text-gray-500 transition-colors   rounded-full  h-11 w-11  dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100"
         onClick={handleClick}
       >
@@ -28,7 +28,7 @@ export default function NotificationDropdown() {
           <span className="absolute inline-flex w-full h-full gradient rounded-full opacity-75 animate-ping"></span>
         </span>
         <NotificationsIcon />
-      </button>
+      </div>
       <Dropdown
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}

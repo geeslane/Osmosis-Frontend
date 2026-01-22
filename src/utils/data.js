@@ -82,7 +82,7 @@ export const data = [
     email: 'noah@untitledui.com',
     address: '78 Market St',
     phone: '+44 20 7946 0958',
-    status: 'Pending',
+    status: 'Inactive',
     image: '/image/Avatar2.png',
   },
   {
@@ -127,7 +127,7 @@ export const data = [
     email: 'ava@untitledui.com',
     address: '33 Pine Ln',
     phone: '+1 415 555 0177',
-    status: 'Pending',
+    status: 'Inactive',
     image: '/image/mentor.jpg',
   },
   {
@@ -147,5 +147,71 @@ export const data = [
     phone: '+1 310 555 0144',
     status: 'Inactive',
     image: '/image/Av.jpg',
+  },
+];
+
+export const Modules = [
+  {
+    id: 'module-1',
+    title: 'Module 1',
+    description: 'Introduction to user research and persona creation.',
+    fileid: 'file-1-1',
+    name: 'Create a User Persona.pdf',
+    files: [
+      {
+        id: 'file-1-1',
+        name: 'Create a User Persona.pdf',
+        description: 'Workbook for crafting user personas.',
+      },
+      /*  {
+        id: 'file-1-2',
+        name: 'Interview Guide.pdf',
+        description: 'Question templates for user interviews.',
+      },
+      {
+        id: 'file-1-3',
+        name: 'Persona Workshop.pdf',
+        description: 'Slides for running a persona workshop.',
+      }, */
+    ],
+  },
+  {
+    id: 'module-2',
+    title: 'Module 2',
+    description: 'Deep dive into behavioral analysis and segmentation.',
+    fileid: 'file-2-1',
+    name: 'Behavioral Segmentation.pdf',
+    files: [
+      {
+        id: 'file-2-1',
+        name: 'Behavioral Segmentation.pdf',
+        description: 'Guide to segmenting users by behavior patterns.',
+      },
+      /*  {
+        id: 'file-2-2',
+        name: 'Cohort Workbook.pdf',
+        description: 'Exercises for building and analyzing cohorts.',
+      }, */
+    ],
+  },
+  {
+    id: 'module-3',
+    title: 'Module 3',
+    description: 'Applying personas to real product decisions.',
+    name: 'Persona Roadmap.pdf',
+    fileid: 'file-3-1',
+
+    files: [
+      {
+        id: 'file-3-1',
+        name: 'Persona Roadmap.pdf',
+        description: 'How to apply personas in roadmap planning.',
+      },
+      /* {
+        id: 'file-3-2',
+        name: 'Persona Validation Checklist.pdf',
+        description: 'Checklist to validate persona assumptions.',
+      }, */
+    ],
   },
 ];

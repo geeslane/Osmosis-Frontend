@@ -4,13 +4,12 @@ import {
   PhoneIcon,
   UserAddIcon,
 } from '@/assets/icons';
-import Button from '@/components/ui/button/Button';
 import Image from 'next/image';
 
 export default function MenteeDetail({
-  selectedAdmin,
+  selectedDetails,
 }: {
-  selectedAdmin: any;
+  selectedDetails: any;
 }) {
   const statusStyles: Record<any['status'], string> = {
     Active: 'bg-green-50 text-green-600',
@@ -26,7 +25,7 @@ export default function MenteeDetail({
         <div className="rounded-lg flex flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 space-y-2">
           <div className="relative w-[140px] h-[120px] rounded-full overflow-hidden">
             <Image
-              src={selectedAdmin.image}
+              src={selectedDetails.image}
               alt="Admin image"
               fill
               className="object-cover"
@@ -41,7 +40,7 @@ export default function MenteeDetail({
                     Full Name
                   </p>
                   <p className="text-green-200  font-medium">
-                    {selectedAdmin.name}
+                    {selectedDetails.name}
                   </p>
                 </div>
               </div>
@@ -50,7 +49,7 @@ export default function MenteeDetail({
                 <div className="flex flex-col gap-1">
                   <p className="text-green-300 text-sm font-medium">Email</p>
                   <p className="text-green-300  font-medium  truncate">
-                    {selectedAdmin.email}
+                    {selectedDetails.email}
                   </p>
                 </div>
               </div>
@@ -61,7 +60,7 @@ export default function MenteeDetail({
                     Phone Number
                   </p>
                   <p className="text-green-300  font-medium">
-                    {selectedAdmin.phone}
+                    {selectedDetails.phone}
                   </p>
                 </div>
               </div>
@@ -72,7 +71,7 @@ export default function MenteeDetail({
                     Address/Location
                   </p>
                   <p className="text-green-300  font-medium">
-                    {selectedAdmin.phone}
+                    {selectedDetails.phone}
                   </p>
                 </div>
               </div>
@@ -99,10 +98,10 @@ export default function MenteeDetail({
                 <p className="text-green-300 font-medium text-sm">Status</p>{' '}
                 <span
                   className={`rounded-full max-w-[100px] px-3 py-1 text-xs font-medium ${
-                    statusStyles[selectedAdmin.status]
+                    statusStyles[selectedDetails.status]
                   }`}
                 >
-                  {selectedAdmin.status}
+                  {selectedDetails.status}
                 </span>
               </div>
             </div>
@@ -158,17 +157,6 @@ export default function MenteeDetail({
                 </a>
               </div>
             </div>
-          </div>
-        </div>
-        <div className="rounded-lg flex max-w-[506px] flex-col  gap-4 border border-[#6CBB0180] px-8  py-8 ">
-          <h3 className="text-green-300 font-medium">Request</h3>
-          <div className="flex flex-row gap-4">
-            <Button className="bg-green-200 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl">
-              Accept
-            </Button>
-            <Button className="bg-red-100 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl">
-              Decline
-            </Button>
           </div>
         </div>
       </div>

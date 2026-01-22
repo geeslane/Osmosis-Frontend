@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { UploadFileIcon } from '@/assets/icons';
 
@@ -23,10 +23,20 @@ const FileUpload: React.FC<FileUploadProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
 
   const handleFileChange = (file: File | null) => {
     if (!file) {
+      if (preview) URL.revokeObjectURL(preview);
+      setPreview(null);
+      setFileName(null);
       onFileSelect(null);
       return;
     }
@@ -37,9 +47,18 @@ const FileUpload: React.FC<FileUploadProps> = ({
     }
 
     setError(null);
+    if (preview) URL.revokeObjectURL(preview);
+    setFileName(file.name);
     setPreview(URL.createObjectURL(file));
     onFileSelect(file);
   };
+
+  const isImage =
+    !!preview &&
+    accept
+      .split(',')
+      .map((s) => s.trim())
+      .some((t) => t.startsWith('image/'));
 
   return (
     <div className="flex flex-col gap-2 font-montserrat">
@@ -47,13 +66,37 @@ const FileUpload: React.FC<FileUploadProps> = ({
         <label className="text-sm font-medium text-gray-700">{label}</label>
       )}
       {preview ? (
-        <Image
-          src={preview}
-          alt="Preview"
-          width={200}
-          height={100}
-          className="rounded-md object-cover"
-        />
+        isImage ? (
+          <Image
+            src={preview}
+            alt="Preview"
+            width={200}
+            height={100}
+            className="rounded-md object-cover"
+          />
+        ) : (
+          <div className="flex items-center justify-between rounded-lg border border-[#C2E6F2] bg-[#F1F9FC] px-4 py-3">
+            <div className="flex items-center gap-3">
+              <UploadFileIcon />
+              <div className="flex flex-col">
+                <p className="text-sm font-medium text-[#2699BF]">
+                  {fileName ?? 'Selected file'}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Click below to change file
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="text-sm font-medium text-[#2699BF]"
+              disabled={disabled}
+            >
+              Change
+            </button>
+          </div>
+        )
       ) : (
         <>
           <div
@@ -68,7 +111,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
             </p>
 
             <p className="text-xs text-gray-500">
-              {accept.replace(/image\//g, '').toUpperCase()} · {widthHint}
+              {accept.toUpperCase()} · {widthHint}
             </p>
           </div>
         </>

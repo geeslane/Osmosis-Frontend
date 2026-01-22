@@ -14,13 +14,14 @@ type TabsProps = {
   paramKey?: string;
   defaultValue?: string;
   preserveSearchParams?: boolean;
+  containerClassName?: string;
 };
-
 const Tabs: React.FC<TabsProps> = ({
   tabs,
   paramKey = 'tab',
   defaultValue,
   preserveSearchParams = false,
+  containerClassName = 'max-w-[350px]',
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -28,19 +29,21 @@ const Tabs: React.FC<TabsProps> = ({
   const activeTab = searchParams.get(paramKey) || defaultValue || tabs[0].value;
 
   const handleChange = (value: string) => {
-    let params: URLSearchParams;
-    if (preserveSearchParams) {
-      params = new URLSearchParams(searchParams.toString());
-      params.set(paramKey, value);
-    } else {
-      params = new URLSearchParams();
-      params.set(paramKey, value);
-    }
+    const params = preserveSearchParams
+      ? new URLSearchParams(searchParams.toString())
+      : new URLSearchParams();
+
+    params.set(paramKey, value);
     router.push(`?${params.toString()}`);
   };
 
   return (
-    <div className="flex gap-8 border-b border-gray-200 max-w-[300px]">
+    <div
+      className={clsx(
+        'flex gap-6 border-b border-gray-200 overflow-x-auto scrollbar-hide overflow-y-hidden',
+        containerClassName
+      )}
+    >
       {tabs.map((tab) => {
         const isActive = tab.value === activeTab;
 
@@ -49,13 +52,15 @@ const Tabs: React.FC<TabsProps> = ({
             key={tab.value}
             onClick={() => handleChange(tab.value)}
             className={clsx(
-              'relative flex items-center gap-2 pb-3 text-base font-medium transition-colors',
+              'relative flex shrink-0 items-center gap-2 pb-3  font-medium transition-colors whitespace-nowrap',
               isActive ? 'text-green-100' : 'text-green-200'
             )}
           >
             {tab.icon && (
               <span
-                className={isActive ? 'text-green-600' : 'text-gray-400 hidden'}
+                className={clsx(
+                  isActive ? 'text-green-600' : 'hidden text-gray-400'
+                )}
               >
                 {tab.icon}
               </span>
