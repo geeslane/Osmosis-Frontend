@@ -28,7 +28,6 @@ export default function Password() {
 
   return (
     <div className="flex flex-col gap-9">
-      <h3 className="text-green-200 text-2xl font-bold">Security</h3>
       <div className="rounded-md max-w-[747px] px-4 md:px-[64px] border-2 border-[#6CBB0180] py-8 w-full">
         <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl space-y-6">
           <PasswordInputForm

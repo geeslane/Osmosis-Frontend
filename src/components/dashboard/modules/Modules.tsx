@@ -31,7 +31,7 @@ export default function Modules() {
         <div className=" border border-[#DCFFAD] rounded-lg px-2 md:px-6 py-5">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2 text-green-200 text-2xl font-semibold">
-              Module
+              Modules
               <span className="bg-[#DCFFAD91] w-[59px] h-[24px] flex justify-center items-center rounded-full text-green-100 text-xs">
                 0 items
               </span>
@@ -46,8 +46,8 @@ export default function Modules() {
               <h3 className="hidden md:flex">Add Module</h3>
             </Button>
           </div>
-          <div className="w-full flex  mt-6 ">
-            <div className="relative flex items-center py-3  rounded-lg gap-2 bg-[#DCFFAD91] px-2 max-w-[469px] w-full">
+          <div className="w-full flex items-center justify-center mt-6">
+            <div className="relative flex items-center py-3  rounded-lg gap-2 bg-[#DCFFAD91] px-2 w-full md:max-w-[60%] w-full">
               <SearchIcon className=" left-3 top-2.5 text-gray-400 pointer-events-none" />
               <input
                 type="search"
