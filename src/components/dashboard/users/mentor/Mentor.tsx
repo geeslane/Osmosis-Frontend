@@ -5,7 +5,8 @@ import Empty from '@/components/ui/NotFound/Empty';
 import React from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MentorTable from './MentorTable';
-import MentorDetail from './MentorDetail';
+import MentorDetail from '@/components/common/Details/MentorDetails';
+
 import {
   useGetMentorsQuery,
   useGetMentorByIdQuery,
@@ -45,12 +46,12 @@ export default function Mentor() {
   const router = useRouter();
   const view = searchParams.get('viewmentor') || 'listmentor';
   const selectedId = searchParams.get('id');
-  
+
   const {
     data: mentorsResponse,
     isLoading: isLoadingMentors,
   } = useGetMentorsQuery({ page: 1, limit: 100 });
-  
+
   const {
     data: mentorResponse,
     isLoading: isLoadingMentor,
@@ -60,7 +61,7 @@ export default function Mentor() {
 
   const mentorData =
     mentorsResponse?.data?.map(mapMentorFromApi) || [];
-  const selectedAdmin = mentorResponse?.data
+  const selectedDetails = mentorResponse?.data
     ? mapMentorFromApi(mentorResponse.data)
     : null;
 
@@ -110,7 +111,7 @@ export default function Mentor() {
         </div>
       )}
 
-      {view === 'viewmentor' && selectedAdmin && (
+      {view === 'viewmentor' && selectedDetails && (
         <div className="w-full ">
           <div className="flex flex-col gap-8 py-4">
             <div
@@ -120,7 +121,7 @@ export default function Mentor() {
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
-            <MentorDetail selectedAdmin={selectedAdmin} />
+            <MentorDetail selectedDetails={selectedDetails} />
           </div>
         </div>
       )}
@@ -147,7 +148,7 @@ export default function Mentor() {
             <MentorTable
               data={mentorData}
               onAddAdmin={() => setParam('addmentor')}
-              onViewAdmin={(admin) => setParam('viewmentor', admin.id)}
+              onViewMentor={(admin) => setParam('viewmentor', admin.id)}
             />
           )}
         </div>

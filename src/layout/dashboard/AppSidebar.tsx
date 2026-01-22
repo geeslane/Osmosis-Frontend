@@ -11,13 +11,13 @@ import useToastify from '@/hooks/useToastify';
 
 import Image from 'next/image';
 import {
-  ContentManagementIcon,
   DashboardIcon,
   LiveSessionIcon,
   LogoutIcon,
+  ModulesIcon,
   PendingRequestIcon,
-  SettingsIcon,
   UserManagementIcon,
+  UserSettingsIcon,
 } from '@/assets/icons';
 
 type NavItem = {
@@ -76,14 +76,14 @@ const AppSidebar: React.FC = () => {
       path: '/dashboard/users',
     },
     {
+      icon: ModulesIcon,
+      name: 'Modules',
+      path: '/dashboard/modules',
+    },
+    {
       icon: LiveSessionIcon,
       name: 'Live Sessions',
       path: '/dashboard/live-sessions',
-    },
-    {
-      icon: ContentManagementIcon,
-      name: 'Content Management',
-      path: '#',
     },
   ];
 
@@ -162,12 +162,12 @@ const AppSidebar: React.FC = () => {
         </div>
         <div className="flex-col flex justify-between  px-5">
           <Link
-            href="/"
-            className={`group flex montserrat border-b py-5 font-medium text-green-200  items-center gap-3 px-4 border-b-green-100 text-sm transition-colors `}
+            href="/dashboard/account-settings"
+            className={`group flex montserrat border-b py-5 font-medium text-green-200  items-center gap-2 px-4 border-b-green-100 text-sm transition-colors `}
           >
-            <SettingsIcon />
+            <UserSettingsIcon />
 
-            {(isExpanded || isMobileOpen) && <span>Settings</span>}
+            {(isExpanded || isMobileOpen) && <span>Manage Account</span>}
           </Link>
           <div className="flex justify-center   items-center  py-5 ">
             <div className="flex items-center  justify-center w-full">

@@ -6,32 +6,34 @@ import {
   PhoneIcon,
   UserAddIcon,
 } from '@/assets/icons';
-import Button from '@/components/ui/button/Button';
 import Image from 'next/image';
-import { useUpdateTeenagerRequestStatusMutation } from '@/store/users/users.api';
+import { useUpdateMentorRequestStatusMutation } from '@/store/users/users.api';
 import useToastify from '@/hooks/useToastify';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { normalizeImageUrl } from '@/utils/helper';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
+import Button from '@/components/ui/button/Button';
 
-export default function MenteeDetail({
-  selectedAdmin,
+export default function MentorDetail({
+  selectedDetails,
   onRefetch,
+  className = '',
 }: {
-  selectedAdmin: any;
+  selectedDetails: any;
   onRefetch?: () => void;
+  className?: string;
 }) {
   const { showToast } = useToastify();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
   const [declineModalOpen, setDeclineModalOpen] = useState(false);
-  const [updateRequestStatus] = useUpdateTeenagerRequestStatusMutation();
+  const [updateRequestStatus] = useUpdateMentorRequestStatusMutation();
 
   const navigateBackToList = () => {
     // Preserve the role tab parameter when navigating back
-    const role = searchParams.get('role') || 'mentee';
+    const role = searchParams.get('role') || 'mentor';
     const params = new URLSearchParams();
     params.set('role', role);
     params.set('viewmentor', 'listmentor');
@@ -39,14 +41,14 @@ export default function MenteeDetail({
   };
 
   const handleAccept = async () => {
-    if (!selectedAdmin?.id) return;
+    if (!selectedDetails?.id) return;
     setIsProcessing(true);
     try {
       await updateRequestStatus({
-        id: selectedAdmin.id,
+        id: selectedDetails.id,
         data: { status: 'APPROVED' },
       }).unwrap();
-      showToast('Mentee request approved. They have been added to Osmosis and can be found in the Users section.', 'success');
+      showToast('Mentor request approved. They have been added to Osmosis and can be found in the Users section.', 'success');
       onRefetch?.();
       navigateBackToList();
     } catch (error: any) {
@@ -62,15 +64,15 @@ export default function MenteeDetail({
   };
 
   const handleDeclineConfirm = async (reason: string) => {
-    if (!selectedAdmin?.id) return;
+    if (!selectedDetails?.id) return;
     setIsProcessing(true);
     setDeclineModalOpen(false);
     try {
       await updateRequestStatus({
-        id: selectedAdmin.id,
+        id: selectedDetails.id,
         data: { status: 'REJECTED', reasonForRejection: reason },
       }).unwrap();
-      showToast('Mentee request declined successfully', 'success');
+      showToast('Mentor request declined successfully', 'success');
       onRefetch?.();
       navigateBackToList();
     } catch (error: any) {
@@ -88,22 +90,22 @@ export default function MenteeDetail({
   return (
     <div className=" w-full">
       <div className="flex gap-[37px]  flex-col">
-        <div className="flex justify-between ">
-          <h3 className="text-green-200 text-3xl font-bold">Mentee Details</h3>
+        <div className={`flex justify-between ${className}`}>
+          <h3 className="text-green-200 text-3xl font-bold">Mentor Details</h3>
         </div>
         <div className="rounded-lg flex flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 space-y-2">
           <div className="relative w-[140px] h-[120px] rounded-full overflow-hidden">
-            {selectedAdmin.image ? (
+            {selectedDetails.image ? (
               <Image
-                src={normalizeImageUrl(selectedAdmin.image) || '/image/Avatar.png'}
-                alt="Mentee image"
+                src={normalizeImageUrl(selectedDetails.image) || '/image/Avatar.png'}
+                alt="Mentor image"
                 fill
                 className="object-cover rounded-full"
               />
             ) : (
               <div className="w-full h-full rounded-full bg-green-100 flex items-center justify-center">
                 <span className="text-white text-2xl font-semibold">
-                  {(selectedAdmin.name || selectedAdmin.email || 'U')
+                  {(selectedDetails.name || selectedDetails.email || 'U')
                     .split(' ')
                     .map((word: string) => word[0])
                     .join('')
@@ -122,7 +124,7 @@ export default function MenteeDetail({
                     Full Name
                   </p>
                   <p className="text-green-200  font-medium">
-                    {selectedAdmin.name}
+                    {selectedDetails.name || '-'}
                   </p>
                 </div>
               </div>
@@ -131,7 +133,7 @@ export default function MenteeDetail({
                 <div className="flex flex-col gap-1">
                   <p className="text-green-300 text-sm font-medium">Email</p>
                   <p className="text-green-300  font-medium  truncate">
-                    {selectedAdmin.email}
+                    {selectedDetails.email}
                   </p>
                 </div>
               </div>
@@ -142,7 +144,7 @@ export default function MenteeDetail({
                     Phone Number
                   </p>
                   <p className="text-green-300  font-medium">
-                    {selectedAdmin.phone}
+                    {selectedDetails.phone}
                   </p>
                 </div>
               </div>
@@ -153,7 +155,7 @@ export default function MenteeDetail({
                     Address/Location
                   </p>
                   <p className="text-green-300  font-medium">
-                    {selectedAdmin.address || 'N/A'}
+                    {selectedDetails.address || 'N/A'}
                   </p>
                 </div>
               </div>
@@ -164,26 +166,26 @@ export default function MenteeDetail({
                   Date of Birth
                 </p>
                 <p className="text-green-200  font-medium">
-                  30th October, 1980
+                  {selectedDetails.dob || 'N/A'}
                 </p>
               </div>
 
               <div className="flex flex-col  gap-4">
                 <p className="text-green-300 text-sm font-medium">Gender</p>
-                <p className="text-green-200  font-medium">Male</p>
+                <p className="text-green-200  font-medium">{selectedDetails.gender || 'N/A'}</p>
               </div>
               <div className="flex flex-col  gap-4">
                 <p className="text-green-300 text-sm font-medium">Occupation</p>
-                <p className="text-green-200  font-medium">Builder</p>
+                <p className="text-green-200  font-medium">{selectedDetails.occupation || 'N/A'}</p>
               </div>
               <div className="flex flex-col  gap-4">
                 <p className="text-green-300 font-medium text-sm">Status</p>{' '}
                 <span
                   className={`rounded-full max-w-[100px] px-3 py-1 text-xs font-medium ${
-                    statusStyles[selectedAdmin.status]
+                    statusStyles[selectedDetails.status]
                   }`}
                 >
-                  {selectedAdmin.status}
+                  {selectedDetails.status}
                 </span>
               </div>
             </div>
@@ -193,14 +195,7 @@ export default function MenteeDetail({
                   What inspire you to be a teens mentor?
                 </p>
                 <p className="text-green-200  font-medium">
-                  Mentors are inspired by a mix of altruism and self-interest,
-                  driven by the joy of seeing others grow, paying forward the
-                  guidance they received, staying relevant in their field, and
-                  gaining fulfillment from sharing wisdom, making a real impact,
-                  and strengthening their own leadership skills. Many feel a
-                  deep sense of satisfaction in helping someone navigate
-                  challenges and reach their potential, creating a positive
-                  ripple effect. {' '}
+                  {selectedDetails.inspiration || 'N/A'}
                 </p>
               </div>
             </div>
@@ -210,11 +205,7 @@ export default function MenteeDetail({
                   Mentor’s Bio{' '}
                 </p>
                 <p className="text-green-200  font-medium">
-                  I have a passion for health and wellness, and educating people
-                  on the benefits of taking control of their own health. I would
-                  like to become an expert and throught leader on marketing in
-                  this space, as well as continue along my own personal journey
-                  towards optimal health, sharing what I learn.
+                  {selectedDetails.bio || 'N/A'}
                 </p>
               </div>
             </div>
@@ -224,7 +215,7 @@ export default function MenteeDetail({
                   Mentorship Topics of Interest{' '}
                 </p>
                 <p className="text-green-200  font-medium">
-                  Career and Development
+                  {selectedDetails.topicsOfInterest || 'N/A'}
                 </p>
               </div>
               <div className="flex w-full flex-col  gap-4">
@@ -232,10 +223,12 @@ export default function MenteeDetail({
                   LinkedIn URL{' '}
                 </p>
                 <a
-                  href="#"
+                  href={selectedDetails.linkedinUrl || '#'}
                   className="text-green-200 break-all  font-medium w-[200px] md:w-full h-full  "
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  https://www.linkedin.com/in/emmanuel-adegbola/{' '}
+                  {selectedDetails.linkedinUrl || 'N/A'}
                 </a>
               </div>
             </div>

@@ -5,10 +5,8 @@ import Empty from '@/components/ui/NotFound/Empty';
 import React from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MentorTable from './MentorTable';
-import MentorDetail from './MentorDetails';
-import {
-  useGetMentorRequestsQuery,
-} from '@/store/users/users.api';
+import MentorDetail from '@/components/common/Details/MentorDetails';
+import { useGetMentorRequestsQuery } from '@/store/users/users.api';
 
 type MentorPending = {
   id: string;
@@ -26,7 +24,6 @@ function mapMentorRequestFromApi(apiRequest: any): MentorPending {
     APPROVED: 'Active',
     REJECTED: 'Inactive',
   };
-  
   return {
     id: apiRequest.id,
     name: apiRequest.fullName || '',
@@ -43,18 +40,18 @@ export default function Mentor() {
   const router = useRouter();
   const view = searchParams.get('viewmentor') || 'listmentor';
   const selectedId = searchParams.get('id');
-  
+
   // Fetch pending mentor requests
   const {
     data: requestsResponse,
     isLoading: isLoadingRequests,
     refetch: refetchRequests,
   } = useGetMentorRequestsQuery({ page: 1, limit: 100, status: 'PENDING' });
-  
+
   const mentorData =
     requestsResponse?.data?.map(mapMentorRequestFromApi) || [];
-  const selectedAdmin = selectedId
-    ? mentorData.find((a: any) => a.id === selectedId)
+  const selectedDetails = selectedId
+    ? mentorData.find((a: MentorPending) => a.id === selectedId)
     : null;
 
   const setParam = (newView: string, id?: string) => {
@@ -74,7 +71,6 @@ export default function Mentor() {
       </div>
     );
   }
-
 
   return (
     <div className=" w-full max-w-full">
@@ -96,7 +92,7 @@ export default function Mentor() {
         </div>
       )}
 
-      {view === 'viewmentor' && selectedAdmin && (
+      {view === 'viewmentor' && selectedDetails && (
         <div className="w-full ">
           <div className="flex flex-col gap-8 py-4">
             <div
@@ -106,7 +102,7 @@ export default function Mentor() {
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
-            <MentorDetail selectedAdmin={selectedAdmin} onRefetch={refetchRequests} />
+            <MentorDetail selectedDetails={selectedDetails} onRefetch={refetchRequests} />
           </div>
         </div>
       )}

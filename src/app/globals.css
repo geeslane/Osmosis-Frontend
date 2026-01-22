@@ -23,6 +23,45 @@
   background-repeat: no-repeat;
   background-position: contain;
 }
+.editor-content p[data-lexical-align='center'] {
+  text-align: center;
+}
+
+.editor-content p[data-lexical-align='right'] {
+  text-align: right;
+}
+
+.editor-content p[data-lexical-align='left'] {
+  text-align: left;
+}
+.editor-text-bold {
+  font-weight: bold;
+}
+
+.editor-text-italic {
+  font-style: italic;
+}
+
+.editor-text-underline {
+  text-decoration: underline;
+}
+
+.editor-text-strikethrough {
+  text-decoration: line-through;
+}
+
+.editor-content p[data-lexical-align='center'] {
+  text-align: center;
+}
+
+.editor-content p[data-lexical-align='right'] {
+  text-align: right;
+}
+
+.editor-content p[data-lexical-align='left'] {
+  text-align: left;
+}
+
 
 .authImage {
   background-image: linear-gradient(rgba(156, 156, 156, 0.7)),
@@ -1029,4 +1068,13 @@ span.flatpickr-weekday,
     0 1px 2px 0 rgba(16, 24, 40, 0.06);
   opacity: 0.8;
   cursor: grabbing; /* Changes the cursor to indicate dragging */
+}
+
+/* TipTap Editor Placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9ca3af;
+  pointer-events: none;
+  height: 0;
 }

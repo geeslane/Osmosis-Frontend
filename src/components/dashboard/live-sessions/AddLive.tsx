@@ -22,7 +22,7 @@ export default function AddLive() {
     formState: { errors },
     reset,
   } = useForm<AddLiveSessionFormInputs>({
-    resolver: yupResolver(AddLiveSessionSchema),
+    resolver: yupResolver(AddLiveSessionSchema) as any,
   });
 
   const onSubmit: SubmitHandler<AddLiveSessionFormInputs> = () => {
@@ -42,7 +42,7 @@ export default function AddLive() {
 
       <div className="flex gap-3 w-full">
         <div className="flex font-montserrat w-full montserrat flex-col gap-1">
-          <label className="text-green-300 font-medium">Date Of Birth</label>
+          <label className="text-green-300 font-medium">Date </label>
           <Controller
             name="date"
             control={control}

@@ -133,7 +133,10 @@ export default function MenteeTable({
       key: 'actions',
       label: 'Action',
       render: (row) => (
-        <div className="relative flex items-center space-x-2">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="relative flex items-center space-x-2"
+        >
           <div
             onClick={() =>
               setOpenDropdownId((prev) => (prev === row.id ? null : row.id))
@@ -217,7 +220,6 @@ export default function MenteeTable({
                 <option value="All">All statuses</option>
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
-                <option value="Pending">Pending</option>
               </select>
             </div>
             <div className="w-full flex gap-2 items-center justify-end">
@@ -243,7 +245,11 @@ export default function MenteeTable({
         title="Delete Mentee"
         description="Deleting this admin will permanently remove access."
       />
-      <DataTable columns={columns} data={paginated} />
+      <DataTable
+        onRowClick={(row) => onViewMentee(row)}
+        columns={columns}
+        data={paginated}
+      />
       <div className="flex items-center justify-between">
         <Pagination
           page={page}

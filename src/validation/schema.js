@@ -129,6 +129,51 @@ export const AddLiveSessionSchema = yup.object({
 
   linkedinUrl: yup
     .string()
-    .required('Linkedin Url is required')
-    .url('Enter a valid Linkedin  URL'),
+    .nullable()
+    .notRequired()
+    .url('Enter a valid LinkedIn URL'),
+});
+
+export const AddModuleSchema = yup.object({
+  topic: yup.string().required('Module title is required'),
+  ModuleNumber: yup.number().required('Module number is required').positive(),
+  notes: yup.string().required('Content is required'), // Add this for editor
+  resources: yup.string().required('Resources is required'), // Add this for editor
+  deliverables: yup.string().required('Deliverables is required'), // Add this for editor
+  workbook: yup
+    .mixed()
+    .required('Workbook file is required')
+    .test('fileRequired', 'Workbook file is required', (value) => {
+      return value && value.length > 0;
+    })
+    .test('fileType', 'Only PDF files are allowed', (value) => {
+      if (!value || value.length === 0) return true;
+      return value[0]?.type === 'application/pdf';
+    })
+    .test('fileSize', 'File size must be less than 10MB', (value) => {
+      if (!value || value.length === 0) return true;
+      return value[0]?.size <= 10 * 1024 * 1024; // 10MB
+    }),
+});
+
+export const changePasswordSchema = yup.object({
+  currentPassword: yup.string().required('Current password is required'),
+
+  newPassword: yup
+    .string()
+    .required('New password is required')
+    .min(8, 'Password must be at least 8 characters')
+    .matches(/[a-z]/, 'Must contain at least one lowercase letter')
+    .matches(/[A-Z]/, 'Must contain at least one uppercase letter')
+    .matches(/[0-9]/, 'Must contain at least one number')
+    .matches(/[@$!%*?&#]/, 'Must contain at least one special character')
+    .notOneOf(
+      [yup.ref('currentPassword')],
+      'New password must be different from current password'
+    ),
+
+  confirmPassword: yup
+    .string()
+    .required('Please confirm your new password')
+    .oneOf([yup.ref('newPassword')], 'Passwords do not match'),
 });

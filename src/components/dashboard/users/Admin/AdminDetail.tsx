@@ -1,17 +1,13 @@
 import {
-  EditIcon,
   EmailIcon,
   LocationIcon,
   PhoneIcon,
   UserAddIcon,
 } from '@/assets/icons';
-import Button from '@/components/ui/button/Button';
 import Image from 'next/image';
-import React, { useState } from 'react';
-import EditDetail from './EditDetail';
+import React from 'react';
 
 export default function AdminDetail({ selectedAdmin }: { selectedAdmin: any }) {
-  const [edit, setEdit] = useState(false);
   const statusStyles: Record<any['status'], string> = {
     Active: 'bg-green-50 text-green-600',
     Inactive: 'bg-[#FEF3F2] text-[#B42318]',
@@ -19,28 +15,10 @@ export default function AdminDetail({ selectedAdmin }: { selectedAdmin: any }) {
   };
   return (
     <div className="max-w-[748px] w-full">
-      {edit ? (
-        <div>
-          <h3 className="text-green-200 text-3xl font-bold mb-[37px]">
-            Edit Admin
-          </h3>
-
-          <div className="rounded-md border px-10 md:px-[64px] border-[#6CBB0180] py-5 w-full">
-            <EditDetail selectedAdmin={selectedAdmin} setEdit={setEdit} />
-          </div>
-        </div>
-      ) : (
+    
         <div className="flex gap-[37px]  flex-col">
           <div className="flex justify-between ">
             <h3 className="text-green-200 text-3xl font-bold">Admin Details</h3>
-            <Button
-              onClick={() => setEdit(true)}
-              variant="primary"
-              className="font-medium flex gap-1"
-            >
-              <h3 className="hidden md:flex">Edit</h3>
-              <EditIcon />
-            </Button>
           </div>
           <div className="rounded-lg flex flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 space-y-2">
             <div className="w-[90px] h-[90px] rounded-full">
@@ -116,7 +94,6 @@ export default function AdminDetail({ selectedAdmin }: { selectedAdmin: any }) {
             </div>
           </div>
         </div>
-      )}
     </div>
   );
 }

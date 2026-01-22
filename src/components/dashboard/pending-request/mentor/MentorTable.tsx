@@ -214,7 +214,6 @@ export default function MentorTable({ data, onViewAdmin, onRefetch }: AdminListP
                 <option value="All">All statuses</option>
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
-                <option value="Pending">Pending</option>
               </select>
             </div>
             <div className="w-full flex gap-2 items-center justify-end">

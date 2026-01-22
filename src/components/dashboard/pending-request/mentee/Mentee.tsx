@@ -5,7 +5,7 @@ import Empty from '@/components/ui/NotFound/Empty';
 import React from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MenteeTable from './MenteeTable';
-import MenteeDetail from './MenteeDetails';
+import MenteeDetail from '@/components/common/Details/MenteeDetails';
 import {
   useGetTeenagerRequestsQuery,
 } from '@/store/users/users.api';
@@ -43,18 +43,17 @@ export default function Mentee() {
   const router = useRouter();
   const view = searchParams.get('viewmentor') || 'listmentor';
   const selectedId = searchParams.get('id');
-  
-  // 1. Destructure 'refetch' and rename it to 'refetchRequests'
+
   const {
     data: requestsResponse,
     isLoading: isLoadingRequests,
-    refetch: refetchRequests, 
+    refetch: refetchRequests,
   } = useGetTeenagerRequestsQuery({ page: 1, limit: 100, status: 'PENDING' });
-  
+
   const menteeData =
     requestsResponse?.data?.map(mapMenteeRequestFromApi) || [];
 
-  const selectedAdmin = selectedId
+  const selectedDetails = selectedId
     ? menteeData.find((a: MenteePending) => a.id === selectedId)
     : null;
 
@@ -96,7 +95,7 @@ export default function Mentee() {
         </div>
       )}
 
-      {view === 'viewmentor' && selectedAdmin && (
+      {view === 'viewmentor' && selectedDetails && (
         <div className="w-full ">
           <div className="flex flex-col gap-8 py-4">
             <div
@@ -106,8 +105,7 @@ export default function Mentee() {
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
-            {/* refetchRequests is now defined and passed here */}
-            <MenteeDetail selectedAdmin={selectedAdmin} onRefetch={refetchRequests} />
+            <MenteeDetail selectedDetails={selectedDetails} onRefetch={refetchRequests} />
           </div>
         </div>
       )}
@@ -135,7 +133,6 @@ export default function Mentee() {
               data={menteeData}
               onAddAdmin={() => setParam('addmentor')}
               onViewAdmin={(admin) => setParam('viewmentor', admin.id)}
-              /* refetchRequests is now defined and passed here */
               onRefetch={refetchRequests}
             />
           )}
