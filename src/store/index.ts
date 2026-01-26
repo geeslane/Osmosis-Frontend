@@ -9,7 +9,7 @@ import {
   PURGE,
   REGISTER,
 } from 'redux-persist';
-import storage from 'redux-persist/lib/storage'; // defaults to localStorage
+import storage from '@/lib/storage'; // SSR-safe storage
 import { AuthApi } from './auth/auth.api';
 import { ProfileApi } from './profile/profile.api';
 import { DashboardApi } from './dashboard/dashboard.api';

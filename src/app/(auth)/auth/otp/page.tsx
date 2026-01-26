@@ -3,25 +3,32 @@
 import { LoadingIcon } from '@/assets/icons';
 import Image from 'next/image';
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  useVerifyOtpMutation,
-  useResendOtpMutation,
-} from '@/store/auth/auth.api';
+import { useVerifyOtpMutation, useResendOtpMutation } from '@/store/auth/auth.api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useToastify from '@/hooks/useToastify';
 import Link from 'next/link';
 import { ArrowBackIcon } from '@/assets/icons';
 import { setSessionCookie } from '@/lib/session';
 
-export default function OtpPage({ sessionId }: { sessionId: string }) {
+export default function OtpPage() {
   const { showToast } = useToastify();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
   const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    const sessionIdParam = searchParams.get('sessionId');
+    if (sessionIdParam) {
+      setSessionId(sessionIdParam);
+    } else {
+      showToast('Invalid session. Please login again.', 'error');
+    }
+  }, [searchParams, showToast]);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -89,9 +96,10 @@ export default function OtpPage({ sessionId }: { sessionId: string }) {
             role: otpData.userType,
           });
 
-          const userId = otpData.user?.id;
+          const userId = otpData.user?.id
 
-          const userType = otpData.userType;
+          const userType =
+            otpData.userType
 
           if (otpData?.requiresPasswordChange) {
             showToast('OTP verified! Please change your password.', 'success');
@@ -115,7 +123,29 @@ export default function OtpPage({ sessionId }: { sessionId: string }) {
         showToast('OTP verified but no token received', 'error');
       }
     } catch (error: any) {
-      showToast(error || 'OTP verification failed', 'error');
+      let message = 'OTP verification failed';
+
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (error?.data?.message) {
+        message = error.data.message;
+      } else if (error?.error) {
+        message = typeof error.error === 'string' ? error.error : 'OTP verification failed';
+      } else if (typeof error === 'string') {
+        message = error;
+      } else if (error?.message) {
+        message = error.message;
+      }
+
+      if (message.includes('expired')) {
+        message = 'OTP code has expired. Please request a new one.';
+      } else if (message.includes('invalid')) {
+        message = 'Invalid OTP code. Please try again.';
+      } else if (message.includes('used')) {
+        message = 'This OTP code has already been used.';
+      }
+
+      showToast(message, 'error');
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     }
@@ -126,14 +156,28 @@ export default function OtpPage({ sessionId }: { sessionId: string }) {
       showToast('Invalid session. Please login again.', 'error');
       return;
     }
+
     try {
-      const response = await resendOtp({ sessionId }).unwrap();
-      showToast(response?.data?.message, 'success');
+      await resendOtp({ sessionId }).unwrap();
+      showToast('OTP code has been resent to your email', 'success');
       setCountdown(60);
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     } catch (error: any) {
-      const message = error?.message;
+      let message = 'Failed to resend OTP';
+
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (error?.data?.message) {
+        message = error.data.message;
+      } else if (error?.error) {
+        message = typeof error.error === 'string' ? error.error : 'Failed to resend OTP';
+      } else if (typeof error === 'string') {
+        message = error;
+      } else if (error?.message) {
+        message = error.message;
+      }
+
       showToast(message, 'error');
     }
   };
@@ -143,7 +187,7 @@ export default function OtpPage({ sessionId }: { sessionId: string }) {
   }
 
   return (
-    <div className="mx-5 md:mx-[133px] flex flex-col h-full pt-20">
+    <div className="mx-5 md:mx-[133px] my-[20px] md:my-[40px]">
       <Link
         href="/signin"
         className="flex mb-5 items-center justify-end font-montserrat montserrat font-medium"
@@ -152,17 +196,17 @@ export default function OtpPage({ sessionId }: { sessionId: string }) {
         Back to Sign In
       </Link>
 
-      <div className="flex flex-col gap-5 justify-center items-center overflow-y-scroll no-scrollbar max-h-[80%] h-full">
+      <div className="flex flex-col gap-5 justify-center overflow-y-scroll no-scrollbar max-h-[80%] h-full">
         <div className="w-full font-montserrat montserrat max-w-full md:max-w-none">
           <Image
-            className="my-[40px] mx-auto lg:mx-none"
+            className="my-[40px] mx-auto"
             src={'/image/logo.png'}
             alt=""
             width={151}
             height={32}
           />
-          <div className="flex flex-col justify-center   mt-6 gap-7">
-            <div className="text-center lg:text-start">
+          <div className="flex flex-col mt-6 gap-7">
+            <div className="text-center md:text-left">
               <h3 className="text-[32px] md:text-[40px] text-green-200 font-bold">
                 Verify Your Account
               </h3>
@@ -172,7 +216,7 @@ export default function OtpPage({ sessionId }: { sessionId: string }) {
             </div>
 
             <form onSubmit={handleSubmit} className="w-full space-y-6">
-              <div className="flex justify-center  gap-2 md:gap-3">
+              <div className="flex justify-center md:justify-start gap-2 md:gap-3">
                 {otp.map((digit, index) => (
                   <input
                     key={index}
@@ -188,7 +232,7 @@ export default function OtpPage({ sessionId }: { sessionId: string }) {
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     onPaste={index === 0 ? handlePaste : undefined}
-                    className="w-11 h-12 md:w-12 md:h-14 text-center text-2xl font-bold border-2 border-green-300 rounded-lg focus:border-green-100  focus:outline-none transition-all"
+                    className="w-11 h-12 md:w-12 md:h-14 text-center text-2xl font-bold border-2 border-green-300 rounded-lg focus:border-green-100 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all"
                   />
                 ))}
               </div>

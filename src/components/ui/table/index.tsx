@@ -5,11 +5,7 @@ export type Column<T> = {
   className?: string;
   onRowClick?: (row: T) => void;
 };
-type DataTableProps<T> = {
-  columns: Column<T>[];
-  data: T[];
-  onRowClick?: (row: T) => void;
-};
+type DataTableProps<T> = { columns: Column<T>[]; data: T[]; onRowClick?: (row: T) => void };
 
 export function DataTable<T extends { id: string }>({
   columns,
@@ -17,7 +13,7 @@ export function DataTable<T extends { id: string }>({
   onRowClick,
 }: DataTableProps<T>) {
   return (
-    <div className="relative w-full min-h-[200px] overflow-x-auto">
+    <div className="relative w-full overflow-x-auto">
       {/* Scroll container */}
       <div className="min-w-full">
         <table className="min-w-max w-full text-sm">

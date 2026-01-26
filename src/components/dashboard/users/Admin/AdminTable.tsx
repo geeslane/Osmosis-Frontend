@@ -7,8 +7,6 @@ import { Column, DataTable } from '@/components/ui/table';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { normalizeImageUrl } from '@/utils/helper';
-import { NoResult } from '@/components/ui/NotFound/NoResult';
-import { useRouter } from 'next/navigation';
 
 type Admin = {
   id: string;
@@ -23,13 +21,14 @@ type Admin = {
 type AdminListPageProps = {
   onAddAdmin: () => void;
   data: Admin[];
+  onViewAdmin: (admin: Admin) => void;
 };
 export default function AdminListPage({
   onAddAdmin,
   data,
+  onViewAdmin,
 }: AdminListPageProps) {
   const [page, setPage] = useState(1);
-  const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | Admin['status']>(
     'All'
@@ -71,8 +70,7 @@ export default function AdminListPage({
       label: 'Name',
       render: (row) => {
         const normalizedImage = row.image ? normalizeImageUrl(row.image) : null;
-        const hasValidImage =
-          normalizedImage && typeof normalizedImage === 'string';
+        const hasValidImage = normalizedImage && typeof normalizedImage === 'string';
         const initials = (row.name || row.email || 'U')
           .split(' ')
           .map((word) => word[0])
@@ -157,7 +155,7 @@ export default function AdminListPage({
                 type="button"
                 className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
                 onClick={() => {
-                  router.push(`/dashboard/users/admin/${row.id}`);
+                  onViewAdmin(row);
                   setOpenDropdownId(null);
                 }}
               >
@@ -172,7 +170,7 @@ export default function AdminListPage({
                   setOpenDropdownId(null);
                 }}
               >
-                Update Status
+                Delete
               </button>
             </div>
           )}
@@ -203,7 +201,7 @@ export default function AdminListPage({
   ) as Admin[];
 
   return (
-    <div className="space-y-3 mt-2" onClick={() => setOpenDropdownId(null)}>
+    <div className="space-y-3 mt-2">
       <div className="flex flex-col mx-4 md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex items-center gap-2 w-full">
           <div className=" w-full flex flex-col md:flex-row gap-2 justify-between md:items-center ">
@@ -259,29 +257,18 @@ export default function AdminListPage({
         title="Delete Admin"
         description="Deleting this admin will permanently remove access."
       />
-      {filtered.length === 0 ? (
-        <NoResult
-          title=" No Data Found"
-          description="Try adjusting your search or filter criteria"
+      <DataTable
+        onRowClick={(row) => onViewAdmin(row)}
+        columns={columns}
+        data={paginated}
+      />
+      <div className="flex items-center justify-between">
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
         />
-      ) : (
-        <>
-          <DataTable
-            onRowClick={(row) => {
-              router.push(`/dashboard/users/admin/${row.id}`);
-            }}
-            columns={columns}
-            data={paginated}
-          />
-          <div className="flex items-center justify-between">
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              onPageChange={setPage}
-            />
-          </div>
-        </>
-      )}
+      </div>
     </div>
   );
 }
