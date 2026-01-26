@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 import {
   CheckIcon,
@@ -19,32 +18,17 @@ import InputForm from '../form/InputForm';
 import { RegisterFormSchema } from '@/validation/schema';
 import { useRegisterTeenagerMutation } from '@/store/auth/auth.api';
 import useToastify from '@/hooks/useToastify';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import SelectForm from '../form/SelectForm';
 import FileUpload from '../form/FileUpload';
 import { Modal } from '../ui/modal';
-
-type RegisterFormData = {
-  fullName: string;
-  email: string;
-  phoneNumber: string;
-  parentFullName: string;
-  parentEmail: string;
-  parentPhoneNumber: string;
-  dateOfBirth: string;
-  gender: string;
-  address: string;
-  hobbies: string;
-  class: string;
-};
+import { TeenagerRegisterFormData } from '../types';
 
 export const TeenagerSignupForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [parentEmail, setParentEmail] = useState("");
+  const [parentEmail, setParentEmail] = useState('');
   const [pictureFile, setPictureFile] = useState<File | null>(null);
-  const router = useRouter();
   const { showToast } = useToastify();
   const [registerTeenager, { isLoading }] = useRegisterTeenagerMutation();
 
@@ -55,7 +39,7 @@ export const TeenagerSignupForm = () => {
     control,
     setValue,
     formState: { errors },
-  } = useForm<RegisterFormData>({
+  } = useForm<TeenagerRegisterFormData>({
     resolver: yupResolver(RegisterFormSchema),
     mode: 'onTouched',
   });
@@ -63,7 +47,7 @@ export const TeenagerSignupForm = () => {
   const totalSteps = 4;
 
   const nextStep = async () => {
-    const stepFields: Record<number, (keyof RegisterFormData)[]> = {
+    const stepFields: Record<number, (keyof TeenagerRegisterFormData)[]> = {
       1: ['fullName', 'email', 'phoneNumber'],
       2: ['parentFullName', 'parentEmail', 'parentPhoneNumber'],
       3: ['dateOfBirth', 'gender'],
@@ -87,41 +71,46 @@ export const TeenagerSignupForm = () => {
     setShowSuccess(false);
   };
 
-  const onSubmit = async (data: RegisterFormData) => {
+  const onSubmit = async (data: TeenagerRegisterFormData) => {
     setParentEmail(data.parentEmail);
 
     try {
-      const payload = {
-        teenagerFullName: data.fullName,
-        teenagerEmail: data.email,
-        teenagerPhoneNumber: data.phoneNumber,
-        parentFullName: data.parentFullName,
-        parentEmail: data.parentEmail,
-        parentPhoneNumber: data.parentPhoneNumber,
-        dateOfBirth: data.dateOfBirth,
-        gender: data.gender,
-        class: data.class,
-        hobbies: data.hobbies,
-        address: data.address,
-        picture: pictureFile || undefined,
-      };
+      const formData = new FormData();
 
-      const response = await registerTeenager(payload).unwrap();
+      formData.append('teenagerFullName', data.fullName);
+      formData.append('teenagerEmail', data.email);
+      formData.append('teenagerPhoneNumber', data.phoneNumber);
+      formData.append('parentFullName', data.parentFullName);
+      formData.append('parentEmail', data.parentEmail);
+      formData.append('parentPhoneNumber', data.parentPhoneNumber);
+      formData.append('dateOfBirth', data.dateOfBirth);
+      formData.append('gender', data.gender);
+      formData.append('class', data.class);
+      formData.append('hobbies', data.hobbies);
+      formData.append('address', data.address);
+
+      if (pictureFile) {
+        formData.append('picture', pictureFile);
+      }
+
+      const response = await registerTeenager(formData).unwrap();
       showToast(response.message || 'Registration successful!', 'success');
       setShowSuccess(true);
     } catch (error: any) {
-      const message =
-        error?.data?.message ||
-        error?.error ||
-        error?.data?.errors?.[0]?.msg ||
-        'Signup failed';
+      const message = error?.data?.message || 'Signup failed';
       showToast(message, 'error');
     }
   };
 
   return (
     <div className="w-full overflow-scroll max-h-[90vh] no-scrollbar font-montserrat montserrat">
-      <Image className='my-[40px] mx-auto md:mx-0' src={'/image/logo.png'} alt="" width={151} height={32} />
+      <Image
+        className="my-[40px] mx-auto md:mx-0"
+        src={'/image/logo.png'}
+        alt=""
+        width={151}
+        height={32}
+      />
       <div className="flex flex-col mt-6 gap-7">
         <div>
           <h3 className="text-[32px] md:text-[40px] text-center md:text-left text-green-200 font-bold">
@@ -138,20 +127,22 @@ export const TeenagerSignupForm = () => {
             {[1, 2, 3, 4].map((step) => (
               <div key={step} className="flex w-full items-center">
                 <div
-                  className={`w-5 h-5 text-sm rounded-full flex items-center justify-center font-medium transition-all duration-300 ${step < currentStep
-                    ? 'bg-green-100 text-white'
-                    : step === currentStep
-                      ? 'bg-green-300 text-white'
-                      : 'bg-gray-200 px-2 text-gray-500'
-                    }`}
+                  className={`w-5 h-5 text-sm rounded-full flex items-center justify-center font-medium transition-all duration-300 ${
+                    step < currentStep
+                      ? 'bg-green-100 text-white'
+                      : step === currentStep
+                        ? 'bg-green-300 text-white'
+                        : 'bg-gray-200 px-2 text-gray-500'
+                  }`}
                 >
                   {step < currentStep ? <CheckIcon /> : step}
                 </div>
 
                 {step < 4 && (
                   <div
-                    className={`h-1 flex-1 w-full mx-2 sm:mx-3 rounded-full ${step < currentStep ? 'bg-green-100' : 'bg-gray-200'
-                      }`}
+                    className={`h-1 flex-1 w-full mx-2 sm:mx-3 rounded-full ${
+                      step < currentStep ? 'bg-green-100' : 'bg-gray-200'
+                    }`}
                   />
                 )}
               </div>
@@ -159,10 +150,10 @@ export const TeenagerSignupForm = () => {
           </div>
           <div className="text-start mt-5">
             <h2 className="text-sm font-bold text-green-200">
-              {currentStep === 1 && 'Teenager\'s Information'}
-              {currentStep === 2 && 'Parent /Guardian\'s Details'}
-              {currentStep === 3 && 'Teenager\'s Personal Details'}
-              {currentStep === 4 && 'Teenager\'s Contact & Location'}
+              {currentStep === 1 && "Teenager's Information"}
+              {currentStep === 2 && "Parent /Guardian's Details"}
+              {currentStep === 3 && "Teenager's Personal Details"}
+              {currentStep === 4 && "Teenager's Contact & Location"}
             </h2>
           </div>
         </div>
@@ -233,7 +224,9 @@ export const TeenagerSignupForm = () => {
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div className="flex font-montserrat montserrat flex-col gap-1">
-                  <label className="text-green-300 font-medium">Teenager&apos;s Date Of Birth</label>
+                  <label className="text-green-300 font-medium">
+                    Teenager&apos;s Date Of Birth
+                  </label>
                   <div className="relative">
                     <Controller
                       name="dateOfBirth"
@@ -243,7 +236,9 @@ export const TeenagerSignupForm = () => {
                           selected={field.value ? new Date(field.value) : null}
                           onChange={(date: Date | null) => {
                             if (date) {
-                              const formattedDate = date.toISOString().split('T')[0];
+                              const formattedDate = date
+                                .toISOString()
+                                .split('T')[0];
                               field.onChange(formattedDate);
                               setValue('dateOfBirth', formattedDate, {
                                 shouldValidate: true,
@@ -256,8 +251,11 @@ export const TeenagerSignupForm = () => {
                           showMonthDropdown
                           dropdownMode="select"
                           placeholderText="Select date of birth"
-                          className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 pr-10 ${errors.dateOfBirth ? 'border-red-500' : 'border-green-300'
-                            }`}
+                          className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 pr-10 ${
+                            errors.dateOfBirth
+                              ? 'border-red-500'
+                              : 'border-green-300'
+                          }`}
                           popperClassName="react-datepicker-popper-modern"
                         />
                       )}
@@ -362,13 +360,20 @@ export const TeenagerSignupForm = () => {
         </div>
         <div className="flex font-montserrat montserrat text-[#0F1C24] text-[15px] font-bold items-center justify-center mt-6 pb-4">
           <span>Already have an account?</span>
-          <Link href="/signin" className="text-green-100 ml-1 hover:text-green-200 transition-colors font-bold">
+          <Link
+            href="/signin"
+            className="text-green-100 ml-1 hover:text-green-200 transition-colors font-bold"
+          >
             Sign in
           </Link>
         </div>
       </div>
 
-      <Modal isOpen={showSuccess} onClose={handleCloseModal} className="w-[600px]">
+      <Modal
+        isOpen={showSuccess}
+        onClose={handleCloseModal}
+        className="w-[600px]"
+      >
         <div className="flex justify-center items-center flex-col">
           <h3 className="text-center text-green-200 text-[32px] font-bold">
             Registration Successful!
@@ -381,9 +386,13 @@ export const TeenagerSignupForm = () => {
             className="object-cover"
           />
           <h3 className="text-green-200 font-medium text-center">
-            Kindly check the registered Parent or Guardian&apos;s email ({parentEmail}) for more details regarding the onboarding process.
+            Kindly check the registered Parent or Guardian&apos;s email (
+            {parentEmail}) for more details regarding the onboarding process.
           </h3>
-          <Link href={'/'} className="mt-7 underline text-green-100 text-center">
+          <Link
+            href={'/'}
+            className="mt-7 underline text-green-100 text-center"
+          >
             View Our Brochure & Pricing Here{' '}
           </Link>
         </div>

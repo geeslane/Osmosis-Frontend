@@ -1,99 +1,90 @@
+'use client';
 import {
   EmailIcon,
   LocationIcon,
   PhoneIcon,
   UserAddIcon,
 } from '@/assets/icons';
+import { DetailRow } from '@/components/common/Details/DetailRow';
+import PageTitle from '@/components/PageTitle';
+import { useGetAdminByIdQuery } from '@/store/users/users.api';
 import Image from 'next/image';
-import React from 'react';
 
-export default function AdminDetail({ selectedAdmin }: { selectedAdmin: any }) {
-  const statusStyles: Record<any['status'], string> = {
+type Props = {
+  id: string;
+};
+
+export default function AdminDetail({ id }: Props) {
+  const { data, isLoading, isError } = useGetAdminByIdQuery(id);
+
+  if (isLoading) return <p>Loading...</p>;
+  if (isError || !data?.data?.data) return <p>Failed to load admin</p>;
+
+  const admin = data.data.data;
+
+  /*  const statusStyles: Record<any['status'], string> = {
     Active: 'bg-green-50 text-green-600',
     Inactive: 'bg-[#FEF3F2] text-[#B42318]',
     Pending: 'bg-[#F2F4F7] text-[#282F2E]',
-  };
+  }; */
   return (
     <div className="max-w-[748px] w-full">
-    
-        <div className="flex gap-[37px]  flex-col">
-          <div className="flex justify-between ">
-            <h3 className="text-green-200 text-3xl font-bold">Admin Details</h3>
+      <PageTitle title={admin.role} />
+      <div className="flex gap-[37px] flex-col">
+        <h3 className="text-green-200 text-3xl font-bold">Admin Details</h3>
+
+        <div className="rounded-lg flex flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8">
+          <div className="w-[90px] h-[90px] rounded-full">
+            {admin.pictureUrl ? (
+              <Image
+                src={admin.pictureUrl}
+                alt={admin.fullName}
+                width={90}
+                height={90}
+                className="rounded-full w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full rounded-full bg-green-100 flex items-center justify-center text-white font-bold text-2xl">
+                {admin.fullName.charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
-          <div className="rounded-lg flex flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 space-y-2">
-            <div className="w-[90px] h-[90px] rounded-full">
-              {selectedAdmin.image ? (
-                <Image
-                  src={selectedAdmin.image}
-                  alt="Adminimage"
-                  width={100}
-                  height={100}
-                  className="rounded-full w-full h-full object-cover mr-3"
-                />
-              ) : (
-                <div className="w-full h-full rounded-full bg-green-100 flex items-center justify-center text-white font-bold text-2xl">
-                  {selectedAdmin.name?.charAt(0)?.toUpperCase() || 'A'}
-                </div>
-              )}
-            </div>
-            <div className="space-y-6">
-              <div className="flex gap-4">
-                <UserAddIcon />
-                <div className="flex flex-col gap-1">
-                  <p className="text-green-300 text-sm font-medium">FullName</p>
-                  <p className="text-green-300  font-medium">
-                    {selectedAdmin.name}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <EmailIcon color={'#6CBB01'} />
-                <div className="flex flex-col gap-1">
-                  <p className="text-green-300 text-sm font-medium">Email</p>
-                  <p className="text-green-300  font-medium">
-                    {selectedAdmin.email}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <PhoneIcon color={'#6CBB01'} />
-                <div className="flex flex-col gap-1">
-                  <p className="text-green-300 text-sm font-medium">
-                    Phone Number
-                  </p>
-                  <p className="text-green-300  font-medium">
-                    {selectedAdmin.phone}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <LocationIcon color={'#6CBB01'} />
-                <div className="flex flex-col gap-1">
-                  <p className="text-green-300 text-sm font-medium">
-                    Address/Location
-                  </p>
-                  <p className="text-green-300  font-medium">
-                    {selectedAdmin.phone}
-                  </p>
-                </div>
-              </div>
-              <div className="ml-8">
-                <p>
-                  <strong className="text-green-300 font-medium text-sm">
-                    Status:
-                  </strong>{' '}
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      statusStyles[selectedAdmin.status]
-                    }`}
-                  >
-                    {selectedAdmin.status}
-                  </span>
-                </p>
-              </div>
+
+          <div className="space-y-6">
+            <DetailRow
+              icon={<UserAddIcon />}
+              label="Full Name"
+              value={admin.fullName}
+            />
+            <DetailRow
+              icon={<EmailIcon color="#6CBB01" />}
+              label="Email"
+              value={admin.email}
+            />
+            <DetailRow
+              icon={<PhoneIcon color="#6CBB01" />}
+              label="Phone Number"
+              value={admin.phoneNumber}
+            />
+            <DetailRow
+              icon={<LocationIcon color="#6CBB01" />}
+              label="Address"
+              value={admin.address}
+            />
+
+            <div className="ml-8">
+              <p className="text-green-300 font-medium text-sm">
+                Role:{' '}
+                <span className="rounded-full px-3 py-1 text-xs bg-green-50 text-green-600">
+                  {admin.role}
+                </span>
+              </p>
             </div>
           </div>
         </div>
+      </div>
     </div>
   );
 }
+
+/* Small reusable row */
