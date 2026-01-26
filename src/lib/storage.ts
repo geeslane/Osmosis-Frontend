@@ -2,7 +2,7 @@
  * Creates a storage adapter for redux-persist that works with Next.js SSR
  * Falls back to noop storage on the server side to prevent hydration errors.
  */
-import createWebStorage from "redux-persist/lib/storage/createWebStorage";
+import createWebStorage from 'redux-persist/lib/storage/createWebStorage';
 
 const createNoopStorage = () => {
   return {
@@ -20,8 +20,8 @@ const createNoopStorage = () => {
 
 // Standard storage initialization for Next.js
 const storage =
-  typeof window !== "undefined"
-    ? createWebStorage("local")
+  typeof window !== 'undefined'
+    ? createWebStorage('local')
     : createNoopStorage();
 
 export default storage;

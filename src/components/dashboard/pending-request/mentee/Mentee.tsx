@@ -1,14 +1,11 @@
 'use client';
-
 import { GoBackIcon, LoadingIcon } from '@/assets/icons';
 import Empty from '@/components/ui/NotFound/Empty';
 import React from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MenteeTable from './MenteeTable';
 import MenteeDetail from '@/components/common/Details/MenteeDetails';
-import {
-  useGetTeenagerRequestsQuery,
-} from '@/store/users/users.api';
+import { useGetTeenagerRequestsQuery } from '@/store/users/users.api';
 
 type MenteePending = {
   id: string;
@@ -26,7 +23,7 @@ function mapMenteeRequestFromApi(apiRequest: any): MenteePending {
     APPROVED: 'Active',
     REJECTED: 'Inactive',
   };
-  
+
   return {
     id: apiRequest.id,
     name: apiRequest.teenagerFullName || apiRequest.fullName || '',
@@ -44,14 +41,10 @@ export default function Mentee() {
   const view = searchParams.get('viewmentor') || 'listmentor';
   const selectedId = searchParams.get('id');
 
-  const {
-    data: requestsResponse,
-    isLoading: isLoadingRequests,
-    refetch: refetchRequests,
-  } = useGetTeenagerRequestsQuery({ page: 1, limit: 100, status: 'PENDING' });
+  const { data: requestsResponse, isLoading: isLoadingRequests } =
+    useGetTeenagerRequestsQuery({ page: 1, limit: 100, status: 'PENDING' });
 
-  const menteeData =
-    requestsResponse?.data?.map(mapMenteeRequestFromApi) || [];
+  const menteeData = requestsResponse?.data?.map(mapMenteeRequestFromApi) || [];
 
   const selectedDetails = selectedId
     ? menteeData.find((a: MenteePending) => a.id === selectedId)
@@ -70,7 +63,11 @@ export default function Mentee() {
   if (isLoadingRequests && view === 'listmentor') {
     return (
       <div className="flex justify-center items-center py-20">
-        <LoadingIcon width="40" height="40" className="animate-spin text-green-100" />
+        <LoadingIcon
+          width="40"
+          height="40"
+          className="animate-spin text-green-100"
+        />
       </div>
     );
   }
@@ -105,7 +102,7 @@ export default function Mentee() {
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
-            <MenteeDetail selectedDetails={selectedDetails} onRefetch={refetchRequests} />
+            <MenteeDetail selectedDetails={selectedDetails} />
           </div>
         </div>
       )}
@@ -113,7 +110,7 @@ export default function Mentee() {
       {view === 'listmentor' && (
         <div className="rounded-md border border-green-400 py-3">
           <div className="flex justify-between px-4 items-center">
-            <div className="flex items-center gap-2 text-green-200 text-xl font-semibold">
+            <div className="flex items-center gap-2 text-green-200 text-2xl font-semibold">
               Pending Mentee List
               <span className="bg-[#DCFFAD91] w-[24px] h-[24px] flex justify-center items-center rounded-full text-green-100 text-xs">
                 {menteeData.length}
@@ -133,7 +130,6 @@ export default function Mentee() {
               data={menteeData}
               onAddAdmin={() => setParam('addmentor')}
               onViewAdmin={(admin) => setParam('viewmentor', admin.id)}
-              onRefetch={refetchRequests}
             />
           )}
         </div>

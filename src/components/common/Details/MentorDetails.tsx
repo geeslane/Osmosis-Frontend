@@ -11,7 +11,7 @@ import { useUpdateMentorRequestStatusMutation } from '@/store/users/users.api';
 import useToastify from '@/hooks/useToastify';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { normalizeImageUrl } from '@/utils/helper';
+import { formatDate, normalizeImageUrl } from '@/utils/helper';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
 import Button from '@/components/ui/button/Button';
 
@@ -32,7 +32,6 @@ export default function MentorDetail({
   const [updateRequestStatus] = useUpdateMentorRequestStatusMutation();
 
   const navigateBackToList = () => {
-    // Preserve the role tab parameter when navigating back
     const role = searchParams.get('role') || 'mentor';
     const params = new URLSearchParams();
     params.set('role', role);
@@ -48,7 +47,10 @@ export default function MentorDetail({
         id: selectedDetails.id,
         data: { status: 'APPROVED' },
       }).unwrap();
-      showToast('Mentor request approved. They have been added to Osmosis and can be found in the Users section.', 'success');
+      showToast(
+        'Mentor request approved. They have been added to Osmosis and can be found in the Users section.',
+        'success'
+      );
       onRefetch?.();
       navigateBackToList();
     } catch (error: any) {
@@ -94,10 +96,13 @@ export default function MentorDetail({
           <h3 className="text-green-200 text-3xl font-bold">Mentor Details</h3>
         </div>
         <div className="rounded-lg flex flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 space-y-2">
-          <div className="relative w-[140px] h-[120px] rounded-full overflow-hidden">
+          <div className="relative w-[150px] h-[120px] rounded-full overflow-hidden">
             {selectedDetails.image ? (
               <Image
-                src={normalizeImageUrl(selectedDetails.image) || '/image/Avatar.png'}
+                src={
+                  normalizeImageUrl(selectedDetails.image) ||
+                  '/image/Avatar.png'
+                }
                 alt="Mentor image"
                 fill
                 className="object-cover rounded-full"
@@ -166,17 +171,21 @@ export default function MentorDetail({
                   Date of Birth
                 </p>
                 <p className="text-green-200  font-medium">
-                  {selectedDetails.dob || 'N/A'}
+                  {formatDate(selectedDetails.dateOfBirth) || 'N/A'}
                 </p>
               </div>
 
               <div className="flex flex-col  gap-4">
                 <p className="text-green-300 text-sm font-medium">Gender</p>
-                <p className="text-green-200  font-medium">{selectedDetails.gender || 'N/A'}</p>
+                <p className="text-green-200  font-medium">
+                  {selectedDetails.gender || 'N/A'}
+                </p>
               </div>
               <div className="flex flex-col  gap-4">
                 <p className="text-green-300 text-sm font-medium">Occupation</p>
-                <p className="text-green-200  font-medium">{selectedDetails.occupation || 'N/A'}</p>
+                <p className="text-green-200  font-medium">
+                  {selectedDetails.occupation || 'N/A'}
+                </p>
               </div>
               <div className="flex flex-col  gap-4">
                 <p className="text-green-300 font-medium text-sm">Status</p>{' '}

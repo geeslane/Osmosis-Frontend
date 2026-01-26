@@ -48,8 +48,7 @@ export default function Mentor() {
     refetch: refetchRequests,
   } = useGetMentorRequestsQuery({ page: 1, limit: 100, status: 'PENDING' });
 
-  const mentorData =
-    requestsResponse?.data?.map(mapMentorRequestFromApi) || [];
+  const mentorData = requestsResponse?.data?.map(mapMentorRequestFromApi) || [];
   const selectedDetails = selectedId
     ? mentorData.find((a: MentorPending) => a.id === selectedId)
     : null;
@@ -67,7 +66,11 @@ export default function Mentor() {
   if (isLoadingRequests && view === 'listmentor') {
     return (
       <div className="flex justify-center items-center py-20">
-        <LoadingIcon width="40" height="40" className="animate-spin text-green-100" />
+        <LoadingIcon
+          width="40"
+          height="40"
+          className="animate-spin text-green-100"
+        />
       </div>
     );
   }
@@ -102,7 +105,10 @@ export default function Mentor() {
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
-            <MentorDetail selectedDetails={selectedDetails} onRefetch={refetchRequests} />
+            <MentorDetail
+              selectedDetails={selectedDetails}
+              onRefetch={refetchRequests}
+            />
           </div>
         </div>
       )}
@@ -110,7 +116,7 @@ export default function Mentor() {
       {view === 'listmentor' && (
         <div className="rounded-md border border-green-400 py-3">
           <div className="flex justify-between px-4 items-center">
-            <div className="flex items-center gap-2 text-green-200 text-xl font-semibold">
+            <div className="flex items-center gap-2 text-green-200 text-2xl font-semibold">
               Pending Mentors List
               <span className="bg-[#DCFFAD91] w-[24px] h-[24px] flex justify-center items-center rounded-full text-green-100 text-xs">
                 {mentorData.length}
