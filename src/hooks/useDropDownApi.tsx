@@ -8,7 +8,6 @@ export const useDropdowns = (types: string[]) => {
   let loading = false;
 
   types.forEach((type) => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const { data, isLoading } = useGetDropdownByTypeQuery({ type });
     results[type] = data?.data || [];
     if (isLoading) loading = true;

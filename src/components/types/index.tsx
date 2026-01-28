@@ -127,3 +127,42 @@ export type Admin = {
   image?: string;
   role?: string;
 };
+
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED';
+}
+
+export interface GetAdminsParams {
+  page?: number;
+  limit?: number;
+  status?: 'ACTIVE' | 'INACTIVE';
+  name?: string;
+}
+
+export interface GetUserListParams {
+  page?: number;
+  limit?: number;
+  status?: 'ACTIVE' | 'INACTIVE';
+  name?: string;
+}
+
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface AdminResponse {
+  success: boolean;
+  message?: string;
+  data?: any;
+  pagination?: PaginationInfo;
+  page?: number;
+  limit?: number;
+  total?: number;
+}

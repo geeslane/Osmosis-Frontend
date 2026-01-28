@@ -1,5 +1,4 @@
 'use client';
-
 import {
   EmailIcon,
   LocationIcon,
@@ -7,82 +6,14 @@ import {
   UserAddIcon,
 } from '@/assets/icons';
 import Image from 'next/image';
-//import { useUpdateMentorRequestStatusMutation } from '@/store/users/users.api';
-//import useToastify from '@/hooks/useToastify';
-//import { useRouter, useSearchParams } from 'next/navigation';
-//import { useState } from 'react';
 import { formatDate, normalizeImageUrl } from '@/utils/helper';
-//import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
-//import Button from '@/components/ui/button/Button';
 
 export default function MentorDetail({
   selectedDetails,
-//  onRefetch,
 }: {
   selectedDetails: any;
-  //onRefetch?: () => void;
   className?: string;
 }) {
-  //const { showToast } = useToastify();
-  //const router = useRouter();
- // const searchParams = useSearchParams();
- // const [isProcessing, setIsProcessing] = useState(false);
-  //const [declineModalOpen, setDeclineModalOpen] = useState(false);
-  //const [updateRequestStatus] = useUpdateMentorRequestStatusMutation();
-
- /*  const navigateBackToList = () => {
-    const role = searchParams.get('role') || 'mentor';
-    const params = new URLSearchParams();
-    params.set('role', role);
-    params.set('viewmentor', 'listmentor');
-    router.replace(`/dashboard/pending-requests?${params.toString()}`);
-  }; */
-
-  /*   const handleAccept = async () => {
-    if (!selectedDetails?.id) return;
-    setIsProcessing(true);
-    try {
-      await updateRequestStatus({
-        id: selectedDetails.id,
-        data: { status: 'APPROVED' },
-      }).unwrap();
-      showToast(
-        'Mentor request approved. They have been added to Osmosis and can be found in the Users section.',
-        'success'
-      );
-      onRefetch?.();
-      navigateBackToList();
-    } catch (error: any) {
-      const message = error?.data?.message || 'Failed to approve request';
-      showToast(message, 'error');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleDeclineClick = () => {
-    setDeclineModalOpen(true);
-  }; */
-
-/*   const handleDeclineConfirm = async (reason: string) => {
-    if (!selectedDetails?.id) return;
-    setIsProcessing(true);
-    setDeclineModalOpen(false);
-    try {
-      await updateRequestStatus({
-        id: selectedDetails.id,
-        data: { status: 'REJECTED', reasonForRejection: reason },
-      }).unwrap();
-      showToast('Mentor request declined successfully', 'success');
-      onRefetch?.();
-      navigateBackToList();
-    } catch (error: any) {
-      const message = error?.data?.message || 'Failed to decline request';
-      showToast(message, 'error');
-    } finally {
-      setIsProcessing(false);
-    }
-  }; */
   const statusStyles: Record<any['status'], string> = {
     Active: 'bg-green-50 text-green-600',
     Inactive: 'bg-[#FEF3F2] text-[#B42318]',
@@ -239,34 +170,7 @@ export default function MentorDetail({
             </div>
           </div>
         </div>
-        {/*
-        <div className="rounded-lg flex max-w-[506px] flex-col  gap-4 border border-[#6CBB0180] px-8  py-8 ">
-          <h3 className="text-green-300 font-medium">Request</h3>
-              <div className="flex flex-row gap-4">
-            <Button
-              onClick={handleAccept}
-              disabled={isProcessing}
-              className="bg-green-200 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Accept
-            </Button>
-            <Button
-              onClick={handleDeclineClick}
-              disabled={isProcessing}
-              className="bg-red-100 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Decline
-            </Button>
-          </div>
-        </div>
-        */}
       </div>
-  {/*     <DeclineModal
-        isOpen={declineModalOpen}
-        onConfirm={handleDeclineConfirm}
-        onCancel={() => setDeclineModalOpen(false)}
-        isLoading={isProcessing}
-      /> */}
     </div>
   );
 }

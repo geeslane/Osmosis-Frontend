@@ -30,7 +30,6 @@ export default function MenteeDetail({
   const [updateRequestStatus] = useUpdateTeenagerRequestStatusMutation();
 
   const navigateBackToList = () => {
-    // Preserve the role tab parameter when navigating back
     const role = searchParams.get('role') || 'mentee';
     const params = new URLSearchParams();
     params.set('role', role);

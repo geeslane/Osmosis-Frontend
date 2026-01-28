@@ -53,7 +53,7 @@ const InputForm: React.FC<InputFormProps> = ({
             type={type}
             {...register(name)}
             placeholder={placeholder}
-            className={`${baseClasses} h-full `}
+            className={`${baseClasses} h-full focus:outline-none`}
           />
         )}
 

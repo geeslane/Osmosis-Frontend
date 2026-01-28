@@ -7,6 +7,7 @@ export const metadata: Metadata = generateMetadata({
   title: 'Osmosis | Users',
   description: 'Manage users within the Osmosis platform.',
 });
+
 export default function page() {
   return (
     <div className="mt-[37px]">
