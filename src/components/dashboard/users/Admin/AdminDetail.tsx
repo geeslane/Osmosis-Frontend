@@ -1,6 +1,8 @@
 'use client';
 import {
   EmailIcon,
+  GoBackIcon,
+  LoadingIcon,
   LocationIcon,
   PhoneIcon,
   UserAddIcon,
@@ -9,15 +11,25 @@ import { DetailRow } from '@/components/common/Details/DetailRow';
 import PageTitle from '@/components/PageTitle';
 import { useGetAdminByIdQuery } from '@/store/users/users.api';
 import Image from 'next/image';
+import { useParams, useRouter } from 'next/navigation';
 
-type Props = {
-  id: string;
-};
+export default function AdminDetail() {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
 
-export default function AdminDetail({ id }: Props) {
   const { data, isLoading, isError } = useGetAdminByIdQuery(id);
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <LoadingIcon
+          width="40"
+          height="40"
+          className="animate-spin text-green-100"
+        />
+      </div>
+    );
+  }
   if (isError || !data?.data?.data) return <p>Failed to load admin</p>;
 
   const admin = data.data.data;
@@ -28,7 +40,14 @@ export default function AdminDetail({ id }: Props) {
     Pending: 'bg-[#F2F4F7] text-[#282F2E]',
   }; */
   return (
-    <div className="max-w-[748px] w-full">
+    <div className="max-w-[748px] py-4 flex flex-col gap-8 w-full">
+      <div
+        onClick={() => router.push('/dashboard/users?role=admins')}
+        className="flex cursor-pointer items-center gap-1"
+      >
+        <GoBackIcon />
+        <h3 className="text-sm text-green-200 font-medium">Back</h3>
+      </div>
       <PageTitle title={admin.role} />
       <div className="flex gap-[37px] flex-col">
         <h3 className="text-green-200 text-3xl font-bold">Admin Details</h3>

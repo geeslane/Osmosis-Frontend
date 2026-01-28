@@ -1,11 +1,16 @@
 'use client';
 import { FilterIcon, MoreIcon, SearchIcon } from '@/assets/icons';
-import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { normalizeImageUrl } from '@/utils/helper';
+import ActionModal from '@/components/ui/modal/ActionModal';
+import { useUpdateTeenagerRequestStatusMutation } from '@/store/users/users.api';
+import { useRouter } from 'next/navigation';
+import useToastify from '@/hooks/useToastify';
+import { NoResult } from '@/components/ui/NotFound/NoResult';
+import { StatusFilter } from '@/hooks/useUserList';
 
 type Mentee = {
   id: string;
@@ -16,31 +21,53 @@ type Mentee = {
   status: string;
   image?: string;
 };
-type MenteeListPageProps = {
-  onAddAdmin: () => void;
+
+type MenteeTableProps = {
   data: Mentee[];
-  onViewMentee: (mentee: Mentee) => void;
+  totalPages: number;
+  page: number;
+  perPage: number;
+  onPageChange: (page: number) => void;
+  search: string;
+  onSearchChange: (value: string) => void;
+  statusFilter: StatusFilter;
+  onStatusFilterChange: (value: StatusFilter) => void;
 };
+
 export default function MenteeTable({
   data,
-  onViewMentee,
-}: MenteeListPageProps) {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'All' | Mentee['status']>(
-    'All'
-  );
+  totalPages,
+  page,
+  perPage,
+  onPageChange,
+  search,
+  onSearchChange,
+  statusFilter,
+  onStatusFilterChange,
+}: MenteeTableProps) {
+  const router = useRouter();
+  const [selectedMentee, setSelectedMentee] = useState<Mentee | null>(null);
+  const [updateTeenager, { isLoading: isUpdating }] =
+    useUpdateTeenagerRequestStatusMutation();
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  const [perPage] = useState(5);
-  const [open, setOpen] = useState(false);
+  const [openStatusModal, setOpenStatusModal] = useState(false);
+  const [newStatus, setNewStatus] = useState<'Active' | 'Inactive'>('Active');
+  const { showToast } = useToastify();
 
-  const handleDelete = async () => {
-    // setLoading(true);
+  const handleUpdateStatus = async () => {
+    if (!selectedMentee) return;
+
     try {
-      // await deleteApiCall()
-    } finally {
-      //setLoading(false);
-      //setOpen(false);
+      const response = await updateTeenager({
+        id: selectedMentee.id,
+        status: newStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE',
+      }).unwrap();
+      showToast(response?.data?.message, 'success');
+      setOpenStatusModal(false);
+      setSelectedMentee(null);
+      setNewStatus('Active');
+    } catch (error) {
+      console.error('Failed to update mentor status', error);
     }
   };
 
@@ -153,7 +180,7 @@ export default function MenteeTable({
                 type="button"
                 className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
                 onClick={() => {
-                  onViewMentee(row);
+                  router.push(`/dashboard/users/mentee/${row.id}?role=mentee`);
                   setOpenDropdownId(null);
                 }}
               >
@@ -164,7 +191,8 @@ export default function MenteeTable({
                 type="button"
                 className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
                 onClick={() => {
-                  setOpen(true);
+                  setSelectedMentee(row);
+                  setOpenStatusModal(true);
                   setOpenDropdownId(null);
                 }}
               >
@@ -176,30 +204,11 @@ export default function MenteeTable({
       ),
     },
   ];
-  const filtered = data.filter((row) => {
-    const q = search.trim().toLowerCase();
-    if (statusFilter !== 'All' && row.status !== statusFilter) return false;
-    if (!q) return true;
-    return (
-      row.name.toLowerCase().includes(q) ||
-      row.email.toLowerCase().includes(q) ||
-      row.address.toLowerCase().includes(q) ||
-      row.phone.toLowerCase().includes(q)
-    );
-  });
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  useEffect(() => {
-    if (page > totalPages) setPage(1);
-  }, [page, totalPages]);
-
-  const paginated = filtered.slice(
-    (page - 1) * perPage,
-    page * perPage
-  ) as Mentee[];
-
   return (
-    <div className="space-y-3 mt-2">
+    <div
+      className="space-y-3 mt-2"
+      onClick={() => setOpenDropdownId(null)}
+    >
       <div className="flex flex-col mx-4 md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex items-center gap-2 w-full">
           <div className=" w-full flex flex-col md:flex-row gap-2 justify-between md:items-center ">
@@ -207,7 +216,9 @@ export default function MenteeTable({
               <FilterIcon className="absolute left-2 text-gray-400 pointer-events-none" />
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
+                onChange={(e) =>
+                  onStatusFilterChange(e.target.value as StatusFilter)
+                }
                 aria-label="Filter by status"
                 className="
                   pl-8 pr-6 py-1.5
@@ -229,8 +240,8 @@ export default function MenteeTable({
                 <input
                   type="search"
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by name"
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  placeholder="Search by name (min 2 characters)"
                   className="w-full text-sm h-full  focus:outline-none"
                 />
               </div>
@@ -238,26 +249,60 @@ export default function MenteeTable({
           </div>
         </div>
       </div>
-      <DeleteModal
-        isOpen={open}
-        onCancel={() => setOpen(false)}
-        onConfirm={handleDelete}
-        //isLoading={loading}
-        title="Delete Mentee"
-        description="Deleting this admin will permanently remove access."
-      />
-      <DataTable
-        onRowClick={(row) => onViewMentee(row)}
-        columns={columns}
-        data={paginated}
-      />
-      <div className="flex items-center justify-between">
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
+      <ActionModal
+        isOpen={openStatusModal}
+        title="Update Status"
+        description="Change the user's status and provide a reason for this action."
+        confirmText="Update"
+        isLoading={isUpdating}
+        onCancel={() => setOpenStatusModal(false)}
+        onConfirm={handleUpdateStatus}
+      >
+        <div className="space-y-4">
+          <div>
+            <label
+              htmlFor="mentor-status"
+              className="block text-sm font-medium text-green-200 mb-1"
+            >
+              Status
+            </label>
+            <select
+              id="mentor-status"
+              value={newStatus}
+              onChange={(e) =>
+                setNewStatus(e.target.value as 'Active' | 'Inactive')
+              }
+              className="w-full rounded-md border border-[#D0D5DD] px-3 py-2 text-sm"
+            >
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </ActionModal>
+      {data.length === 0 ? (
+        <NoResult
+          title="Data not found"
+          description="Try adjusting your search or filter criteria."
         />
-      </div>
+      ) : (
+        <>
+          <DataTable
+            onRowClick={(row) =>
+              router.push(`/dashboard/users/mentee/${row.id}?role=mentee`)
+            }
+            columns={columns}
+            data={data}
+          />
+          <div className="flex items-center justify-between">
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -50,7 +50,6 @@ export default function UserRoleContent() {
     case 'mentee':
       return <MenteeView />;
     case 'admins':
-      // Only SUPERADMIN can access admins view
       if (!shouldShowAdminTab) {
         return <MentorView />;
       }

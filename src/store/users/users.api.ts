@@ -7,10 +7,35 @@ interface PaginationParams {
   status?: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
+interface GetAdminsParams {
+  page?: number;
+  limit?: number;
+  status?: 'ACTIVE' | 'INACTIVE';
+  name?: string;
+}
+
+interface GetUserListParams {
+  page?: number;
+  limit?: number;
+  status?: 'ACTIVE' | 'INACTIVE';
+  name?: string;
+}
+
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
 interface AdminResponse {
   success: boolean;
   message?: string;
   data?: any;
+  pagination?: PaginationInfo;
+  // Legacy fields for backward compatibility
   page?: number;
   limit?: number;
   total?: number;
@@ -38,7 +63,7 @@ interface UpdateRequestStatusRequest {
 
 interface UpdateMentorStatusRequest {
   id: string;
-  formData: FormData;
+  status: 'ACTIVE' | 'INACTIVE';
 }
 
 interface UpdateTeenagerStatusRequest {
@@ -80,6 +105,14 @@ export const UsersApi = createApi({
   baseQuery: axiosBaseQuery(),
   tagTypes: ['Admin', 'Mentor', 'Teenager', 'MentorRequest', 'TeenagerRequest'],
   endpoints: (builder) => ({
+    getAdmins: builder.query<AdminResponse, GetAdminsParams>({
+      query: (params) => ({
+        url: '/admin',
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['Admin'],
+    }),
     createAdmin: builder.mutation<AdminResponse, FormData>({
       query: (formData) => {
         return {
@@ -101,23 +134,53 @@ export const UsersApi = createApi({
       AdminResponse,
       UpdateMentorStatusRequest
     >({
-      query: ({ id, formData }) => ({
-        url: `/mentor/${id}/status`,
+      query: ({ id, ...body }) => ({
+        url: `/mentor/status/${id}`,
         method: 'PATCH',
-        data: formData,
+        data: body,
       }),
       invalidatesTags: ['Mentor'],
     }),
-
-    /*Need to be worked on */
-    getAdmins: builder.query<AdminResponse, PaginationParams>({
+    getTeenagers: builder.query<AdminResponse, GetUserListParams>({
       query: (params) => ({
-        url: '/admin',
+        url: '/teenager',
         method: 'GET',
         params,
       }),
-      providesTags: ['Admin'],
+      providesTags: ['Teenager'],
     }),
+    getTeenagerById: builder.query<AdminResponse, string>({
+      query: (id) => ({
+        url: `/teenager/${id}`,
+        method: 'GET',
+      }),
+      providesTags: ['Teenager'],
+    }),
+
+    updateTeenagerRequestStatus: builder.mutation<
+      AdminResponse,
+      UpdateMentorStatusRequest
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/teenager/status/${id}`,
+        method: 'PUT',
+        data: body,
+      }),
+      invalidatesTags: ['TeenagerRequest', 'Teenager'],
+    }),
+
+    updateAdminStatus: builder.mutation<
+      AdminResponse,
+      UpdateMentorStatusRequest
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/admin/status/${id}`,
+        method: 'PATCH',
+        data: body,
+      }),
+      invalidatesTags: ['Admin'],
+    }),
+
     updateAdminProfile: builder.mutation<
       AdminResponse,
       { id: string; data: UpdateAdminProfileRequest }
@@ -164,7 +227,7 @@ export const UsersApi = createApi({
         return ['MentorRequest'];
       },
     }),
-    getMentors: builder.query<AdminResponse, PaginationParams>({
+    getMentors: builder.query<AdminResponse, GetUserListParams>({
       query: (params) => ({
         url: '/mentor',
         method: 'GET',
@@ -221,31 +284,7 @@ export const UsersApi = createApi({
       }),
       providesTags: ['TeenagerRequest'],
     }),
-    updateTeenagerRequestStatus: builder.mutation<
-      AdminResponse,
-      { id: string; data: UpdateRequestStatusRequest }
-    >({
-      query: ({ id, data }) => ({
-        url: `/teenager/request/${id}/status`,
-        method: 'PATCH',
-        data,
-      }),
-      invalidatesTags: (result, error, { data: requestData }) => {
-        // If approved, also invalidate Teenager list since they're now a user
-        if (requestData.status === 'APPROVED') {
-          return ['TeenagerRequest', 'Teenager'];
-        }
-        return ['TeenagerRequest'];
-      },
-    }),
-    getTeenagers: builder.query<AdminResponse, PaginationParams>({
-      query: (params) => ({
-        url: '/teenager',
-        method: 'GET',
-        params,
-      }),
-      providesTags: ['Teenager'],
-    }),
+
     updateTeenagerStatus: builder.mutation<
       AdminResponse,
       { id: string; data: UpdateTeenagerStatusRequest }
@@ -257,13 +296,7 @@ export const UsersApi = createApi({
       }),
       invalidatesTags: ['Teenager'],
     }),
-    getTeenagerById: builder.query<AdminResponse, string>({
-      query: (id) => ({
-        url: `/teenager/${id}`,
-        method: 'GET',
-      }),
-      providesTags: (result, error, id) => [{ type: 'Teenager', id }],
-    }),
+
     updateTeenagerProfile: builder.mutation<
       AdminResponse,
       { id: string; data: UpdateTeenagerProfileRequest }
@@ -302,6 +335,7 @@ export const UsersApi = createApi({
 export const {
   useCreateAdminMutation,
   useGetAdminsQuery,
+  useUpdateAdminStatusMutation,
   useGetAdminByIdQuery,
   useUpdateAdminProfileMutation,
   useGetMentorRequestsQuery,

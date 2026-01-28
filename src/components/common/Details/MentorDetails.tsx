@@ -7,39 +7,38 @@ import {
   UserAddIcon,
 } from '@/assets/icons';
 import Image from 'next/image';
-import { useUpdateMentorRequestStatusMutation } from '@/store/users/users.api';
-import useToastify from '@/hooks/useToastify';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+//import { useUpdateMentorRequestStatusMutation } from '@/store/users/users.api';
+//import useToastify from '@/hooks/useToastify';
+//import { useRouter, useSearchParams } from 'next/navigation';
+//import { useState } from 'react';
 import { formatDate, normalizeImageUrl } from '@/utils/helper';
-import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
-import Button from '@/components/ui/button/Button';
+//import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
+//import Button from '@/components/ui/button/Button';
 
 export default function MentorDetail({
   selectedDetails,
-  onRefetch,
-  className = '',
+//  onRefetch,
 }: {
   selectedDetails: any;
-  onRefetch?: () => void;
+  //onRefetch?: () => void;
   className?: string;
 }) {
-  const { showToast } = useToastify();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [declineModalOpen, setDeclineModalOpen] = useState(false);
-  const [updateRequestStatus] = useUpdateMentorRequestStatusMutation();
+  //const { showToast } = useToastify();
+  //const router = useRouter();
+ // const searchParams = useSearchParams();
+ // const [isProcessing, setIsProcessing] = useState(false);
+  //const [declineModalOpen, setDeclineModalOpen] = useState(false);
+  //const [updateRequestStatus] = useUpdateMentorRequestStatusMutation();
 
-  const navigateBackToList = () => {
+ /*  const navigateBackToList = () => {
     const role = searchParams.get('role') || 'mentor';
     const params = new URLSearchParams();
     params.set('role', role);
     params.set('viewmentor', 'listmentor');
     router.replace(`/dashboard/pending-requests?${params.toString()}`);
-  };
+  }; */
 
-  const handleAccept = async () => {
+  /*   const handleAccept = async () => {
     if (!selectedDetails?.id) return;
     setIsProcessing(true);
     try {
@@ -63,9 +62,9 @@ export default function MentorDetail({
 
   const handleDeclineClick = () => {
     setDeclineModalOpen(true);
-  };
+  }; */
 
-  const handleDeclineConfirm = async (reason: string) => {
+/*   const handleDeclineConfirm = async (reason: string) => {
     if (!selectedDetails?.id) return;
     setIsProcessing(true);
     setDeclineModalOpen(false);
@@ -83,7 +82,7 @@ export default function MentorDetail({
     } finally {
       setIsProcessing(false);
     }
-  };
+  }; */
   const statusStyles: Record<any['status'], string> = {
     Active: 'bg-green-50 text-green-600',
     Inactive: 'bg-[#FEF3F2] text-[#B42318]',
@@ -92,9 +91,6 @@ export default function MentorDetail({
   return (
     <div className=" w-full">
       <div className="flex gap-[37px]  flex-col">
-        <div className={`flex justify-between ${className}`}>
-          <h3 className="text-green-200 text-3xl font-bold">Mentor Details</h3>
-        </div>
         <div className="rounded-lg flex flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 space-y-2">
           <div className="relative w-[150px] h-[120px] rounded-full overflow-hidden">
             {selectedDetails.image ? (
@@ -243,9 +239,10 @@ export default function MentorDetail({
             </div>
           </div>
         </div>
+        {/*
         <div className="rounded-lg flex max-w-[506px] flex-col  gap-4 border border-[#6CBB0180] px-8  py-8 ">
           <h3 className="text-green-300 font-medium">Request</h3>
-          <div className="flex flex-row gap-4">
+              <div className="flex flex-row gap-4">
             <Button
               onClick={handleAccept}
               disabled={isProcessing}
@@ -262,13 +259,14 @@ export default function MentorDetail({
             </Button>
           </div>
         </div>
+        */}
       </div>
-      <DeclineModal
+  {/*     <DeclineModal
         isOpen={declineModalOpen}
         onConfirm={handleDeclineConfirm}
         onCancel={() => setDeclineModalOpen(false)}
         isLoading={isProcessing}
-      />
+      /> */}
     </div>
   );
 }
