@@ -1,22 +1,25 @@
-export interface DashboardResponse {
+export interface Module {
+  id: string;
+  title: string;
+  moduleNumber: number;
+  notes: string;
+  additionalResources: string;
+  deliverables: string;
+  workbookFile: string;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface ModulesResponse {
+  success: boolean;
   message: string;
   data: {
-    completed_lessons: number;
-    certificate: number;
-    hours_spent: number;
-    total_lessons: number;
-    ongoing_course: number;
-    completed_course: number;
-    current_ongoing_course: {
-      title: string;
-      slug: string;
-      completed_lessons: number;
-      total_lessons: number;
-      percentage_completed: number;
-    };
+    data: Module[];
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
   };
 }
-
 export type RegisterFormData = {
   fullName: string;
   email: string;
@@ -165,4 +168,15 @@ export interface AdminResponse {
   page?: number;
   limit?: number;
   total?: number;
+}
+export interface CreateContactRequest {
+  firstName: string;
+  lastName: string;
+  emailAddress: string;
+  message: string;
+}
+
+export interface CreateContactResponse {
+  success: boolean;
+  message?: string;
 }

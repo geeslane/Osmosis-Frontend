@@ -1,13 +1,45 @@
 'use client';
-import { Modules } from '@/utils/data';
 import { useRouter } from 'next/navigation';
+import type { Module } from '@/components/types';
+import useToastify from '@/hooks/useToastify';
+import { useDeleteModuleMutation } from '@/store/dashboard/dashboard.api';
+import { useState } from 'react';
+import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 
-export default function ModuleList() {
+export default function ModuleList({ modules }: { modules: Module[] }) {
   const router = useRouter();
+  const { showToast } = useToastify();
+
+  const [deleteModule, { isLoading }] = useDeleteModuleMutation();
+
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
+
+  const openDeleteModal = (id: string) => {
+    setSelectedModuleId(id);
+    setIsDeleteOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteOpen(false);
+    setSelectedModuleId(null);
+  };
+
+  const handleDelete = async () => {
+    if (!selectedModuleId) return;
+
+    try {
+      await deleteModule(selectedModuleId).unwrap();
+      showToast('Module deleted successfully', 'success');
+      closeDeleteModal();
+    } catch (err: any) {
+      showToast(err?.data?.message || 'Failed to delete module', 'error');
+    }
+  };
 
   return (
     <div className="max-full font-montserrat mt-8 montserrat mx-auto space-y-6">
-      {Modules.map((module) => (
+      {modules.map((module) => (
         <div
           key={module.id}
           className="flex flex-col gap-5  border-b px-5 border-green-100 pb-4"
@@ -16,23 +48,19 @@ export default function ModuleList() {
             <div className="flex flex-col gap-3 md:flex-row justify-between md:items-center w-full">
               <div>
                 <h2 className="font-medium  text-[#282F2E]">
-                  {module.title}: {module.name}
+                  Module {module.moduleNumber}: {module.title}
                 </h2>
               </div>
               <div className="flex gap-3">
                 <button
-                  onClick={() =>
-                    router.push(
-                      `/dashboard/modules/${module.id}?fileId=${module.fileid}`
-                    )
-                  }
+                  onClick={() => router.push(`/dashboard/modules/${module.id}`)}
                   className="bg-green-200 text-white px-2 md:px-6 py-3 rounded-md text-xs font-medium"
                 >
-                  View Modules
+                  View Module
                 </button>
 
                 <button
-                  onClick={() => console.log('Remove module', module.fileid)}
+                  onClick={() => openDeleteModal(module.id)}
                   className="bg-green-100 text-white px-2 md:px-6 py-3 rounded-md text-xs font-medium"
                 >
                   Remove Module
@@ -42,6 +70,15 @@ export default function ModuleList() {
           </div>
         </div>
       ))}
+      {/* ✅ Delete Modal */}
+      <DeleteModal
+        isOpen={isDeleteOpen}
+        title="Delete Module"
+        description="This module will be permanently deleted. This action cannot be undone."
+        isLoading={isLoading}
+        onCancel={closeDeleteModal}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

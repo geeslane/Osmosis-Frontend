@@ -4,6 +4,7 @@ import {
   UseFormRegister,
   FieldErrorsImpl,
   Merge,
+  RegisterOptions,
 } from 'react-hook-form';
 
 interface InputFormProps {
@@ -17,6 +18,7 @@ interface InputFormProps {
   icon?: ReactNode;
   as?: 'input' | 'textarea';
   rows?: number;
+  validationRules?: RegisterOptions;
 }
 
 const InputForm: React.FC<InputFormProps> = ({
@@ -29,6 +31,7 @@ const InputForm: React.FC<InputFormProps> = ({
   placeholder,
   as = 'input',
   rows = 3,
+  validationRules,
 }) => {
   const baseClasses = 'w-full text-sm focus:outline-none bg-transparent';
 
@@ -43,7 +46,7 @@ const InputForm: React.FC<InputFormProps> = ({
       >
         {as === 'textarea' ? (
           <textarea
-            {...register(name)}
+            {...register(name, validationRules)}
             placeholder={placeholder}
             rows={rows}
             className={`${baseClasses} resize-none`}
@@ -51,7 +54,7 @@ const InputForm: React.FC<InputFormProps> = ({
         ) : (
           <input
             type={type}
-            {...register(name)}
+            {...register(name, validationRules)}
             placeholder={placeholder}
             className={`${baseClasses} h-full focus:outline-none`}
           />

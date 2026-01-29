@@ -17,11 +17,6 @@ const WorkbookView: React.FC = () => (
   </div>
 );
 
-/* const NoteView: React.FC = () => (
-  <div className="mt-6">
-    <Mentee />
-  </div>
-);  */
 
 export default function ModuleContent() {
   const searchParams = useSearchParams();

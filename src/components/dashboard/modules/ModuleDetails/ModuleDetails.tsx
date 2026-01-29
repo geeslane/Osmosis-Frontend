@@ -1,16 +1,33 @@
 'use client';
-import { GoBackIcon, NoteIcon, WorkBookIcon } from '@/assets/icons';
+import {
+  GoBackIcon,
+  LoadingIcon,
+  NoteIcon,
+  WorkBookIcon,
+} from '@/assets/icons';
 import Tabs from '@/components/ui/Tabs';
-import { useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import React from 'react';
 import ModuleContent from './ModuleContent';
 import Link from 'next/link';
 import PageTitle from '@/components/PageTitle';
+import { useGetModuleByIdQuery } from '@/store/dashboard/dashboard.api';
 
 export default function ModuleDetails() {
-  const searchParams = useSearchParams();
-  const fileIdFromUrl = searchParams.get('fileId');
-  console.log(fileIdFromUrl);
+  const { id } = useParams<{ id: string }>();
+  const { data, isLoading } = useGetModuleByIdQuery(id);
+  console.log('Module', data);
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <LoadingIcon
+          width="40"
+          height="40"
+          className="animate-spin text-green-100"
+        />
+      </div>
+    );
+  }
   return (
     <div>
       <Tabs
@@ -54,7 +71,6 @@ export default function ModuleDetails() {
           <div className="rounded-lg flex max-w-[639px] w-full flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 space-y-2">
             <ModuleContent />
           </div>
-          {fileIdFromUrl}
         </div>
       </div>
     </div>

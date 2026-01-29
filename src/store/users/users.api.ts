@@ -1,5 +1,7 @@
 import {
   AdminResponse,
+  CreateContactRequest,
+  CreateContactResponse,
   GetAdminsParams,
   GetUserListParams,
   PaginationParams,
@@ -64,6 +66,17 @@ export const UsersApi = createApi({
   baseQuery: axiosBaseQuery(),
   tagTypes: ['Admin', 'Mentor', 'Teenager', 'MentorRequest', 'TeenagerRequest'],
   endpoints: (builder) => ({
+    createContact: builder.mutation<
+      CreateContactResponse,
+      CreateContactRequest
+    >({
+      query: (payload) => ({
+        url: '/contact',
+        method: 'POST',
+        data: payload,
+      }),
+    }),
+
     getAdmins: builder.query<AdminResponse, GetAdminsParams>({
       query: (params) => ({
         url: '/admin',
@@ -150,8 +163,6 @@ export const UsersApi = createApi({
       }),
       providesTags: ['Teenager'],
     }),
-
-    // Teenager request status (APPROVED / REJECTED)
     updateTeenagerRequestStatus: builder.mutation<
       AdminResponse,
       { id: string; data: UpdateRequestStatusRequest }
@@ -164,7 +175,6 @@ export const UsersApi = createApi({
       invalidatesTags: ['TeenagerRequest', 'Teenager'],
     }),
 
-    // Teenager account status (ACTIVE / INACTIVE / DEACTIVATED)
     updateTeenagerStatus: builder.mutation<
       AdminResponse,
       { id: string; data: UpdateTeenagerStatusRequest }
@@ -306,5 +316,6 @@ export const {
   useGetTeenagersQuery,
   useUpdateTeenagerStatusMutation,
   useGetTeenagerByIdQuery,
+  useCreateContactMutation,
   useUpdateTeenagerProfileMutation,
 } = UsersApi;

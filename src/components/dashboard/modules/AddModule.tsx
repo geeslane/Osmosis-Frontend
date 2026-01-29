@@ -13,18 +13,20 @@ import useToastify from '@/hooks/useToastify';
 import { AddModuleSchema } from '@/validation/schema';
 import TextEditor from '@/components/Editors/TextEditors';
 import FileUpload from '@/components/Editors/FileUpload';
+import { useCreateModuleMutation } from '@/store/dashboard/dashboard.api';
 
 export type AddModuleFormInputs = {
-  topic: string;
+  title: string;
   ModuleNumber: number;
   notes: string;
-  resources: string;
+  additionalResources: string;
   deliverables: string;
-  workbook: File[];
+  workbookFile: File[];
 };
 
 export default function AddModule() {
   const { showToast } = useToastify();
+  const [createModule, { isLoading }] = useCreateModuleMutation();
 
   const {
     register,
@@ -38,20 +40,42 @@ export default function AddModule() {
     ) as unknown as Resolver<AddModuleFormInputs>,
   });
 
-  const onSubmit: SubmitHandler<AddModuleFormInputs> = (data) => {
-    console.log('Module Payload:', data);
-    showToast('Module added successfully', 'success');
-    reset();
+  const onSubmit: SubmitHandler<AddModuleFormInputs> = async (data) => {
+    try {
+      const formData = new FormData();
+
+      formData.append('title', data.title);
+      formData.append('moduleNumber', String(data.ModuleNumber));
+      formData.append('notes', data.notes);
+      formData.append('additionalResources', data.additionalResources);
+      formData.append('deliverables', data.deliverables);
+
+      if (data.workbookFile?.length) {
+        formData.append('workbookFile', data.workbookFile[0]);
+      }
+      await createModule(formData).unwrap();
+      showToast('Module added successfully', 'success');
+      reset({
+        title: '',
+        ModuleNumber: undefined,
+        notes: '',
+        additionalResources: '',
+        deliverables: '',
+        workbookFile: [], // ✅ clears file
+      });
+    } catch (err: any) {
+      showToast(err?.data?.message || 'Failed to create module', 'error');
+    }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <InputForm
         label="Module Title"
-        name="topic"
-        placeholder="Enter Module topic"
+        name="title"
+        placeholder="Enter Module title"
         register={register}
-        error={errors.topic}
+        error={errors.title}
       />
       <InputForm
         label="Module Number"
@@ -75,7 +99,7 @@ export default function AddModule() {
         )}
       />
       <Controller
-        name="resources"
+        name="additionalResources"
         control={control}
         defaultValue=""
         render={({ field }) => (
@@ -83,7 +107,7 @@ export default function AddModule() {
             label="Additional Resources (links to external articles, videos, etc)"
             value={field.value}
             onChange={field.onChange}
-            error={errors.resources?.message}
+            error={errors.additionalResources?.message}
           />
         )}
       />
@@ -101,15 +125,15 @@ export default function AddModule() {
         )}
       />
       <Controller
-        name="workbook"
+        name="workbookFile"
         control={control}
         defaultValue={[]}
         render={() => (
           <FileUpload
             label="Add Workbook"
-            name="workbook"
+            name="workbookFile"
             register={register}
-            error={errors.workbook as any}
+            error={errors.workbookFile as any}
             accept=".pdf,application/pdf"
             maxSize={10}
           />
@@ -120,6 +144,8 @@ export default function AddModule() {
         type="submit"
         variant="primary"
         fullWidth
+        disabled={isLoading}
+        isLoading={isLoading}
         className="py-4 font-medium"
       >
         Save
