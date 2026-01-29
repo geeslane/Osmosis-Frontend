@@ -1,13 +1,9 @@
 'use client';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useSidebar } from '../../context/SidebarContext';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { useLogoutMutation } from '@/store/auth/auth.api';
-import { clearSessionCookie } from '@/lib/session';
-import { clearUser } from '@/store/profile/profile.slice';
-import useToastify from '@/hooks/useToastify';
 
 import Image from 'next/image';
 import {
@@ -19,6 +15,7 @@ import {
   UserManagementIcon,
   UserSettingsIcon,
 } from '@/assets/icons';
+import { useLogoutHandler } from '@/hooks/useLogout';
 
 type NavItem = {
   name: string;
@@ -30,34 +27,10 @@ type NavItem = {
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered } = useSidebar();
   const pathname = usePathname();
-  const router = useRouter();
-  const dispatch = useDispatch();
-  const { showToast } = useToastify();
   const user = useSelector((state: RootState) => state.profile.user);
-  const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
   const isActive = (path: string) => pathname === path;
 
-  const handleLogout = async () => {
-    try {
-      await logout().unwrap();
-
-      await clearSessionCookie();
-
-      router.replace('/signin');
-
-      dispatch(clearUser());
-
-      showToast('You have been logged out successfully', 'success');
-    } catch (error: any) {
-      await clearSessionCookie();
-      dispatch(clearUser());
-
-      const message =
-        error?.data?.message || error?.error || 'Logged out successfully';
-      showToast(message, 'success');
-      router.replace('/signin');
-    }
-  };
+  const { handleLogout, isLoggingOut } = useLogoutHandler();
 
   const navItems: NavItem[] = [
     {
@@ -97,15 +70,17 @@ const AppSidebar: React.FC = () => {
           <li key={item.name}>
             <Link
               href={item.path}
-              className={`group flex montserrat  font-medium text-green-200  items-center gap-3 px-4 py-2 text-sm transition-colors ${active ? ' rounded-lg bg-green-100 text-white' : ''
-                }`}
+              className={`group flex montserrat  font-medium text-green-200  items-center gap-3 px-4 py-2 text-sm transition-colors ${
+                active ? ' rounded-lg bg-green-100 text-white' : ''
+              }`}
             >
               {Icon && (
                 <Icon
-                  className={`transition-colors ${active
+                  className={`transition-colors ${
+                    active
                       ? 'text-white '
                       : 'text-white-300 text-green-100 group-hover:text-white-100'
-                    }`}
+                  }`}
                   active={active}
                 />
               )}
@@ -122,14 +97,16 @@ const AppSidebar: React.FC = () => {
     <aside
       className={`fixed max-w-[1600px] bg-white font-montserrat montserrat  mx-auto mt-16 flex flex-col lg:mt-0 top-0  left-0   text-gray-900 md:h-screen transition-all duration-300 ease-in-out z-50 
     ${isExpanded || isMobileOpen ? 'w-[290px] z-999' : 'w-[90px]'}
-    ${isMobileOpen ? 'translate-x-0 bg-white h-full pb-10' : '-translate-x-full'
-        } lg:translate-x-0`}
+    ${
+      isMobileOpen ? 'translate-x-0 bg-white h-full pb-10' : '-translate-x-full'
+    } lg:translate-x-0`}
     >
       <div className="flex flex-col pb-4 justify-between   h-full">
         <div>
           <div
-            className={`pt-[32.7px] pb-5   flex px-5    ${!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
-              }`}
+            className={`pt-[32.7px] pb-5   flex px-5    ${
+              !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
+            }`}
           >
             <Link href="/">
               {isExpanded || isMobileOpen ? (
@@ -200,7 +177,9 @@ const AppSidebar: React.FC = () => {
                       {user?.full_name || user?.email || 'User'}
                     </h3>
                     {user?.email && (
-                      <h2 className="text-green-200 text-[10px] truncate">{user.email}</h2>
+                      <h2 className="text-green-200 text-[10px] truncate">
+                        {user.email}
+                      </h2>
                     )}
                   </div>
                 </div>
@@ -209,8 +188,9 @@ const AppSidebar: React.FC = () => {
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className={`${!isExpanded && !isHovered ? ' ' : ''
-                }  justify-center items-center flex hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={`${
+                !isExpanded && !isHovered ? ' ' : ''
+              }  justify-center items-center flex hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
               title="Logout"
             >
               <LogoutIcon />
