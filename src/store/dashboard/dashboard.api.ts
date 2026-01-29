@@ -1,4 +1,4 @@
-import { ModulesResponse } from '@/components/types';
+import { GetModuleByIdResponse, ModulesResponse } from '@/components/types';
 import { axiosBaseQuery } from '@/lib/baseApi';
 import { createApi } from '@reduxjs/toolkit/query/react';
 
@@ -29,13 +29,22 @@ export const DashboardApi = createApi({
       }),
       invalidatesTags: ['Modules'],
     }),
-    getModuleById: builder.query<ModulesResponse, string>({
+    updateModule: builder.mutation<void, { id: string; formData: FormData }>({
+      query: ({ id, formData }) => ({
+        url: `/module/${id}`,
+        method: 'PATCH',
+        data: formData,
+      }),
+      invalidatesTags: ['Modules'],
+    }),
+    getModuleById: builder.query<GetModuleByIdResponse, string>({
       query: (id) => ({
         url: `/module/${id}`,
         method: 'GET',
       }),
       providesTags: ['Modules'],
     }),
+
     deleteModule: builder.mutation<void, string>({
       query: (id) => ({
         url: `/module/${id}`,
@@ -49,6 +58,7 @@ export const DashboardApi = createApi({
 export const {
   useModulesQuery,
   useCreateModuleMutation,
+  useUpdateModuleMutation,
   useGetModuleByIdQuery,
   useDeleteModuleMutation,
 } = DashboardApi;

@@ -6,14 +6,20 @@ import {
   type SubmitHandler,
 } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 import InputForm from '@/components/form/InputForm';
 import Button from '@/components/ui/button/Button';
 import 'react-datepicker/dist/react-datepicker.css';
 import useToastify from '@/hooks/useToastify';
-import { AddModuleSchema } from '@/validation/schema';
+import { AddModuleSchema, EditModuleSchema } from '@/validation/schema';
 import TextEditor from '@/components/Editors/TextEditors';
 import FileUpload from '@/components/Editors/FileUpload';
-import { useCreateModuleMutation } from '@/store/dashboard/dashboard.api';
+import {
+  useCreateModuleMutation,
+  useUpdateModuleMutation,
+} from '@/store/dashboard/dashboard.api';
+import type { Module } from '@/components/types';
 
 export type AddModuleFormInputs = {
   title: string;
@@ -24,9 +30,19 @@ export type AddModuleFormInputs = {
   workbookFile: File[];
 };
 
-export default function AddModule() {
+type AddModuleProps = {
+  module?: Module | null;
+};
+
+export default function AddModule({ module = null }: AddModuleProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToastify();
-  const [createModule, { isLoading }] = useCreateModuleMutation();
+  const returnTab = searchParams.get('content') || 'Note';
+  const [createModule, { isLoading: isCreating }] = useCreateModuleMutation();
+  const [updateModule, { isLoading: isUpdating }] = useUpdateModuleMutation();
+  const isEdit = !!module;
+  const isLoading = isCreating || isUpdating;
 
   const {
     register,
@@ -36,35 +52,61 @@ export default function AddModule() {
     reset,
   } = useForm<AddModuleFormInputs>({
     resolver: yupResolver(
-      AddModuleSchema
+      (isEdit ? EditModuleSchema : AddModuleSchema) as any
     ) as unknown as Resolver<AddModuleFormInputs>,
+    defaultValues: {
+      title: '',
+      ModuleNumber: undefined as any,
+      notes: '',
+      additionalResources: '',
+      deliverables: '',
+      workbookFile: [],
+    },
   });
+
+  useEffect(() => {
+    if (module) {
+      reset({
+        title: module.title,
+        ModuleNumber: module.moduleNumber,
+        notes: module.notes,
+        additionalResources: module.additionalResources,
+        deliverables: module.deliverables,
+        workbookFile: [],
+      });
+    }
+  }, [module, reset]);
 
   const onSubmit: SubmitHandler<AddModuleFormInputs> = async (data) => {
     try {
       const formData = new FormData();
-
       formData.append('title', data.title);
       formData.append('moduleNumber', String(data.ModuleNumber));
       formData.append('notes', data.notes);
       formData.append('additionalResources', data.additionalResources);
       formData.append('deliverables', data.deliverables);
-
       if (data.workbookFile?.length) {
         formData.append('workbookFile', data.workbookFile[0]);
       }
-      await createModule(formData).unwrap();
-      showToast('Module added successfully', 'success');
-      reset({
-        title: '',
-        ModuleNumber: undefined,
-        notes: '',
-        additionalResources: '',
-        deliverables: '',
-        workbookFile: [], // ✅ clears file
-      });
+
+      if (isEdit && module) {
+        await updateModule({ id: module.id, formData }).unwrap();
+        showToast('Module updated successfully', 'success');
+        router.push(`/dashboard/modules/${module.id}?content=${returnTab}`);
+      } else {
+        await createModule(formData).unwrap();
+        showToast('Module added successfully', 'success');
+        reset({
+          title: '',
+          ModuleNumber: undefined as any,
+          notes: '',
+          additionalResources: '',
+          deliverables: '',
+          workbookFile: [],
+        });
+      }
     } catch (err: any) {
-      showToast(err?.data?.message || 'Failed to create module', 'error');
+      showToast(err?.data?.message || 'Failed to save module', 'error');
     }
   };
 
@@ -130,7 +172,11 @@ export default function AddModule() {
         defaultValue={[]}
         render={() => (
           <FileUpload
-            label="Add Workbook"
+            label={
+              isEdit
+                ? 'Workbook (optional – leave empty to keep current)'
+                : 'Add Workbook'
+            }
             name="workbookFile"
             register={register}
             error={errors.workbookFile as any}
@@ -148,7 +194,7 @@ export default function AddModule() {
         isLoading={isLoading}
         className="py-4 font-medium"
       >
-        Save
+        {isEdit ? 'Save changes' : 'Save'}
       </Button>
     </form>
   );

@@ -9,9 +9,7 @@ import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 export default function ModuleList({ modules }: { modules: Module[] }) {
   const router = useRouter();
   const { showToast } = useToastify();
-
   const [deleteModule, { isLoading }] = useDeleteModuleMutation();
-
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
 
@@ -27,7 +25,6 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
 
   const handleDelete = async () => {
     if (!selectedModuleId) return;
-
     try {
       await deleteModule(selectedModuleId).unwrap();
       showToast('Module deleted successfully', 'success');
@@ -70,10 +67,9 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
           </div>
         </div>
       ))}
-      {/* ✅ Delete Modal */}
       <DeleteModal
         isOpen={isDeleteOpen}
-        title="Delete Module"
+        title="Delete Module "
         description="This module will be permanently deleted. This action cannot be undone."
         isLoading={isLoading}
         onCancel={closeDeleteModal}

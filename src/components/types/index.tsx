@@ -20,6 +20,15 @@ export interface ModulesResponse {
     totalPages: number;
   };
 }
+
+export interface GetModuleByIdResponse {
+  success: boolean;
+  data: {
+    message: string;
+    data: Module;
+  };
+  timestamp: string;
+}
 export type RegisterFormData = {
   fullName: string;
   email: string;
