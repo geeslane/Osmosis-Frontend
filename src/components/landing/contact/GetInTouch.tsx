@@ -88,6 +88,7 @@ export default function GetInTouch() {
               error={errors.emailAddress}
               type="email"
               icon={<EmailIcon />}
+              validationRules={contactRules.emailAddress}
             />
 
             <InputForm

@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { normalizeImageUrl } from '@/utils/helper';
 import ActionModal from '@/components/ui/modal/ActionModal';
-import { useUpdateTeenagerRequestStatusMutation } from '@/store/users/users.api';
+import { useUpdateTeenagerStatusMutation } from '@/store/users/users.api';
 import { useRouter } from 'next/navigation';
 import useToastify from '@/hooks/useToastify';
 import { NoResult } from '@/components/ui/NotFound/NoResult';
@@ -48,7 +48,7 @@ export default function MenteeTable({
   const router = useRouter();
   const [selectedMentee, setSelectedMentee] = useState<Mentee | null>(null);
   const [updateTeenager, { isLoading: isUpdating }] =
-    useUpdateTeenagerRequestStatusMutation();
+    useUpdateTeenagerStatusMutation();
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [openStatusModal, setOpenStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState<'Active' | 'Inactive'>('Active');
@@ -58,11 +58,13 @@ export default function MenteeTable({
     if (!selectedMentee) return;
 
     try {
-      const response = await updateTeenager({
+      await updateTeenager({
         id: selectedMentee.id,
-        status: newStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE',
+        data: {
+          status: newStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE',
+        },
       }).unwrap();
-      showToast(response?.data?.message, 'success');
+      showToast('Teneeger updated Sucessfully ', 'success');
       setOpenStatusModal(false);
       setSelectedMentee(null);
       setNewStatus('Active');
@@ -205,10 +207,7 @@ export default function MenteeTable({
     },
   ];
   return (
-    <div
-      className="space-y-3 mt-2"
-      onClick={() => setOpenDropdownId(null)}
-    >
+    <div className="space-y-3 mt-2" onClick={() => setOpenDropdownId(null)}>
       <div className="flex flex-col mx-4 md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex items-center gap-2 w-full">
           <div className=" w-full flex flex-col md:flex-row gap-2 justify-between md:items-center ">

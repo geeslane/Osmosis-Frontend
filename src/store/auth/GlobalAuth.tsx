@@ -3,17 +3,14 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import useToastify from '@/hooks/useToastify';
-import { useDispatch } from 'react-redux';
 import { clearSessionCookie } from '@/lib/session';
 
 export default function GlobalAuthHandler() {
   const router = useRouter();
   const pathname = usePathname();
-  const dispatch = useDispatch();
   const { showToast } = useToastify();
 
   useEffect(() => {
-    // ⛔ Do nothing on OTP page
     if (pathname.startsWith('/auth/otp')) return;
 
     const handleUnauthorized = async () => {
@@ -25,7 +22,7 @@ export default function GlobalAuthHandler() {
     window.addEventListener('unauthorized', handleUnauthorized);
 
     return () => window.removeEventListener('unauthorized', handleUnauthorized);
-  }, [pathname, router, showToast, dispatch]);
+  }, [pathname, router, showToast]);
 
   return null;
 }

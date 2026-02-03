@@ -9,8 +9,9 @@ import { useUpdateMentorStatusMutation } from '@/store/users/users.api';
 import ActionModal from '@/components/ui/modal/ActionModal';
 import { NoResult } from '@/components/ui/NotFound/NoResult';
 import { StatusFilter } from '@/hooks/useUserList';
+import useToastify from '@/hooks/useToastify';
 
-type Admin = {
+type Mentor = {
   id: string;
   name: string;
   email: string;
@@ -21,7 +22,7 @@ type Admin = {
 };
 
 type MentorTableProps = {
-  data: Admin[];
+  data: Mentor[];
   totalPages: number;
   page: number;
   perPage: number;
@@ -30,7 +31,7 @@ type MentorTableProps = {
   onSearchChange: (value: string) => void;
   statusFilter: StatusFilter;
   onStatusFilterChange: (value: StatusFilter) => void;
-  onViewMentor: (admin: Admin) => void;
+  onViewMentor: (admin: Mentor) => void;
 };
 
 export default function MentorTable({
@@ -46,9 +47,10 @@ export default function MentorTable({
   onViewMentor,
 }: MentorTableProps) {
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
-  const [newStatus, setNewStatus] = useState<Admin['status']>('Active');
+  const [selectedAdmin, setSelectedAdmin] = useState<Mentor | null>(null);
+  const [newStatus, setNewStatus] = useState<Mentor['status']>('Active');
   const [openStatusModal, setOpenStatusModal] = useState(false);
+  const { showToast } = useToastify();
 
   const [updateMentorStatus, { isLoading: isUpdating }] =
     useUpdateMentorStatusMutation();
@@ -61,7 +63,7 @@ export default function MentorTable({
         id: selectedAdmin.id,
         status: newStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE',
       }).unwrap();
-
+      showToast('Mentor updated Sucessfully ', 'success');
       setOpenStatusModal(false);
       setSelectedAdmin(null);
       setNewStatus('Active');
@@ -70,13 +72,13 @@ export default function MentorTable({
     }
   };
 
-  const statusStyles: Record<Admin['status'], string> = {
+  const statusStyles: Record<Mentor['status'], string> = {
     Active: 'bg-green-50 text-green-600',
     Inactive: 'bg-[#FEF3F2] text-[#B42318]',
     Pending: 'bg-[#F2F4F7] text-[#282F2E]',
   };
 
-  const columns: Column<Admin>[] = [
+  const columns: Column<Mentor>[] = [
     {
       key: 'id',
       label: 'S/N',
@@ -207,10 +209,7 @@ export default function MentorTable({
     },
   ];
   return (
-    <div
-      className="space-y-3 mt-2"
-      onClick={() => setOpenDropdownId(null)}
-    >
+    <div className="space-y-3 mt-2" onClick={() => setOpenDropdownId(null)}>
       <div className="flex flex-col mx-4 md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex items-center gap-2 w-full">
           <div className=" w-full flex flex-col md:flex-row gap-2 justify-between md:items-center ">

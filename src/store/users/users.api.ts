@@ -64,7 +64,7 @@ interface UpdateTeenagerProfileRequest {
 export const UsersApi = createApi({
   reducerPath: 'usersApi',
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['Admin', 'Mentor', 'Teenager', 'MentorRequest', 'TeenagerRequest'],
+  tagTypes: ['Admin', 'Mentor', 'Teenager'],
   endpoints: (builder) => ({
     createContact: builder.mutation<
       CreateContactResponse,
@@ -127,7 +127,7 @@ export const UsersApi = createApi({
         method: 'GET',
         params,
       }),
-      providesTags: ['MentorRequest'],
+      providesTags: ['Mentor'],
     }),
     updateMentorRequestStatus: builder.mutation<
       AdminResponse,
@@ -138,7 +138,7 @@ export const UsersApi = createApi({
         method: 'PATCH',
         data,
       }),
-      invalidatesTags: ['MentorRequest'],
+      invalidatesTags: ['Mentor'],
     }),
     getTeenagerRequests: builder.query<AdminResponse, PaginationParams>({
       query: (params) => ({
@@ -146,7 +146,7 @@ export const UsersApi = createApi({
         method: 'GET',
         params,
       }),
-      providesTags: ['TeenagerRequest'],
+      providesTags: ['Teenager'],
     }),
     getTeenagers: builder.query<AdminResponse, GetUserListParams>({
       query: (params) => ({
@@ -172,7 +172,7 @@ export const UsersApi = createApi({
         method: 'PATCH',
         data,
       }),
-      invalidatesTags: ['TeenagerRequest', 'Teenager'],
+      invalidatesTags: ['Teenager'],
     }),
 
     updateTeenagerStatus: builder.mutation<
@@ -180,7 +180,7 @@ export const UsersApi = createApi({
       { id: string; data: UpdateTeenagerStatusRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/teenager/${id}/status`,
+        url: `/teenager/status/${id}`,
         method: 'PUT',
         data,
       }),

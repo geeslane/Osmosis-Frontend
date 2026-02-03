@@ -104,7 +104,6 @@ export const MentorSignupForm = () => {
        setPictureFile(null);
        setCurrentStep(1);
        setShowSuccess(true);
-      setShowSuccess(true);
     } catch (error: any) {
       const message =
         error?.data?.message ||

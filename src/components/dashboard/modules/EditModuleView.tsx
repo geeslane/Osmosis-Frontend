@@ -1,5 +1,4 @@
 'use client';
-
 import { GoBackIcon, LoadingIcon } from '@/assets/icons';
 import AddModule from './AddModule';
 import { useGetModuleByIdQuery } from '@/store/dashboard/dashboard.api';
@@ -12,7 +11,7 @@ export default function EditModuleView() {
   const id =
     typeof params.id === 'string' ? params.id : params.id?.[0] ?? '';
   const { data, isLoading } = useGetModuleByIdQuery(id, { skip: !id });
-  const module = data?.data?.data;
+  const moduleData = data?.data?.data;
   const returnTab = searchParams.get('content') || 'Note';
 
   if (isLoading) {
@@ -27,7 +26,7 @@ export default function EditModuleView() {
     );
   }
 
-  if (!module) {
+  if (!moduleData) {
     return (
       <div className="space-y-9">
         <Link
@@ -45,7 +44,7 @@ export default function EditModuleView() {
   return (
     <div className="space-y-9">
       <Link
-        href={`/dashboard/modules/${module.id}?content=${returnTab}`}
+        href={`/dashboard/modules/${moduleData.id}?content=${returnTab}`}
         className="flex cursor-pointer items-center gap-1"
       >
         <GoBackIcon />
@@ -53,7 +52,7 @@ export default function EditModuleView() {
       </Link>
       <h3 className="text-green-200 text-2xl font-bold">Edit Module</h3>
       <div className="rounded-md max-w-[747px] px-4 md:px-[64px] border-2 border-[#6CBB0180] py-8 w-full">
-        <AddModule module={module} />
+        <AddModule module={moduleData} />
       </div>
     </div>
   );
