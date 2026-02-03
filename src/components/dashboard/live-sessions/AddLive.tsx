@@ -3,6 +3,7 @@ import { Controller, useForm, type SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import type { InferType } from 'yup';
 import InputForm from '@/components/form/InputForm';
+import TimePicker from '@/components/form/TimePicker';
 import Button from '@/components/ui/button/Button';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -23,6 +24,7 @@ export default function AddLive() {
     reset,
   } = useForm<AddLiveSessionFormInputs>({
     resolver: yupResolver(AddLiveSessionSchema) as any,
+    defaultValues: { time: '12:00 AM' },
   });
 
   const onSubmit: SubmitHandler<AddLiveSessionFormInputs> = () => {
@@ -71,8 +73,8 @@ export default function AddLive() {
                 showYearDropdown
                 showMonthDropdown
                 dropdownMode="select"
-                placeholderText="Select date of birth"
-                className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 ${
+                placeholderText="Select date"
+                className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:border-green-300 focus-within:outline-none px-3 ${
                   errors.date ? 'border-red-500' : 'border-green-300'
                 }`}
               />
@@ -82,17 +84,26 @@ export default function AddLive() {
             <p className="text-red-500 text-xs mt-1">
               {typeof errors.date.message === 'string'
                 ? errors.date.message
-                : 'Date of birth is required'}
+                : 'Date is required'}
             </p>
           )}
         </div>
 
-        <InputForm
-          label="Time"
+        <Controller
           name="time"
-          register={register}
-          error={errors.time}
-          type="time"
+          control={control}
+          render={({ field }) => (
+            <TimePicker
+              label="Time"
+              value={field.value}
+              onChange={(value) => {
+                field.onChange(value);
+                setValue('time', value, { shouldValidate: true });
+              }}
+              onBlur={field.onBlur}
+              error={errors.time}
+            />
+          )}
         />
       </div>
 

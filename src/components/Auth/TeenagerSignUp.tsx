@@ -251,7 +251,7 @@ export const TeenagerSignupForm = () => {
                           showMonthDropdown
                           dropdownMode="select"
                           placeholderText="Select date of birth"
-                          className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 pr-10 ${
+                          className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:border-green-300 focus-within:outline-none px-3 pr-10 ${
                             errors.dateOfBirth
                               ? 'border-red-500'
                               : 'border-green-300'
