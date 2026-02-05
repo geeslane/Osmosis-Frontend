@@ -12,8 +12,20 @@ import { AddLiveSessionSchema } from '@/validation/schema';
 
 export type AddLiveSessionFormInputs = InferType<typeof AddLiveSessionSchema>;
 
-export default function AddLive() {
+type AddLiveProps = {
+  initialData?: AddLiveSessionFormInputs;
+  sessionId?: string;
+  onCancelEdit?: () => void;
+  onSaved?: () => void;
+};
+
+export default function AddLive({
+  initialData,
+  sessionId,
+  onSaved,
+}: AddLiveProps) {
   const { showToast } = useToastify();
+  const isEditMode = Boolean(sessionId && initialData);
 
   const {
     register,
@@ -24,12 +36,17 @@ export default function AddLive() {
     reset,
   } = useForm<AddLiveSessionFormInputs>({
     resolver: yupResolver(AddLiveSessionSchema) as any,
-    defaultValues: { time: '12:00 AM' },
+    defaultValues: initialData ?? { time: '12:00 AM' },
   });
 
   const onSubmit: SubmitHandler<AddLiveSessionFormInputs> = () => {
-    showToast('Live session added successfully', 'success');
-    reset();
+    if (isEditMode) {
+      showToast('Live session updated successfully', 'success');
+      onSaved?.();
+    } else {
+      showToast('Live session added successfully', 'success');
+      reset();
+    }
   };
 
   return (
@@ -147,7 +164,7 @@ export default function AddLive() {
         fullWidth
         className="py-4 font-medium"
       >
-        Save
+        {isEditMode ? 'Update' : 'Save'}
       </Button>
     </form>
   );

@@ -720,17 +720,17 @@ export const EyeCloseIcon = ({
   );
 };
 export const EyeIcon = ({
-  width = '24',
-  height = '24',
+  width = '16',
+  height = '16',
   fill = 'currentColor',
   className = '',
 }) => {
   return (
     <svg
       width={width}
-      className={className}
       height={height}
-      viewBox={`0 0 ${width} ${height}`}
+      className={className}
+      viewBox="0 0 20 20"
       fill={fill}
       xmlns="http://www.w3.org/2000/svg"
     >
