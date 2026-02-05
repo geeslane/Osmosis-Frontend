@@ -43,8 +43,8 @@ export default function VerifyPage() {
         if (response.success) {
           try {
             await setSessionCookie({
-              token,
-              role: verifyData?.user?.role,
+              token: verifyData?.token,
+              role: verifyData?.userType,
             });
 
             setStatus('success');
@@ -104,7 +104,7 @@ export default function VerifyPage() {
     };
 
     verifyMagicLinkFlow();
-  }, [searchParams, verifyMagicLink, router]);
+  }, []);
 
   if (status === 'verifying') {
     return (
