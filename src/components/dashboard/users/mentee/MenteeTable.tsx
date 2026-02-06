@@ -67,8 +67,7 @@ export default function MenteeTable({
       label: 'Name',
       render: (row) => {
         const normalizedImage = row.image ? normalizeImageUrl(row.image) : null;
-        const hasValidImage =
-          normalizedImage && typeof normalizedImage === 'string';
+        const hasValidImage = normalizedImage && typeof normalizedImage === 'string';
         const initials = (row.name || row.email || 'U')
           .split(' ')
           .map((word) => word[0])
@@ -168,7 +167,7 @@ export default function MenteeTable({
                   setOpenDropdownId(null);
                 }}
               >
-                Update Status
+                Delete
               </button>
             </div>
           )}

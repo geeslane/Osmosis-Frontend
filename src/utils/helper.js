@@ -97,44 +97,69 @@ export function getTimeFromDate(dateStr) {
   hours = hours % 12 || 12;
   return `${hours}:${minutes}${ampm}`;
 }
-/* New Format date to DD/MM/YYYY */
-export function formatDate(date, locale) {
-  if (!date) return 'N/A';
 
-  const parsedDate = typeof date === 'string' ? new Date(date) : date;
+export function getDayName(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { weekday: 'long' });
+}
+export function formatTo12HourWithMinutes(timeString) {
+  if (!timeString) return '';
 
-  if (isNaN(parsedDate.getTime())) return 'N/A';
+  const [hour, minute] = timeString.split(':').map(Number);
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
 
-  return parsedDate.toLocaleDateString(locale, {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
+  return `${hour12}:${String(minute).padStart(2, '0')}${period}`;
+}
+export function getGreeting() {
+  const hour = new Date().getHours();
+
+  if (hour >= 0 && hour < 12) {
+    return 'Good Morning';
+  } else if (hour >= 12 && hour < 17) {
+    return 'Good Afternoon';
+  } else {
+    return 'Good Evening';
+  }
 }
 
+/**
+ * Normalizes image URLs, converting HTTP to HTTPS for Cloudinary URLs
+ * and prepending API base URL for relative paths
+ * Treats old "uploads/..." paths as empty (returns undefined)
+ * @param {string | undefined} url - The image URL to normalize
+ * @returns {string | undefined} - The normalized URL, or undefined for old uploads
+ */
 export function normalizeImageUrl(url) {
   if (!url || typeof url !== 'string') return url;
-
+  
+  // Treat old uploads/... paths as empty (show initials instead)
   if (url.startsWith('uploads/')) {
     return undefined;
   }
-
+  
+  // Convert HTTP Cloudinary URLs to HTTPS
   if (url.startsWith('http://res.cloudinary.com')) {
     return url.replace('http://', 'https://');
   }
-
+  
+  // If it's already an absolute URL (http:// or https://), return as is
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
-
+  
   // If it's a relative path (starts with /), prepend API base URL
   if (url.startsWith('/')) {
-    const apiBaseUrl =
-      process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL;
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 
+                      process.env.NEXT_PUBLIC_API_BASE_URL || 
+                      'https://osmosis-backend.onrender.com';
     return `${apiBaseUrl}${url}`;
   }
-
-  const apiBaseUrl =
-    process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL;
+  
+  // If it's a relative path without leading slash, prepend API base URL with /
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 
+                    process.env.NEXT_PUBLIC_API_BASE_URL || 
+                    'https://osmosis-backend.onrender.com';
   return `${apiBaseUrl}/${url}`;
 }

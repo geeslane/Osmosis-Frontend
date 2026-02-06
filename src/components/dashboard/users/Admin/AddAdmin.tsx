@@ -1,14 +1,15 @@
 'use client';
 import React, { useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import InputForm from '@/components/form/InputForm';
 import Button from '@/components/ui/button/Button';
-import { EmailIcon, PhoneIcon, LocationIcon, CameraIcon } from '@/assets/icons';
+import { EmailIcon, PhoneIcon, LocationIcon, CameraIcon, LoadingIcon } from '@/assets/icons';
 import useToastify from '@/hooks/useToastify';
 import Image from 'next/image';
 import { AddAdminSchema } from '@/validation/schema';
 import { useCreateAdminMutation } from '@/store/users/users.api';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface AddAdminFormInputs {
   fullName: string;
@@ -18,6 +19,8 @@ interface AddAdminFormInputs {
 }
 export default function AddAdmin() {
   const { showToast } = useToastify();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [createAdmin, { isLoading }] = useCreateAdminMutation();
 
   const {
@@ -43,24 +46,27 @@ export default function AddAdmin() {
     setFile(f);
   };
 
-  const onSubmit = async (data: AddAdminFormInputs) => {
+  const onSubmit: SubmitHandler<AddAdminFormInputs> = async (data) => {
     try {
-      const formData = new FormData();
-      formData.append('fullName', data.fullName);
-      formData.append('email', data.email);
-      formData.append('phoneNumber', data.phoneNumber || '');
-      formData.append('address', data.address || '');
+      await createAdmin({
+        data: {
+          fullName: data.fullName,
+          email: data.email,
+          phoneNumber: data.phoneNumber || undefined,
+          address: data.address || undefined,
+        },
+        picture: file || undefined,
+      }).unwrap();
 
-      if (file) {
-        formData.append('picture', file);
-      }
-      const response = await createAdmin(formData).unwrap();
-      showToast(response?.data?.message, 'success');
+      showToast('Admin invited successfully', 'success');
       reset();
+      setPreview(null);
       setFile(null);
-      /* const params = new URLSearchParams(searchParams.toString());
+      
+      // Navigate back to list
+      const params = new URLSearchParams(searchParams.toString());
       params.set('viewadmin', 'listadmin');
-      router.replace(`?${params.toString()}`); */
+      router.replace(`?${params.toString()}`);
     } catch (error: any) {
       const message =
         error?.data?.message || error?.error || 'Failed to invite admin';
@@ -161,12 +167,14 @@ export default function AddAdmin() {
             type="submit"
             variant="primary"
             fullWidth
-            isLoading={isLoading}
             className="py-4 font-medium"
             disabled={isLoading}
           >
             {isLoading ? (
-              <span className="flex items-center gap-2">Inviting Admin</span>
+              <span className="flex items-center gap-2">
+                <LoadingIcon width="20" height="20" />
+                Adding...
+              </span>
             ) : (
               'Invite Admin'
             )}

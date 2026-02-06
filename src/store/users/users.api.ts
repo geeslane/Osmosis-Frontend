@@ -16,12 +16,12 @@ interface AdminResponse {
   total?: number;
 }
 
-/* interface CreateAdminRequest {
+interface CreateAdminRequest {
   fullName: string;
   email: string;
   phoneNumber?: string;
   address?: string;
-} */
+}
 
 interface UpdateAdminProfileRequest {
   fullName?: string;
@@ -37,8 +37,7 @@ interface UpdateRequestStatusRequest {
 }
 
 interface UpdateMentorStatusRequest {
-  id: string;
-  formData: FormData;
+  status: 'ACTIVE' | 'INACTIVE' | 'DEACTIVATED';
 }
 
 interface UpdateTeenagerStatusRequest {
@@ -80,8 +79,22 @@ export const UsersApi = createApi({
   baseQuery: axiosBaseQuery(),
   tagTypes: ['Admin', 'Mentor', 'Teenager', 'MentorRequest', 'TeenagerRequest'],
   endpoints: (builder) => ({
-    createAdmin: builder.mutation<AdminResponse, FormData>({
-      query: (formData) => {
+    // Admin endpoints
+    createAdmin: builder.mutation<AdminResponse, { data: CreateAdminRequest; picture?: File }>({
+      query: ({ data, picture }) => {
+        const formData = new FormData();
+        formData.append('fullName', data.fullName);
+        formData.append('email', data.email);
+        if (data.phoneNumber) {
+          formData.append('phoneNumber', data.phoneNumber);
+        }
+        if (data.address) {
+          formData.append('address', data.address);
+        }
+        if (picture) {
+          formData.append('picture', picture);
+        }
+
         return {
           url: '/admin',
           method: 'POST',
@@ -90,26 +103,6 @@ export const UsersApi = createApi({
       },
       invalidatesTags: ['Admin'],
     }),
-    getAdminById: builder.query<AdminResponse, string>({
-      query: (id) => ({
-        url: `/admin/${id}`,
-        method: 'GET',
-      }),
-      providesTags: ['Admin'],
-    }),
-    updateMentorStatus: builder.mutation<
-      AdminResponse,
-      UpdateMentorStatusRequest
-    >({
-      query: ({ id, formData }) => ({
-        url: `/mentor/${id}/status`,
-        method: 'PATCH',
-        data: formData,
-      }),
-      invalidatesTags: ['Mentor'],
-    }),
-
-    /*Need to be worked on */
     getAdmins: builder.query<AdminResponse, PaginationParams>({
       query: (params) => ({
         url: '/admin',
@@ -117,6 +110,13 @@ export const UsersApi = createApi({
         params,
       }),
       providesTags: ['Admin'],
+    }),
+    getAdminById: builder.query<AdminResponse, string>({
+      query: (id) => ({
+        url: `/admin/${id}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, id) => [{ type: 'Admin', id }],
     }),
     updateAdminProfile: builder.mutation<
       AdminResponse,
@@ -172,7 +172,17 @@ export const UsersApi = createApi({
       }),
       providesTags: ['Mentor'],
     }),
-
+    updateMentorStatus: builder.mutation<
+      AdminResponse,
+      { id: string; data: UpdateMentorStatusRequest }
+    >({
+      query: ({ id, data }) => ({
+        url: `/mentor/status/${id}`,
+        method: 'PATCH',
+        data,
+      }),
+      invalidatesTags: ['Mentor'],
+    }),
     getMentorById: builder.query<AdminResponse, string>({
       query: (id) => ({
         url: `/mentor/${id}`,
@@ -270,22 +280,17 @@ export const UsersApi = createApi({
     >({
       query: ({ id, data }) => {
         const formData = new FormData();
-        if (data.teenagerFullName)
-          formData.append('teenagerFullName', data.teenagerFullName);
-        if (data.teenagerEmail)
-          formData.append('teenagerEmail', data.teenagerEmail);
-        if (data.teenagerPhoneNumber)
-          formData.append('teenagerPhoneNumber', data.teenagerPhoneNumber);
+        if (data.teenagerFullName) formData.append('teenagerFullName', data.teenagerFullName);
+        if (data.teenagerEmail) formData.append('teenagerEmail', data.teenagerEmail);
+        if (data.teenagerPhoneNumber) formData.append('teenagerPhoneNumber', data.teenagerPhoneNumber);
         if (data.address) formData.append('address', data.address);
         if (data.dateOfBirth) formData.append('dateOfBirth', data.dateOfBirth);
         if (data.gender) formData.append('gender', data.gender);
         if (data.class) formData.append('class', data.class);
         if (data.hobbies) formData.append('hobbies', data.hobbies);
-        if (data.parentFullName)
-          formData.append('parentFullName', data.parentFullName);
+        if (data.parentFullName) formData.append('parentFullName', data.parentFullName);
         if (data.parentEmail) formData.append('parentEmail', data.parentEmail);
-        if (data.parentPhoneNumber)
-          formData.append('parentPhoneNumber', data.parentPhoneNumber);
+        if (data.parentPhoneNumber) formData.append('parentPhoneNumber', data.parentPhoneNumber);
         if (data.picture) formData.append('picture', data.picture);
 
         return {

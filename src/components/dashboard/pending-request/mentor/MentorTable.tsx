@@ -25,11 +25,7 @@ type AdminListPageProps = {
   onViewAdmin: (admin: MwntorPending) => void;
   onRefetch?: () => void;
 };
-export default function MentorTable({
-  data,
-  onViewAdmin,
-  onRefetch,
-}: AdminListPageProps) {
+export default function MentorTable({ data, onViewAdmin, onRefetch }: AdminListPageProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<
@@ -40,8 +36,7 @@ export default function MentorTable({
   const [declineModalOpen, setDeclineModalOpen] = useState(false);
   const [declineId, setDeclineId] = useState<string | null>(null);
   const { showToast } = useToastify();
-  const [updateRequestStatus, { isLoading: isUpdating }] =
-    useUpdateMentorRequestStatusMutation();
+  const [updateRequestStatus, { isLoading: isUpdating }] = useUpdateMentorRequestStatusMutation();
 
   const handleAccept = async (id: string) => {
     setProcessingId(id);
@@ -50,10 +45,7 @@ export default function MentorTable({
         id,
         data: { status: 'APPROVED' },
       }).unwrap();
-      showToast(
-        'Mentor request approved. They have been added to Osmosis and can be found in the Users section.',
-        'success'
-      );
+      showToast('Mentor request approved. They have been added to Osmosis and can be found in the Users section.', 'success');
       onRefetch?.();
     } catch (error: any) {
       const message = error?.data?.message || 'Failed to approve request';
@@ -105,8 +97,7 @@ export default function MentorTable({
       label: 'Name',
       render: (row) => {
         const normalizedImage = row.image ? normalizeImageUrl(row.image) : null;
-        const hasValidImage =
-          normalizedImage && typeof normalizedImage === 'string';
+        const hasValidImage = normalizedImage && typeof normalizedImage === 'string';
         const initials = (row.name || row.email || 'U')
           .split(' ')
           .map((word) => word[0])
@@ -152,20 +143,20 @@ export default function MentorTable({
             <Button
               onClick={() => handleAccept(row.id)}
               disabled={isProcessing || isUpdating}
-              className="bg-green-200 text-white text-base font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-green-200 text-white font-semibold text-xs px-4 py-1.5 flex items-center gap-1 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Accept
             </Button>
             <Button
               onClick={() => handleDeclineClick(row.id)}
               disabled={isProcessing || isUpdating}
-              className="bg-red-100 text-white text-base font-semibold px-8 py-2 flex items-center gap-1 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-red-100 text-white font-semibold text-xs px-4 py-1.5 flex items-center gap-1 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Decline
             </Button>
             <button
               type="button"
-              className="px-3 py-2 text-xs font-medium ml-5 underline"
+              className="px-2 py-1 text-xs underline"
               onClick={() => {
                 onViewAdmin(row);
               }}
