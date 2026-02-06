@@ -1,14 +1,16 @@
 'use client';
 import { AddsIcon, FilterIcon, MoreIcon, SearchIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
-import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { normalizeImageUrl } from '@/utils/helper';
 import { NoResult } from '@/components/ui/NotFound/NoResult';
 import { useRouter } from 'next/navigation';
+import ActionModal from '@/components/ui/modal/ActionModal';
+import useToastify from '@/hooks/useToastify';
+import { useUpdateAdminStatusMutation } from '@/store/users/users.api';
 
 type Admin = {
   id: string;
@@ -20,31 +22,60 @@ type Admin = {
   image?: string;
   role?: string;
 };
+type StatusFilter = 'All' | 'Active' | 'Inactive';
+
 type AdminListPageProps = {
   onAddAdmin: () => void;
   data: Admin[];
+  totalPages: number;
+  page: number;
+  perPage: number;
+  onPageChange: (page: number) => void;
+  search: string;
+  onSearchChange: (value: string) => void;
+  statusFilter: StatusFilter;
+  onStatusFilterChange: (value: StatusFilter) => void;
 };
 export default function AdminListPage({
   onAddAdmin,
   data,
+  totalPages,
+  page,
+  perPage,
+  onPageChange,
+  search,
+  onSearchChange,
+  statusFilter,
+  onStatusFilterChange,
 }: AdminListPageProps) {
-  const [page, setPage] = useState(1);
   const router = useRouter();
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'All' | Admin['status']>(
-    'All'
-  );
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  const [perPage] = useState(5);
-  const [open, setOpen] = useState(false);
+  const [updateAdmin, { isLoading: isUpdating }] =
+    useUpdateAdminStatusMutation();
+  const { showToast } = useToastify();
 
-  const handleDelete = async () => {
-    // setLoading(true);
+  const [state, setState] = useState({
+    selectedAdmin: null as Admin | null,
+    openDropdownId: null as string | null,
+    newStatus: 'Active' as 'Active' | 'Inactive',
+    open: false,
+  });
+
+  const handleUpdateStatus = async () => {
+    if (!state.selectedAdmin) return;
     try {
-      // await deleteApiCall()
-    } finally {
-      //setLoading(false);
-      //setOpen(false);
+      const response = await updateAdmin({
+        id: state.selectedAdmin.id,
+        status: state.newStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE',
+      }).unwrap();
+      showToast(response?.data?.message, 'success');
+      setState((prev) => ({
+        ...prev,
+        open: false,
+        selectedAdmin: null,
+        newStatus: 'Active',
+      }));
+    } catch (error) {
+      console.error('Failed to update mentor status', error);
     }
   };
 
@@ -144,21 +175,24 @@ export default function AdminListPage({
         >
           <div
             onClick={() =>
-              setOpenDropdownId((prev) => (prev === row.id ? null : row.id))
+              setState((prev) => ({
+                ...prev,
+                openDropdownId: prev.openDropdownId === row.id ? null : row.id,
+              }))
             }
             className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer"
           >
             <MoreIcon />
           </div>
 
-          {openDropdownId === row.id && (
+          {state.openDropdownId === row.id && (
             <div className="absolute top-8 right-0 z-50 flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg text-sm text-green-300 py-2">
               <button
                 type="button"
                 className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
                 onClick={() => {
-                  router.push(`/dashboard/users/admin/${row.id}`);
-                  setOpenDropdownId(null);
+                  router.push(`/dashboard/users/admin/${row.id}?role=admins`);
+                  setState((prev) => ({ ...prev, openDropdownId: null }));
                 }}
               >
                 View
@@ -168,8 +202,12 @@ export default function AdminListPage({
                 type="button"
                 className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
                 onClick={() => {
-                  setOpen(true);
-                  setOpenDropdownId(null);
+                  setState((prev) => ({
+                    ...prev,
+                    selectedAdmin: row,
+                    open: true,
+                    openDropdownId: null,
+                  }));
                 }}
               >
                 Update Status
@@ -180,30 +218,11 @@ export default function AdminListPage({
       ),
     },
   ];
-  const filtered = data.filter((row) => {
-    const q = search.trim().toLowerCase();
-    if (statusFilter !== 'All' && row.status !== statusFilter) return false;
-    if (!q) return true;
-    return (
-      row.name.toLowerCase().includes(q) ||
-      row.email.toLowerCase().includes(q) ||
-      row.address.toLowerCase().includes(q) ||
-      row.phone.toLowerCase().includes(q)
-    );
-  });
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  useEffect(() => {
-    if (page > totalPages) setPage(1);
-  }, [page, totalPages]);
-
-  const paginated = filtered.slice(
-    (page - 1) * perPage,
-    page * perPage
-  ) as Admin[];
-
   return (
-    <div className="space-y-3 mt-2" onClick={() => setOpenDropdownId(null)}>
+    <div
+      className="space-y-3 mt-2"
+      onClick={() => setState((prev) => ({ ...prev, openDropdownId: null }))}
+    >
       <div className="flex flex-col mx-4 md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex items-center gap-2 w-full">
           <div className=" w-full flex flex-col md:flex-row gap-2 justify-between md:items-center ">
@@ -212,7 +231,9 @@ export default function AdminListPage({
 
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
+                onChange={(e) =>
+                  onStatusFilterChange(e.target.value as StatusFilter)
+                }
                 aria-label="Filter by status"
                 className="
                   pl-8 pr-6 py-1.5
@@ -234,8 +255,8 @@ export default function AdminListPage({
                 <input
                   type="search"
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by name"
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  placeholder="Search by name (min 2 characters)"
                   className="w-full text-sm h-full  focus:outline-none"
                 />
               </div>
@@ -251,33 +272,59 @@ export default function AdminListPage({
           </div>
         </div>
       </div>
-      <DeleteModal
-        isOpen={open}
-        onCancel={() => setOpen(false)}
-        onConfirm={handleDelete}
-        //isLoading={loading}
-        title="Delete Admin"
-        description="Deleting this admin will permanently remove access."
-      />
-      {filtered.length === 0 ? (
+      <ActionModal
+        isOpen={state.open}
+        title="Update Status"
+        description="Change the user's status and provide a reason for this action."
+        confirmText="Update"
+        isLoading={isUpdating}
+        onCancel={() => setState((prev) => ({ ...prev, open: false }))}
+        onConfirm={handleUpdateStatus}
+      >
+        <div className="space-y-4">
+          <div>
+            <label
+              htmlFor="mentor-status"
+              className="block text-sm font-medium text-green-200 mb-1"
+            >
+              Status
+            </label>
+            <select
+              id="mentor-status"
+              value={state.newStatus}
+              onChange={(e) =>
+                setState((prev) => ({
+                  ...prev,
+                  newStatus: e.target.value as 'Active' | 'Inactive',
+                }))
+              }
+              className="w-full rounded-md border border-[#D0D5DD] px-3 py-2 text-sm"
+            >
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </ActionModal>
+      {data.length === 0 ? (
         <NoResult
-          title=" No Data Found"
-          description="Try adjusting your search or filter criteria"
+          title="Data not found"
+          description="Try adjusting your search or filter criteria."
         />
       ) : (
         <>
           <DataTable
             onRowClick={(row) => {
-              router.push(`/dashboard/users/admin/${row.id}`);
+              router.push(`/dashboard/users/admin/${row.id}?role=admins`);
             }}
             columns={columns}
-            data={paginated}
+            data={data}
           />
           <div className="flex items-center justify-between">
             <Pagination
               page={page}
               totalPages={totalPages}
-              onPageChange={setPage}
+              onPageChange={onPageChange}
             />
           </div>
         </>

@@ -1,12 +1,13 @@
 'use client';
 import { GoBackIcon, LoadingIcon } from '@/assets/icons';
 import Empty from '@/components/ui/NotFound/Empty';
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MentorTable from './MentorTable';
-import MentorDetail from '@/components/common/Details/MentorDetails';
 
 import { useGetMentorsQuery } from '@/store/users/users.api';
+import Details from './Details';
+import { useUserList } from '@/hooks/useUserList';
 
 type Mentor = {
   id: string;
@@ -57,10 +58,40 @@ export default function Mentor() {
   const view = searchParams.get('viewmentor') || 'listmentor';
   const selectedId = searchParams.get('id');
 
-  const { data: mentorsResponse, isLoading: isLoadingMentors } =
-    useGetMentorsQuery({ page: 1, limit: 100 });
+  const userList = useUserList({ defaultLimit: 10 });
+  const { queryParams, search, statusFilter, limit } = userList;
 
-  const mentorData = mentorsResponse?.data?.map(mapMentorFromApi) || [];
+  const { data: mentorsResponse, isLoading: isLoadingMentors } =
+    useGetMentorsQuery(queryParams);
+
+  const mentorData = useMemo(
+    () => mentorsResponse?.data?.map(mapMentorFromApi) || [],
+    [mentorsResponse]
+  );
+
+  const total = mentorsResponse?.pagination?.total ?? 0;
+  const totalPages = mentorsResponse?.pagination?.totalPages ?? 1;
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    const currentView = params.get('viewmentor') || 'listmentor';
+    const currentSelectedId = params.get('id');
+
+    if (
+      mentorData.length > 0 &&
+      currentView === 'viewmentor' &&
+      currentSelectedId &&
+      !mentorData.find((m: any) => m.id === currentSelectedId)
+    ) {
+      router.replace('?viewmentor=listmentor');
+    } else if (
+      currentView !== 'listmentor' &&
+      mentorData.length === 0 &&
+      !isLoadingMentors
+    ) {
+      router.replace('?viewmentor=listmentor');
+    }
+  }, [mentorData, isLoadingMentors, searchParams, router]);
 
   const setParam = (newView: string, id?: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -84,18 +115,6 @@ export default function Mentor() {
     );
   }
 
-  /*   if (view === 'viewmentor') {
-    return (
-      <div className="flex justify-center items-center py-20">
-        <LoadingIcon
-          width="40"
-          height="40"
-          className="animate-spin text-green-100"
-        />
-      </div>
-    );
-  } */
-
   return (
     <div className=" w-full max-w-full">
       {view === 'addmentor' && (
@@ -116,22 +135,20 @@ export default function Mentor() {
         </div>
       )}
 
-      {view === 'viewmentor' && mentorData && (
-        <div className="w-full ">
-          <div className="flex flex-col gap-8 py-4">
-            <div
-              onClick={handleBack}
-              className="flex cursor-pointer w-20  items-center gap-1"
-            >
-              <GoBackIcon />
-              <h3 className="text-sm text-green-200 font-medium">Back</h3>
+      {view === 'viewmentor' &&
+        mentorData &&
+        mentorData.find((m: any) => m.id === selectedId) && (
+          <div className="w-full ">
+            <div className="flex flex-col gap-8 py-4">
+              <Details
+                handleBack={handleBack}
+                selectedDetails={mentorData.find(
+                  (m: any) => m.id === selectedId
+                )}
+              />
             </div>
-            <MentorDetail
-              selectedDetails={mentorData.find((m: any) => m.id === selectedId)}
-            />
           </div>
-        </div>
-      )}
+        )}
 
       {view === 'listmentor' && (
         <div className="rounded-md border border-green-400 py-5">
@@ -139,12 +156,15 @@ export default function Mentor() {
             <div className="flex items-center gap-2 text-green-200 text-2xl font-semibold">
               Mentors List
               <span className="bg-[#DCFFAD91] w-[24px] h-[24px] flex justify-center items-center rounded-full text-green-100 text-xs">
-                {mentorData.length}
+                {total}
               </span>
             </div>
           </div>
 
-          {mentorData.length === 0 ? (
+          {!isLoadingMentors &&
+          total === 0 &&
+          search.trim() === '' &&
+          statusFilter === 'All' ? (
             <div className="max-w-[400px] mx-auto my-[65px]">
               <Empty
                 title="No Mentor for now."
@@ -154,7 +174,14 @@ export default function Mentor() {
           ) : (
             <MentorTable
               data={mentorData}
-              onAddAdmin={() => setParam('addmentor')}
+              totalPages={totalPages}
+              page={userList.page}
+              perPage={limit}
+              onPageChange={userList.setPage}
+              search={userList.search}
+              onSearchChange={userList.setSearch}
+              statusFilter={userList.statusFilter}
+              onStatusFilterChange={userList.setStatusFilter}
               onViewMentor={(admin) => setParam('viewmentor', admin.id)}
             />
           )}

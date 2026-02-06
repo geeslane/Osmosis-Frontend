@@ -1,24 +1,64 @@
-import { DashboardResponse } from '@/components/types';
+import { GetModuleByIdResponse, ModulesResponse } from '@/components/types';
 import { axiosBaseQuery } from '@/lib/baseApi';
 import { createApi } from '@reduxjs/toolkit/query/react';
 
-/*  providesTags: (result, error, arg) => [
-        { type: 'Course', id: arg.course },
-      ],
-      invalidatesTags: ['AllCourses'], */
+export type GetModulesParams = {
+  page?: number;
+  limit?: number;
+  title?: string;
+};
 
 export const DashboardApi = createApi({
   reducerPath: 'dashboardApi',
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['Course', 'AllCourses'],
+  tagTypes: ['Modules', 'AllCourses'],
   endpoints: (builder) => ({
-    dashboard: builder.query<DashboardResponse, void>({
-      query: () => ({
-        url: '/api/dashboard',
+    modules: builder.query<ModulesResponse, GetModulesParams | void>({
+      query: (params) => ({
+        url: '/module',
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['Modules'],
+    }),
+    createModule: builder.mutation<void, FormData>({
+      query: (formData) => ({
+        url: '/module',
+        method: 'POST',
+        data: formData,
+      }),
+      invalidatesTags: ['Modules'],
+    }),
+    updateModule: builder.mutation<void, { id: string; formData: FormData }>({
+      query: ({ id, formData }) => ({
+        url: `/module/${id}`,
+        method: 'PATCH',
+        data: formData,
+      }),
+      invalidatesTags: ['Modules'],
+    }),
+    getModuleById: builder.query<GetModuleByIdResponse, string>({
+      query: (id) => ({
+        url: `/module/${id}`,
         method: 'GET',
       }),
+      providesTags: ['Modules'],
+    }),
+
+    deleteModule: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/module/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Modules'],
     }),
   }),
 });
 
-export const { useDashboardQuery } = DashboardApi;
+export const {
+  useModulesQuery,
+  useCreateModuleMutation,
+  useUpdateModuleMutation,
+  useGetModuleByIdQuery,
+  useDeleteModuleMutation,
+} = DashboardApi;

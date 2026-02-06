@@ -23,6 +23,7 @@ import SelectForm from '../form/SelectForm';
 import FileUpload from '../form/FileUpload';
 import { Modal } from '../ui/modal';
 import { TeenagerRegisterFormData } from '../types';
+import { useDropdowns } from '@/hooks/useDropDownApi';
 
 export const TeenagerSignupForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -37,6 +38,7 @@ export const TeenagerSignupForm = () => {
     handleSubmit,
     trigger,
     control,
+    reset,
     setValue,
     formState: { errors },
   } = useForm<TeenagerRegisterFormData>({
@@ -66,7 +68,10 @@ export const TeenagerSignupForm = () => {
       setCurrentStep((prev) => prev - 1);
     }
   };
-
+  const { dropdowns, isLoading: isDropdownsLoading } = useDropdowns([
+    'gender',
+    'mentorship-topics',
+  ]);
   const handleCloseModal = () => {
     setShowSuccess(false);
   };
@@ -95,6 +100,9 @@ export const TeenagerSignupForm = () => {
 
       const response = await registerTeenager(formData).unwrap();
       showToast(response.message || 'Registration successful!', 'success');
+      reset();
+      setPictureFile(null);
+      setCurrentStep(1);
       setShowSuccess(true);
     } catch (error: any) {
       const message = error?.data?.message || 'Signup failed';
@@ -103,7 +111,7 @@ export const TeenagerSignupForm = () => {
   };
 
   return (
-    <div className="w-full overflow-scroll max-h-[90vh] no-scrollbar font-montserrat montserrat">
+    <div className="w-full px-2 overflow-scroll max-h-[90vh] no-scrollbar font-montserrat montserrat">
       <Image
         className="my-[40px] mx-auto md:mx-0"
         src={'/image/logo.png'}
@@ -251,10 +259,10 @@ export const TeenagerSignupForm = () => {
                           showMonthDropdown
                           dropdownMode="select"
                           placeholderText="Select date of birth"
-                          className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 pr-10 ${
+                          className={`w-full h-[56px] text-sm   focus:outline-none focus:ring-0 focus:shadow-none bg-transparent border rounded-md  px-3 pr-10 ${
                             errors.dateOfBirth
                               ? 'border-red-500'
-                              : 'border-green-300'
+                              : 'border-green-300 focus:outline-none'
                           }`}
                           popperClassName="react-datepicker-popper-modern"
                         />
@@ -272,18 +280,16 @@ export const TeenagerSignupForm = () => {
                     </p>
                   )}
                 </div>
+
                 <SelectForm
                   label="Teenager's Gender"
                   name="gender"
-                  placeholder="Select gender"
+                  placeholder={
+                    isDropdownsLoading ? 'Loading...' : 'Select gender'
+                  }
+                  options={dropdowns['gender']}
                   register={register}
                   error={errors.gender}
-                  options={[
-                    { label: 'Male', value: 'male' },
-                    { label: 'Female', value: 'female' },
-                    { label: 'Other', value: 'other' },
-                    { label: 'Prefer not to say', value: 'prefer-not-to-say' },
-                  ]}
                 />
                 <FileUpload
                   label="Teenager's Picture"

@@ -167,7 +167,7 @@ export default function SignInForm() {
     }
   };
   return (
-    <div className=" w-full font-montserrat montserrat">
+    <div className=" w-full  font-montserrat montserrat">
       <Image
         className="my-[40px] mx-auto md:mx-0"
         src={'/image/logo.png'}
@@ -217,7 +217,7 @@ export default function SignInForm() {
             </div>
           </div>
         </form>
-        <div className="flex flex-col gap-3 font-montserrat montserrat text-[#0F1C24] text-[15px] font-bold items-center justify-center">
+        <div className="flex relative flex-col gap-3 font-montserrat montserrat text-[#0F1C24] text-[15px] font-bold items-center justify-center">
           <div className="flex items-center">
             <span>Don&apos;t have an account yet? </span>
             <div className="relative inline-block" ref={menuRef}>
@@ -247,17 +247,17 @@ export default function SignInForm() {
                 </svg>
               </button>
               {signupMenuOpen && (
-                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[9999]">
+                <div className="absolute bottom-full -left-20 mb-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-999">
                   <Link
                     href="/teenagers/signup"
-                    className="block px-4 py-2 text-sm text-[#0F1C24] hover:bg-green-50 transition-colors font-montserrat montserrat font-bold"
+                    className="block px-4 py-2 text-sm text-[#0F1C24] hover:bg-green-100 transition-colors font-montserrat montserrat font-bold"
                     onClick={() => setSignupMenuOpen(false)}
                   >
                     Teenager Sign Up
                   </Link>
                   <Link
                     href="/mentor/signup"
-                    className="block px-4 py-2 text-sm text-[#0F1C24] hover:bg-green-50 transition-colors font-montserrat montserrat font-bold"
+                    className="block px-4 py-2 text-sm text-[#0F1C24] hover:bg-green-100 transition-colors font-montserrat montserrat font-bold"
                     onClick={() => setSignupMenuOpen(false)}
                   >
                     Mentor Sign Up

@@ -19,7 +19,7 @@ export default function page() {
         <ArrowBackIcon className="w-5 h-5" />
         Home
       </Link>
-      <div className="flex justify-centers items-center overflow-y-scroll no-scrollbar   max-h-[85%] h-full">
+      <div className="flex justify-centers items-center   overflow-y-scroll no-scrollbar   max-h-[85%] h-full">
         <TeenagerSignupForm />
       </div>
     </div>

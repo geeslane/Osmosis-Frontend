@@ -135,17 +135,36 @@ export const AddLiveSessionSchema = yup.object({
 });
 
 export const AddModuleSchema = yup.object({
-  topic: yup.string().required('Module title is required'),
+  title: yup.string().required('Module title is required'),
   ModuleNumber: yup.number().required('Module number is required').positive(),
-  notes: yup.string().required('Content is required'), // Add this for editor
-  resources: yup.string().required('Resources is required'), // Add this for editor
-  deliverables: yup.string().required('Deliverables is required'), // Add this for editor
-  workbook: yup
+  notes: yup.string().required('Content is required'),
+  additionalResources: yup.string().required('Resources is required'),
+  deliverables: yup.string().required('Deliverables is required'),
+  workbookFile: yup
     .mixed()
     .required('Workbook file is required')
     .test('fileRequired', 'Workbook file is required', (value) => {
       return value && value.length > 0;
     })
+    .test('fileType', 'Only PDF files are allowed', (value) => {
+      if (!value || value.length === 0) return true;
+      return value[0]?.type === 'application/pdf';
+    })
+    .test('fileSize', 'File size must be less than 10MB', (value) => {
+      if (!value || value.length === 0) return true;
+      return value[0]?.size <= 10 * 1024 * 1024; // 10MB
+    }),
+});
+
+export const EditModuleSchema = yup.object({
+  title: yup.string().required('Module title is required'),
+  ModuleNumber: yup.number().required('Module number is required').positive(),
+  notes: yup.string().required('Content is required'),
+  additionalResources: yup.string().required('Resources is required'),
+  deliverables: yup.string().required('Deliverables is required'),
+  workbookFile: yup
+    .mixed()
+    .notRequired()
     .test('fileType', 'Only PDF files are allowed', (value) => {
       if (!value || value.length === 0) return true;
       return value[0]?.type === 'application/pdf';
@@ -176,4 +195,42 @@ export const changePasswordSchema = yup.object({
     .string()
     .required('Please confirm your new password')
     .oneOf([yup.ref('newPassword')], 'Passwords do not match'),
+});
+
+export const contactFormValidation = yup.object({
+  firstName: {
+    required: 'First name is required',
+    minLength: {
+      value: 2,
+      message: 'First name must be at least 2 characters',
+    },
+    maxLength: {
+      value: 50,
+      message: 'First name cannot exceed 50 characters',
+    },
+  },
+
+  lastName: {
+    required: 'Last name is required',
+    minLength: {
+      value: 2,
+      message: 'Last name must be at least 2 characters',
+    },
+    maxLength: {
+      value: 50,
+      message: 'Last name cannot exceed 50 characters',
+    },
+  },
+
+  emailAddress: {
+    required: 'Email address is required',
+    pattern: {
+      value: /^\S+@\S+\.\S+$/,
+      message: 'Enter a valid email address',
+    },
+  },
+
+  message: {
+    required: 'Message is required',
+  },
 });

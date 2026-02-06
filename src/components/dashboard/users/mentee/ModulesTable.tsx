@@ -1,4 +1,3 @@
-import { MoreIcon } from '@/assets/icons';
 import { Column, DataTable } from '@/components/ui/table';
 import React from 'react';
 
@@ -63,8 +62,8 @@ export default function ModulesTable() {
 
       render: () => (
         <div className="relative flex items-center space-x-2">
-          <div className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer">
-            <MoreIcon />
+          <div className="p-2 underline rounded-md hover:bg-[#F9FAFB] cursor-pointer">
+            view
           </div>
         </div>
       ),
