@@ -6,11 +6,8 @@ import Empty from '@/components/ui/NotFound/Empty';
 import React from 'react';
 import AddAdmin from './AddAdmin';
 import AdminListPage from './AdminTable';
-import AdminDetail from './AdminDetail';
 import { useSearchParams, useRouter } from 'next/navigation';
-import {
-  useGetAdminsQuery,
-} from '@/store/users/users.api';
+import { useGetAdminsQuery } from '@/store/users/users.api';
 
 type Admin = {
   id: string;
@@ -30,13 +27,13 @@ function mapAdminFromApi(apiAdmin: any): Admin {
     DEACTIVATED: 'Inactive',
     PENDING: 'Pending',
   };
-  
+
   return {
     id: apiAdmin.id,
-    name: apiAdmin.fullName || '',
-    email: apiAdmin.email || '',
-    address: apiAdmin.address || '',
-    phone: apiAdmin.phoneNumber || '',
+    name: apiAdmin.fullName || '-',
+    email: apiAdmin.email || '-',
+    address: apiAdmin.address || '-',
+    phone: apiAdmin.phoneNumber || '-',
     status: statusMap[apiAdmin.status] || 'Active',
     image: apiAdmin.pictureUrl || undefined,
     role: apiAdmin.role || undefined,
@@ -48,15 +45,11 @@ export default function Admin() {
   const router = useRouter();
 
   const view = searchParams.get('viewadmin') || 'listadmin';
-  
-  const {
-    data: adminsResponse,
-    isLoading: isLoadingAdmins,
-  } = useGetAdminsQuery({ page: 1, limit: 100 });
 
+  const { data: adminsResponse, isLoading: isLoadingAdmins } =
+    useGetAdminsQuery({ page: 1, limit: 100 });
 
-  const adminData =
-    adminsResponse?.data?.map(mapAdminFromApi) || [];
+  const adminData = adminsResponse?.data?.map(mapAdminFromApi) || [];
 
   const setParam = (newView: string, id?: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -71,7 +64,11 @@ export default function Admin() {
   if (isLoadingAdmins && view === 'listadmin') {
     return (
       <div className="flex justify-center items-center py-20">
-        <LoadingIcon width="40" height="40" className="animate-spin text-green-100" />
+        <LoadingIcon
+          width="40"
+          height="40"
+          className="animate-spin text-green-100"
+        />
       </div>
     );
   }
@@ -79,7 +76,11 @@ export default function Admin() {
   if (view === 'viewadmin') {
     return (
       <div className="flex justify-center items-center py-20">
-        <LoadingIcon width="40" height="40" className="animate-spin text-green-100" />
+        <LoadingIcon
+          width="40"
+          height="40"
+          className="animate-spin text-green-100"
+        />
       </div>
     );
   }
@@ -103,22 +104,6 @@ export default function Admin() {
           </div>
         </div>
       )}
-
-      {view === 'viewadmin' && (
-        <div className="max-w-[745px]">
-          <div className="flex flex-col gap-8 py-4">
-            <div
-              onClick={handleBack}
-              className="flex cursor-pointer items-center gap-1"
-            >
-              <GoBackIcon />
-              <h3 className="text-sm text-green-200 font-medium">Back</h3>
-            </div>
-            <AdminDetail selectedAdmin={{}} />
-          </div>
-        </div>
-      )}
-
       {view === 'listadmin' && (
         <div className="rounded-md border border-green-400 py-5">
           <div className="flex justify-between px-6 items-center">
@@ -151,7 +136,6 @@ export default function Admin() {
             <AdminListPage
               data={adminData}
               onAddAdmin={() => setParam('addadmin')}
-              onViewAdmin={(admin) => setParam('viewadmin', admin.id)}
             />
           )}
         </div>

@@ -25,7 +25,11 @@ type AdminListPageProps = {
   onViewAdmin: (admin: MenteePending) => void;
   onRefetch?: () => void;
 };
-export default function MenteeTable({ data, onViewAdmin, onRefetch }: AdminListPageProps) {
+export default function MenteeTable({
+  data,
+  onViewAdmin,
+  onRefetch,
+}: AdminListPageProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<
@@ -36,7 +40,8 @@ export default function MenteeTable({ data, onViewAdmin, onRefetch }: AdminListP
   const [declineModalOpen, setDeclineModalOpen] = useState(false);
   const [declineId, setDeclineId] = useState<string | null>(null);
   const { showToast } = useToastify();
-  const [updateRequestStatus, { isLoading: isUpdating }] = useUpdateTeenagerRequestStatusMutation();
+  const [updateRequestStatus, { isLoading: isUpdating }] =
+    useUpdateTeenagerRequestStatusMutation();
 
   const handleAccept = async (id: string) => {
     setProcessingId(id);
@@ -45,8 +50,10 @@ export default function MenteeTable({ data, onViewAdmin, onRefetch }: AdminListP
         id,
         data: { status: 'APPROVED' },
       }).unwrap();
-      showToast('Mentee request approved. They have been added to Osmosis and can be found in the Users section.', 'success');
-      onRefetch?.();
+      showToast(
+        'Mentee request approved. They have been added to Osmosis and can be found in the Users section.',
+        'success'
+      );
     } catch (error: any) {
       const message = error?.data?.message || 'Failed to approve request';
       showToast(message, 'error');
@@ -97,7 +104,8 @@ export default function MenteeTable({ data, onViewAdmin, onRefetch }: AdminListP
       label: 'Name',
       render: (row) => {
         const normalizedImage = row.image ? normalizeImageUrl(row.image) : null;
-        const hasValidImage = normalizedImage && typeof normalizedImage === 'string';
+        const hasValidImage =
+          normalizedImage && typeof normalizedImage === 'string';
         const initials = (row.name || row.email || 'U')
           .split(' ')
           .map((word) => word[0])
@@ -143,20 +151,20 @@ export default function MenteeTable({ data, onViewAdmin, onRefetch }: AdminListP
             <Button
               onClick={() => handleAccept(row.id)}
               disabled={isProcessing || isUpdating}
-              className="bg-green-200 text-white font-semibold text-xs px-4 py-1.5 flex items-center gap-1 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-green-200 text-white font-semibold text-base px-8 py-2 flex items-center gap-1 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Accept
             </Button>
             <Button
               onClick={() => handleDeclineClick(row.id)}
               disabled={isProcessing || isUpdating}
-              className="bg-red-100 text-white font-semibold text-xs px-4 py-1.5 flex items-center gap-1 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-red-100 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Decline
             </Button>
             <button
               type="button"
-              className="px-2 py-1 text-xs underline"
+              className="px-3 py-3 text-green-300 ml-5 font-medium text-xs underline"
               onClick={() => {
                 onViewAdmin(row);
               }}

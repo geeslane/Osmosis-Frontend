@@ -1,11 +1,12 @@
 'use client';
 import { FilterIcon, MoreIcon, SearchIcon } from '@/assets/icons';
-import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { normalizeImageUrl } from '@/utils/helper';
+import { useUpdateMentorStatusMutation } from '@/store/users/users.api';
+import ActionModal from '@/components/ui/modal/ActionModal';
 
 type Admin = {
   id: string;
@@ -21,6 +22,7 @@ type AdminListPageProps = {
   data: Admin[];
   onViewMentor: (admin: Admin) => void;
 };
+
 export default function MentorTable({
   data,
   onViewMentor,
@@ -32,15 +34,33 @@ export default function MentorTable({
   );
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [perPage] = useState(5);
-  const [open, setOpen] = useState(false);
+  const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
+  const [newStatus, setNewStatus] = useState<Admin['status']>('Active');
+  const [reason, setReason] = useState('');
+  const [openStatusModal, setOpenStatusModal] = useState(false);
 
-  const handleDelete = async () => {
-    // setLoading(true);
+  const [updateMentorStatus, { isLoading: isUpdating }] =
+    useUpdateMentorStatusMutation();
+
+  const handleUpdateStatus = async () => {
+    if (!selectedAdmin) return;
+
+    const formData = new FormData();
+    formData.append('status', newStatus);
+    formData.append('reason', reason);
+
     try {
-      // await deleteApiCall()
-    } finally {
-      //setLoading(false);
-      //setOpen(false);
+      await updateMentorStatus({
+        id: selectedAdmin.id,
+        formData,
+      }).unwrap();
+
+      setOpenStatusModal(false);
+      setSelectedAdmin(null);
+      setNewStatus('Active');
+      setReason('');
+    } catch (error) {
+      console.error('Failed to update mentor status', error);
     }
   };
 
@@ -67,7 +87,8 @@ export default function MentorTable({
       label: 'Name',
       render: (row) => {
         const normalizedImage = row.image ? normalizeImageUrl(row.image) : null;
-        const hasValidImage = normalizedImage && typeof normalizedImage === 'string';
+        const hasValidImage =
+          normalizedImage && typeof normalizedImage === 'string';
         const initials = (row.name || row.email || 'U')
           .split(' ')
           .map((word) => word[0])
@@ -76,7 +97,7 @@ export default function MentorTable({
           .slice(0, 2);
 
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex relative items-center gap-2">
             <div className="w-8 h-8 rounded-full flex-shrink-0">
               {hasValidImage ? (
                 <Image
@@ -135,42 +156,46 @@ export default function MentorTable({
       render: (row) => (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="relative flex items-center space-x-2"
+          className="flex relative items-center space-x-2"
         >
-          <div
-            onClick={() =>
-              setOpenDropdownId((prev) => (prev === row.id ? null : row.id))
-            }
-            className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer"
-          >
-            <MoreIcon />
-          </div>
-
-          {openDropdownId === row.id && (
-            <div className="absolute top-8 right-0 z-50 flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg text-sm text-green-300 py-2">
-              <button
-                type="button"
-                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                onClick={() => {
-                  onViewMentor(row);
-                  setOpenDropdownId(null);
-                }}
-              >
-                View
-              </button>
-
-              <button
-                type="button"
-                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                onClick={() => {
-                  setOpen(true);
-                  setOpenDropdownId(null);
-                }}
-              >
-                Delete
-              </button>
+          <div className="">
+            <div
+              onClick={() =>
+                setOpenDropdownId((prev) => (prev === row.id ? null : row.id))
+              }
+              className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer"
+            >
+              <MoreIcon />
             </div>
-          )}
+
+            {openDropdownId === row.id && (
+              <div className="absolute  top-8 right-0 z-50 flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg text-sm text-green-300 py-2 pointer-events-auto">
+                <button
+                  type="button"
+                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
+                  onClick={() => {
+                    onViewMentor(row);
+                    setOpenDropdownId(null);
+                  }}
+                >
+                  View
+                </button>
+
+                <button
+                  type="button"
+                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
+                  onClick={() => {
+                    setSelectedAdmin(row);
+                    setNewStatus(row.status);
+                    setOpenStatusModal(true);
+                    setOpenDropdownId(null);
+                  }}
+                >
+                  Update Status
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       ),
     },
@@ -246,26 +271,72 @@ export default function MentorTable({
           </div>
         </div>
       </div>
-      <DeleteModal
-        isOpen={open}
-        onCancel={() => setOpen(false)}
-        onConfirm={handleDelete}
-        //isLoading={loading}
-        title="Delete Admin"
-        description="Deleting this admin will permanently remove access."
-      />
-      <DataTable
-        onRowClick={(row) => onViewMentor(row)}
-        columns={columns}
-        data={paginated}
-      />
-      <div className="flex items-center justify-between">
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
-        />
-      </div>
+      <ActionModal
+        isOpen={openStatusModal}
+        title="Update Status"
+        description="Change the user's status and provide a reason for this action."
+        confirmText="Update"
+        isLoading={isUpdating}
+        onCancel={() => setOpenStatusModal(false)}
+        onConfirm={handleUpdateStatus}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-green-200 mb-1">
+              Status
+            </label>
+            <select
+              value={newStatus}
+              onChange={(e) =>
+                setNewStatus(e.target.value as 'Active' | 'Inactive')
+              }
+              className="w-full rounded-md border border-[#D0D5DD] px-3 py-2 text-sm"
+            >
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-green-200 mb-1">
+              Reason
+            </label>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Enter reason for status change"
+              rows={3}
+              className="w-full rounded-md border border-[#D0D5DD] px-3 py-2 text-sm resize-none"
+            />
+          </div>
+        </div>
+      </ActionModal>
+
+      {filtered.length === 0 ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <p className="text-gray-500 text-lg font-medium">No data found</p>
+            <p className="text-gray-400 text-sm mt-1">
+              Try adjusting your search or filter criteria
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <DataTable
+            onRowClick={(row) => onViewMentor(row)}
+            columns={columns}
+            data={paginated}
+          />
+          <div className="flex items-center justify-between">
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
