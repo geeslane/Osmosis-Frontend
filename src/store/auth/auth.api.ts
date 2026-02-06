@@ -31,6 +31,7 @@ interface MagicLinkResponse {
       userType?: 'ADMIN' | 'TEENAGER' | 'MENTOR';
       userId?: string;
       requiresPasswordChange?: boolean;
+      token: string;
     };
   };
 }
