@@ -39,6 +39,11 @@ const AppSidebar: React.FC = () => {
       path: '#',
     },
     {
+      icon: DashboardIcon,
+      name: 'Mentee',
+      path: '/dashboard/mentee',
+    },
+    {
       icon: PendingRequestIcon,
       name: 'Pending Requests',
       path: '/dashboard/pending-requests',
