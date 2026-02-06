@@ -10,6 +10,7 @@ import './globals.css';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { NavbarTitleProvider } from '@/context/NavbarTitleContsxt';
 import ErrorHandler from '@/components/common/ErrorHandler';
+import GlobalAuthHandler from '@/store/auth/GlobalAuth';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -66,6 +67,7 @@ export default function RootLayout({
         <ErrorHandler />
         <GoogleOAuthProvider clientId={config.googleClientId ?? ''}>
           <Providers>
+            <GlobalAuthHandler />
             <NavbarTitleProvider>
               <SidebarProvider>{children}</SidebarProvider>
             </NavbarTitleProvider>

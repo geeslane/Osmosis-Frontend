@@ -36,7 +36,6 @@ export default function SignInForm() {
     resolver: yupResolver(SignInFormSchema),
   });
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -60,16 +59,15 @@ export default function SignInForm() {
         password: formData.password,
       };
       const response = await UserSignIn(apiData).unwrap();
-
       const loginData = response.data?.data as
         | {
-          sessionId?: string;
-          requiresOtp?: boolean;
-          requiresPasswordChange?: boolean;
-          userType?: 'ADMIN' | 'MENTOR' | 'TEENAGER';
-          userId?: string;
-          token?: string;
-        }
+            sessionId?: string;
+            requiresOtp?: boolean;
+            requiresPasswordChange?: boolean;
+            userType?: 'ADMIN';
+            userId?: string;
+            token?: string;
+          }
         | undefined;
       const responseMessage = response.data?.message;
 
@@ -77,9 +75,11 @@ export default function SignInForm() {
         showToast(responseMessage || 'Login failed', 'error');
         return;
       }
-
       if (loginData.requiresOtp && loginData.sessionId) {
-        showToast(responseMessage || 'OTP code has been sent to your email', 'success');
+        showToast(
+          responseMessage || 'OTP code has been sent to your email',
+          'success'
+        );
         try {
           const params = new URLSearchParams();
           params.set('sessionId', loginData.sessionId);
@@ -87,19 +87,27 @@ export default function SignInForm() {
             params.set('redirect', redirectPath);
           }
 
-          if (loginData.requiresPasswordChange && loginData.userId && loginData.userType) {
+          if (
+            loginData.requiresPasswordChange &&
+            loginData.userId &&
+            loginData.userType
+          ) {
             params.set('requiresPasswordChange', 'true');
             params.set('userId', loginData.userId);
             params.set('userType', loginData.userType);
           }
-          router.push(`/auth/otp?${params.toString()}`);
+          router.push(`/auth/otp/${loginData.sessionId}`);
         } catch (navError) {
           console.error('Navigation error:', navError);
         }
         return;
       }
 
-      if (loginData.requiresPasswordChange && loginData.userId && loginData.userType) {
+      if (
+        loginData.requiresPasswordChange &&
+        loginData.userId &&
+        loginData.userType
+      ) {
         try {
           router.push(
             `/auth/change-password?userType=${loginData.userType}&userId=${loginData.userId}`
@@ -147,7 +155,8 @@ export default function SignInForm() {
       } else if (error?.data?.message) {
         message = error.data.message;
       } else if (error?.error) {
-        message = typeof error.error === 'string' ? error.error : 'Login failed';
+        message =
+          typeof error.error === 'string' ? error.error : 'Login failed';
       } else if (typeof error === 'string') {
         message = error;
       } else if (error?.message) {
@@ -159,7 +168,13 @@ export default function SignInForm() {
   };
   return (
     <div className=" w-full font-montserrat montserrat">
-      <Image className='my-[40px] mx-auto md:mx-0' src={'/image/logo.png'} alt="" width={151} height={32} />
+      <Image
+        className="my-[40px] mx-auto md:mx-0"
+        src={'/image/logo.png'}
+        alt=""
+        width={151}
+        height={32}
+      />
       <div className="flex flex-col mt-6 gap-7">
         <div>
           <h3 className="text-[32px] md:text-[40px] text-center md:text-left text-green-200 font-bold">
@@ -204,7 +219,7 @@ export default function SignInForm() {
         </form>
         <div className="flex flex-col gap-3 font-montserrat montserrat text-[#0F1C24] text-[15px] font-bold items-center justify-center">
           <div className="flex items-center">
-            <span>Don&apos;t have an account yet?{' '}</span>
+            <span>Don&apos;t have an account yet? </span>
             <div className="relative inline-block" ref={menuRef}>
               <button
                 type="button"
@@ -216,8 +231,9 @@ export default function SignInForm() {
               >
                 Sign Up
                 <svg
-                  className={`w-4 h-4 transition-transform duration-200 ${signupMenuOpen ? 'rotate-180' : ''
-                    }`}
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    signupMenuOpen ? 'rotate-180' : ''
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

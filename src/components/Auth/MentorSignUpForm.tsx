@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 import {
   CheckIcon,
@@ -16,38 +15,26 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import InputForm from '../form/InputForm';
-import {
-  RegisterMentorFormSchema,
-} from '@/validation/schema';
+import { RegisterMentorFormSchema } from '@/validation/schema';
 import { useRegisterMentorMutation } from '@/store/auth/auth.api';
 import useToastify from '@/hooks/useToastify';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import SelectForm from '../form/SelectForm';
 import FileUpload from '../form/FileUpload';
 import { Modal } from '../ui/modal';
-
-type RegisterFormData = {
-  fullName: string;
-  email: string;
-  dateOfBirth: string;
-  gender: string;
-  phoneNumber: string;
-  address: string;
-  occupation: string;
-  linkedin: string;
-  topic: string;
-  inspires: string;
-  bio: string;
-};
+import { useDropdowns } from '@/hooks/useDropDownApi';
+import { RegisterFormData } from '../types';
 
 export const MentorSignupForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
   const [pictureFile, setPictureFile] = useState<File | null>(null);
-  const router = useRouter();
   const { showToast } = useToastify();
   const [registerMentor, { isLoading }] = useRegisterMentorMutation();
+  const { dropdowns, isLoading: isDropdownsLoading } = useDropdowns([
+    'gender',
+    'mentorship-topics',
+  ]);
 
   const {
     register,
@@ -90,23 +77,28 @@ export const MentorSignupForm = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const payload = {
-        fullName: data.fullName,
-        email: data.email,
-        dateOfBirth: data.dateOfBirth,
-        gender: data.gender,
-        phoneNumber: data.phoneNumber,
-        address: data.address,
-        occupation: data.occupation,
-        linkedinUrl: data.linkedin || undefined,
-        mentorshipTopics: [data.topic], // Convert single topic to array
-        inspiration: data.inspires,
-        bio: data.bio,
-        picture: pictureFile || undefined,
-      };
-
-      const response = await registerMentor(payload).unwrap();
-      showToast(response.message || 'Registration successful!', 'success');
+      const formData = new FormData();
+      formData.append('fullName', data.fullName);
+      formData.append('email', data.email);
+      formData.append('dateOfBirth', data.dateOfBirth);
+      formData.append('gender', data.gender);
+      formData.append('phoneNumber', data.phoneNumber);
+      formData.append('address', data.address);
+      formData.append('occupation', data.occupation);
+      if (data.linkedin) {
+        formData.append('linkedinUrl', data.linkedin);
+      }
+      formData.append('mentorshipTopics[]', data.topic);
+      formData.append('inspiration', data.inspires);
+      formData.append('bio', data.bio);
+      if (pictureFile) {
+        formData.append('picture', pictureFile);
+      }
+      const response = await registerMentor(formData).unwrap();
+      showToast(
+        response.data?.message || 'Registration successful!',
+        'success'
+      );
       setShowSuccess(true);
     } catch (error: any) {
       const message =
@@ -127,10 +119,10 @@ export const MentorSignupForm = () => {
           <h3 className="text-[40px] text-green-200 font-bold">
             Welcome Here!
           </h3>
-          <p className="text-[#37445D] font-medium text-xl">Sign up to Join Osmosis as a Mentor</p>
+          <p className="text-[#37445D] font-medium text-xl">
+            Sign up to Join Osmosis as a Mentor
+          </p>
         </div>
-
-        {/* Progress */}
         <div className="mb-2 flex max-w-[900px] flex-col w-full mt-3">
           <div className="flex items-center w-full justify-between">
             {[1, 2, 3, 4].map((step) => (
@@ -140,8 +132,8 @@ export const MentorSignupForm = () => {
                     step < currentStep
                       ? 'bg-green-100 text-white'
                       : step === currentStep
-                      ? 'bg-green-300 text-white'
-                      : 'bg-gray-200 px-2 text-gray-500'
+                        ? 'bg-green-300 text-white'
+                        : 'bg-gray-200 px-2 text-gray-500'
                   }`}
                 >
                   {step < currentStep ? <CheckIcon /> : step}
@@ -196,7 +188,9 @@ export const MentorSignupForm = () => {
             {currentStep === 2 && (
               <div className="space-y-6">
                 <div className="flex font-montserrat montserrat flex-col gap-1">
-                  <label className="text-green-300 font-medium">Date Of Birth</label>
+                  <label className="text-green-300 font-medium">
+                    Date Of Birth
+                  </label>
                   <div className="relative">
                     <Controller
                       name="dateOfBirth"
@@ -206,7 +200,9 @@ export const MentorSignupForm = () => {
                           selected={field.value ? new Date(field.value) : null}
                           onChange={(date: Date | null) => {
                             if (date) {
-                              const formattedDate = date.toISOString().split('T')[0];
+                              const formattedDate = date
+                                .toISOString()
+                                .split('T')[0];
                               field.onChange(formattedDate);
                               setValue('dateOfBirth', formattedDate, {
                                 shouldValidate: true,
@@ -220,7 +216,9 @@ export const MentorSignupForm = () => {
                           dropdownMode="select"
                           placeholderText="Select date of birth"
                           className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 pr-10 ${
-                            errors.dateOfBirth ? 'border-red-500' : 'border-green-300'
+                            errors.dateOfBirth
+                              ? 'border-red-500'
+                              : 'border-green-300'
                           }`}
                           popperClassName="react-datepicker-popper-modern"
                         />
@@ -241,15 +239,12 @@ export const MentorSignupForm = () => {
                 <SelectForm
                   label="Gender"
                   name="gender"
-                  placeholder="Select gender"
+                  placeholder={
+                    isDropdownsLoading ? 'Loading...' : 'Select gender'
+                  }
+                  options={dropdowns['gender']}
                   register={register}
                   error={errors.gender}
-                  options={[
-                    { label: 'Male', value: 'male' },
-                    { label: 'Female', value: 'female' },
-                    { label: 'Other', value: 'other' },
-                    { label: 'Prefer not to say', value: 'prefer-not-to-say' },
-                  ]}
                 />
                 <FileUpload
                   label="Picture"
@@ -303,15 +298,12 @@ export const MentorSignupForm = () => {
                 <SelectForm
                   label="Mentorship Topics of Interest"
                   name="topic"
-                  placeholder="Select Topic"
                   register={register}
+                  placeholder={
+                    isDropdownsLoading ? 'Loading...' : 'Select Topics'
+                  }
                   error={errors.topic}
-                  options={[
-                    { label: 'Male', value: 'male' },
-                    { label: 'Female', value: 'female' },
-                    { label: 'Other', value: 'other' },
-                    { label: 'Prefer not to say', value: 'prefer-not-to-say' },
-                  ]}
+                  options={dropdowns['mentorship-topics']}
                 />
 
                 <InputForm
@@ -364,7 +356,10 @@ export const MentorSignupForm = () => {
         </div>
         <div className="flex font-montserrat montserrat text-[#0F1C24] text-[15px] font-bold items-center justify-center mt-6 pb-4">
           <span>Already have an account?</span>
-          <Link href="/signin" className="text-green-100 ml-1 hover:text-green-200 transition-colors font-bold">
+          <Link
+            href="/signin"
+            className="text-green-100 ml-1 hover:text-green-200 transition-colors font-bold"
+          >
             Sign in
           </Link>
         </div>
@@ -382,8 +377,9 @@ export const MentorSignupForm = () => {
             height={100}
             className="object-cover"
           />
-         <h3 className="text-green-200 font-medium text-center">
-            Thank you for applying to join Osmosis as a Mentor. Kindly check your email inbox for more details regarding the onboarding process.
+          <h3 className="text-green-200 font-medium text-center">
+            Thank you for applying to join Osmosis as a Mentor. Kindly check
+            your email inbox for more details regarding the onboarding process.
           </h3>
         </div>
       </Modal>
