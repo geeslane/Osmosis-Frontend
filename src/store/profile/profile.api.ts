@@ -67,6 +67,7 @@ export const ProfileApi = createApi({
         // Transform the API response to match the expected format
         if (response?.success && response?.data?.data) {
           const apiData = response.data.data;
+          const role = response.data;
           return {
             success: response.success,
             data: {
@@ -76,7 +77,7 @@ export const ProfileApi = createApi({
                 id: apiData.id,
                 fullName: apiData.fullName,
                 email: apiData.email,
-                role: apiData.role,
+                role: role.userType,
                 pictureUrl: apiData.pictureUrl || null,
                 phoneNumber: apiData.phoneNumber || null,
                 address: apiData.address || null,

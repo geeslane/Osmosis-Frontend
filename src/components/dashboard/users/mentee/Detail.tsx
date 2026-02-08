@@ -17,7 +17,9 @@ import ProgressGauge from '@/components/ui/Progress/ProgressGauge';
 import { Info } from '@/components/common/Details/Info';
 import { Meta } from '@/components/common/Details/Meta';
 import PageTitle from '@/components/PageTitle';
-// types/mentee.ts
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+
 export type MenteeStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING';
 export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 
@@ -49,7 +51,7 @@ export default function Detail() {
   const { id } = useParams<{ id: string }>();
   const { data, isLoading } = useGetTeenagerByIdQuery(id);
   const [viewCallHistory, setViewCallHistory] = useState(false);
-
+  const user = useSelector((state: RootState) => state.profile.user);
   const mentee: TeenagerDTO | undefined = data?.data?.data;
 
   if (isLoading) {
@@ -78,15 +80,19 @@ export default function Detail() {
             <h3 className="text-green-200 text-3xl font-bold">
               Mentee Details
             </h3>
-            <button
-              onClick={() => setViewCallHistory(true)}
-              className="flex items-center gap-2 px-8 rounded-xl bg-[#DCFFAD91]"
-            >
-              <span className="hidden md:block font-medium text-green-300">
-                View Call History
-              </span>
-              <PhoneIcon color="#002825" />
-            </button>
+            {['ADMIN', 'SUPERADMIN'].includes(
+              user?.role?.toUpperCase() || ''
+            ) && (
+              <button
+                onClick={() => setViewCallHistory(true)}
+                className="flex items-center gap-2 px-8 rounded-xl bg-[#DCFFAD91]"
+              >
+                <span className="hidden md:block font-medium text-green-300">
+                  View Call History
+                </span>
+                <PhoneIcon color="#002825" />
+              </button>
+            )}
           </div>
 
           {/* Profile Card */}
@@ -101,13 +107,13 @@ export default function Detail() {
             </span>
           </div>
           <div className="rounded-lg border border-[#6CBB0180] px-10 md:px-16 py-8 flex flex-col md:flex-row  gap-10">
-            <div className="w-[120px] h-[120px] rounded-full">
+            <div className="w-[120px] h-[120px] rounded-full object-cover">
               <Image
                 src={mentee.pictureUrl}
                 alt={mentee.teenagerFullName}
                 width={120}
                 height={120}
-                className="rounded-full object-cover"
+                className="rounded-full object-cover overflow-hidden"
               />
             </div>
             <div className="flex flex-col w-full gap-[56px]">
