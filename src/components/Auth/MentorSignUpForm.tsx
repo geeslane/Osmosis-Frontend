@@ -41,6 +41,7 @@ export const MentorSignupForm = () => {
     handleSubmit,
     trigger,
     control,
+    reset,
     setValue,
     formState: { errors },
   } = useForm<RegisterFormData>({
@@ -99,7 +100,10 @@ export const MentorSignupForm = () => {
         response.data?.message || 'Registration successful!',
         'success'
       );
-      setShowSuccess(true);
+       reset();
+       setPictureFile(null);
+       setCurrentStep(1);
+       setShowSuccess(true);
     } catch (error: any) {
       const message =
         error?.data?.message ||
@@ -111,7 +115,7 @@ export const MentorSignupForm = () => {
   };
 
   return (
-    <div className="w-full overflow-scroll max-h-[90vh] no-scrollbar font-montserrat montserrat">
+    <div className="w-full px-2 overflow-scroll max-h-[90vh] no-scrollbar font-montserrat montserrat">
       <Image src="/image/logo.png" alt="Logo" width={151} height={32} />
 
       <div className="flex flex-col mt-6 gap-7">

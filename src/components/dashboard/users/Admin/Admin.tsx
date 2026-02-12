@@ -8,6 +8,7 @@ import AddAdmin from './AddAdmin';
 import AdminListPage from './AdminTable';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useGetAdminsQuery } from '@/store/users/users.api';
+import { useUserList } from '@/hooks/useUserList';
 
 type Admin = {
   id: string;
@@ -43,13 +44,17 @@ function mapAdminFromApi(apiAdmin: any): Admin {
 export default function Admin() {
   const searchParams = useSearchParams();
   const router = useRouter();
-
   const view = searchParams.get('viewadmin') || 'listadmin';
 
+  const userList = useUserList({ defaultLimit: 10 });
+  const { queryParams, search, statusFilter, limit } = userList;
+
   const { data: adminsResponse, isLoading: isLoadingAdmins } =
-    useGetAdminsQuery({ page: 1, limit: 100 });
+    useGetAdminsQuery(queryParams);
 
   const adminData = adminsResponse?.data?.map(mapAdminFromApi) || [];
+  const total = adminsResponse?.pagination?.total ?? 0;
+  const totalPages = adminsResponse?.pagination?.totalPages ?? 1;
 
   const setParam = (newView: string, id?: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -110,22 +115,28 @@ export default function Admin() {
             <div className="flex items-center gap-2 text-green-200 text-2xl font-semibold">
               Admins List
               <span className="bg-[#DCFFAD91] w-[24px] h-[24px] flex justify-center items-center rounded-full text-green-100 text-xs">
-                {adminData.length}
+                {total}
               </span>
             </div>
-            {adminData.length == 0 && (
-              <Button
-                onClick={() => setParam('addadmin')}
-                variant="primary"
-                className="font-medium flex gap-1"
-              >
-                <AddsIcon />
-                <span className="hidden md:flex">Invite Admin</span>
-              </Button>
-            )}
+            {!isLoadingAdmins &&
+              total === 0 &&
+              search.trim() === '' &&
+              statusFilter === 'All' && (
+                <Button
+                  onClick={() => setParam('addadmin')}
+                  variant="primary"
+                  className="font-medium flex gap-1"
+                >
+                  <AddsIcon />
+                  <span className="hidden md:flex">Invite Admin</span>
+                </Button>
+              )}
           </div>
 
-          {adminData.length === 0 ? (
+          {!isLoadingAdmins &&
+          total === 0 &&
+          search.trim() === '' &&
+          statusFilter === 'All' ? (
             <div className="max-w-[400px] mx-auto my-[65px]">
               <Empty
                 title="No Admins for now."
@@ -135,6 +146,14 @@ export default function Admin() {
           ) : (
             <AdminListPage
               data={adminData}
+              totalPages={totalPages}
+              page={userList.page}
+              perPage={limit}
+              onPageChange={userList.setPage}
+              search={userList.search}
+              onSearchChange={userList.setSearch}
+              statusFilter={userList.statusFilter}
+              onStatusFilterChange={userList.setStatusFilter}
               onAddAdmin={() => setParam('addadmin')}
             />
           )}

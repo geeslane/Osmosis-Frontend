@@ -2,38 +2,56 @@
 
 import React from 'react';
 import { useSearchParams } from 'next/navigation';
+import type { Module } from '@/components/types';
 import Note from './Note';
 import Workbook from './Workbook';
+import Deliverable from './Deliverable';
+import AdditionalResources from './AdditionalResources';
 
-const NoteView: React.FC = () => (
-  <div className=" w-full ">
-    <Note />
-  </div>
-);
+type ModuleContentProps = {
+  module: Module | undefined;
+};
 
-const WorkbookView: React.FC = () => (
-  <div className="w-full">
-    <Workbook />
-  </div>
-);
-
-/* const NoteView: React.FC = () => (
-  <div className="mt-6">
-    <Mentee />
-  </div>
-);  */
-
-export default function ModuleContent() {
+export default function ModuleContent({ module }: ModuleContentProps) {
   const searchParams = useSearchParams();
   const content = searchParams.get('content') || 'Note';
 
   switch (content) {
     case 'Note':
-      return <NoteView />;
+      return (
+        <div className="w-full max-w-full min-w-0">
+          <Note notes={module?.notes} title={module?.title} />
+        </div>
+      );
     case 'Workbook':
-      return <WorkbookView />;
-    case 'admins':
+      return (
+        <div className="w-full max-w-full min-w-0">
+          <Workbook title={module?.title} workbookFile={module?.workbookFile} />
+        </div>
+      );
+    case 'Deliverable':
+      return (
+        <div className="w-full max-w-full min-w-0">
+          <Deliverable
+            deliverables={module?.deliverables}
+            title={module?.title}
+          />
+        </div>
+      );
+    case 'Additional':
+      return (
+        <div className="w-full max-w-full min-w-0">
+          <AdditionalResources
+            additionalResources={module?.additionalResources}
+            title={module?.title}
+          />
+        </div>
+      );
     default:
-      return <NoteView />;
+      return (
+        <div className="w-full max-w-full min-w-0">
+          <Note notes={module?.notes} title={module?.title} />
+        </div>
+      );
   }
 }

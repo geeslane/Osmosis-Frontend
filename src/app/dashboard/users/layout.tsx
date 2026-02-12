@@ -7,7 +7,7 @@ export default function UserLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-[37px]">
+    <div className="flex flex-col ">
       <UsersTabs />
       {children}
     </div>

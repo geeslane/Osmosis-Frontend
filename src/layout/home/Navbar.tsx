@@ -5,22 +5,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CloseIcon, Hamburger } from '@/assets/icons';
+import { ArrowDownIcon, CloseIcon, Hamburger } from '@/assets/icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { mobileMenuVariants, navbarVariants } from '@/animation';
 import { NAV_LINKS } from '@/utils/data';
+import { useLogoutHandler } from '@/hooks/useLogout';
 
 const Navbar = () => {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
+  const user = useSelector((state: RootState) => state.profile.user);
   const [visible, setVisible] = useState(true);
   const [accountOpen, setAccountOpen] = useState(false);
   const isLoggedIn = useSelector(
     (state: RootState) => state.profile.isLoggedIn
   );
+  const { handleLogout, isLoggingOut } = useLogoutHandler();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -77,27 +80,75 @@ const Navbar = () => {
               ))}
             </ul>
           </div>
-          <div className="hidden montserrat   lg:flex items-center  gap-12">
+          <div className="hidden montserrat  lg:flex items-center  gap-12">
             {isLoggedIn ? (
               <li className="relative group list-none">
-                <span className="flex items-center gap-1 text-sm font-medium cursor-pointer text-white transition-colors duration-200 group-hover:text-gray-300">
-                  <span className="transition-transform duration-300 group-hover:rotate-180"></span>
-                </span>
-                <ul className="absolute right-0 mt-2 h-30 w-44 bg-white text-black rounded-lg shadow-lg opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transform transition-all duration-200 translate-y-2 z-10">
-                  <li className="flex items-center gap-2  mt-5 hover:bg-gray-100 px-3 py-2 rounded-lg">
+                <div className="flex justify-center   items-center   ">
+                  <div className="flex items-center  justify-center w-full">
+                    <div className="flex w-full gap-3">
+                      <div className="w-[36px] h-[36px] flex-shrink-0">
+                        {user?.avatar ? (
+                          <Image
+                            src={user.avatar}
+                            alt={user.full_name || user?.email || 'User'}
+                            width={36}
+                            height={36}
+                            className="rounded-full w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center">
+                            <span className="text-white text-xs font-semibold">
+                              {(user?.full_name || user?.email || 'U')
+                                .split(' ')
+                                .map((word) => word[0])
+                                .join('')
+                                .toUpperCase()
+                                .slice(0, 2)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-sm font-semibold text-green-200 truncate">
+                          {user?.full_name || user?.email || 'User'}
+                        </h3>
+                        {user?.email && (
+                          <h2 className="text-green-200 text-[10px] truncate">
+                            {user.email}
+                          </h2>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="flex items-center gap-1 text-sm font-medium cursor-pointer text-white transition-colors duration-200 group-hover:text-gray-300">
+                    <span className="transition-transform duration-300 group-hover:rotate-180">
+                      <ArrowDownIcon />
+                    </span>
+                  </span>
+                </div>
+                <ul className="absolute  right-0 mt-2  w-44  text-black rounded-lg shadow-lg opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transform transition-all duration-200 translate-y-1 z-10">
+                  <li className="flex items-center  gap-2 mt-2 hover:bg-green-100 px-3 py-2 rounded-lg">
                     <Link
                       href="/dashboard"
-                      className="block  text-sm hover:bg-gray-100"
+                      className="block  text-sm  h-full w-full"
                     >
                       Dashboard
                     </Link>
                   </li>
-
-                  <li>Logout</li>
+                  <li className="flex items-center gap-2 mt-2  hover:bg-green-100 px-3 py-2 rounded-lg">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
+                      className="block  text-sm text-start w-full h-full"
+                    >
+                      Logout
+                    </button>
+                  </li>
                 </ul>
               </li>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex  items-center gap-3">
                 <Link
                   href="/signin"
                   className="px-6 py-2 montserrat   rounded-lg  text-black-100 font-medium transition-colors  hover:bg-green-100"
@@ -170,11 +221,51 @@ const Navbar = () => {
                 {isLoggedIn ? (
                   <div>
                     <div
-                      className="flex items-center justify-between text-white font-medium cursor-pointer"
+                      className="flex items-center justify-between  font-medium cursor-pointer"
                       onClick={() => setAccountOpen((prev) => !prev)}
                     >
-                      <div className="flex items-center gap-1">
-                        <span>Account</span>
+                      <div className="flex justify-between w-full   items-center   ">
+                        <div className="flex items-center  justify-between w-full">
+                          <div className="flex w-full gap-3">
+                            <div className="w-[36px] h-[36px] flex-shrink-0">
+                              {user?.avatar ? (
+                                <Image
+                                  src={user.avatar}
+                                  alt={user.full_name || user?.email || 'User'}
+                                  width={36}
+                                  height={36}
+                                  className="rounded-full w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center">
+                                  <span className="text-white text-xs font-semibold">
+                                    {(user?.full_name || user?.email || 'U')
+                                      .split(' ')
+                                      .map((word) => word[0])
+                                      .join('')
+                                      .toUpperCase()
+                                      .slice(0, 2)}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-sm font-semibold text-green-200 truncate">
+                                {user?.full_name || user?.email || 'User'}
+                              </h3>
+                              {user?.email && (
+                                <h2 className="text-green-200 text-[10px] truncate">
+                                  {user.email}
+                                </h2>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <span className="flex items-center gap-1 text-sm font-medium cursor-pointer text-white transition-colors duration-200 group-hover:text-gray-300">
+                          <span className="transition-transform duration-300 group-hover:rotate-180">
+                            <ArrowDownIcon />
+                          </span>
+                        </span>
                       </div>
                       <span
                         className={`transition-transform duration-300 ${
@@ -183,22 +274,25 @@ const Navbar = () => {
                       ></span>
                     </div>
                     {accountOpen && (
-                      <ul className="mt-4 w-full bg-white text-black rounded-lg shadow-lg py-2 px-4 space-y-2">
-                        <li className="flex items-center gap-2 hover:bg-gray-100 px-3 py-2 rounded-lg">
-                          {/*  <HomeIcon
-                            width={24}
-                            height={24}
-                            className="fill-black"
-                          /> */}
+                      <ul className="mt-2 w-full bg-white text-black rounded-lg shadow-lg py-2 px-4 space-y-2">
+                        <li className="flex items-center  gap-2  mt-2 hover:bg-green-100 px-3 py-2 rounded-lg">
                           <Link
                             href="/dashboard"
-                            className="text-sm"
-                            onClick={() => setMenuOpen(false)}
+                            className="block  text-sm  h-full w-full"
                           >
                             Dashboard
                           </Link>
                         </li>
-                        <li>hello</li>
+                        <li className="flex items-center gap-2   hover:bg-green-100 px-3 py-2 rounded-lg">
+                          <button
+                            type="button"
+                            onClick={handleLogout}
+                            disabled={isLoggingOut}
+                            className="block text-start  text-sm w-full h-full"
+                          >
+                            Logout
+                          </button>
+                        </li>
                       </ul>
                     )}
                   </div>

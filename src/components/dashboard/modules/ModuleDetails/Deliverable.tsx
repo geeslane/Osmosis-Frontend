@@ -1,15 +1,18 @@
 import React from 'react';
 
-type NoteProps = {
+type DeliverableProps = {
   title?: string;
-  notes?: string;
+  deliverables?: string;
 };
 
-export default function Note({ title, notes }: NoteProps) {
-  if (!title && !notes) {
+export default function Deliverable({
+  title,
+  deliverables,
+}: DeliverableProps) {
+  if (!title && !deliverables) {
     return (
       <div className="font-montserrat montserrat space-y-10 text-green-200">
-        <p className="text-green-200/70">No note content available.</p>
+        <p className="text-green-200/70">No deliverable content available.</p>
       </div>
     );
   }
@@ -21,10 +24,10 @@ export default function Note({ title, notes }: NoteProps) {
           {title}
         </h3>
       )}
-      {notes && (
+      {deliverables && (
         <div
           className="text-green-200 font-medium break-words [&_strong]:font-semibold [&_p]:mb-3 [&_p:last-child]:mb-0 [&_*]:break-words"
-          dangerouslySetInnerHTML={{ __html: notes }}
+          dangerouslySetInnerHTML={{ __html: deliverables }}
         />
       )}
     </div>

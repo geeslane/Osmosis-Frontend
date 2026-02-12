@@ -6,25 +6,43 @@ import {
   type SubmitHandler,
 } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 import InputForm from '@/components/form/InputForm';
 import Button from '@/components/ui/button/Button';
 import 'react-datepicker/dist/react-datepicker.css';
 import useToastify from '@/hooks/useToastify';
-import { AddModuleSchema } from '@/validation/schema';
+import { AddModuleSchema, EditModuleSchema } from '@/validation/schema';
 import TextEditor from '@/components/Editors/TextEditors';
 import FileUpload from '@/components/Editors/FileUpload';
+import {
+  useCreateModuleMutation,
+  useUpdateModuleMutation,
+} from '@/store/dashboard/dashboard.api';
+import type { Module } from '@/components/types';
 
 export type AddModuleFormInputs = {
-  topic: string;
+  title: string;
   ModuleNumber: number;
   notes: string;
-  resources: string;
+  additionalResources: string;
   deliverables: string;
-  workbook: File[];
+  workbookFile: File[];
 };
 
-export default function AddModule() {
+type AddModuleProps = {
+  module?: Module | null;
+};
+
+export default function AddModule({ module = null }: AddModuleProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToastify();
+  const returnTab = searchParams.get('content') || 'Note';
+  const [createModule, { isLoading: isCreating }] = useCreateModuleMutation();
+  const [updateModule, { isLoading: isUpdating }] = useUpdateModuleMutation();
+  const isEdit = !!module;
+  const isLoading = isCreating || isUpdating;
 
   const {
     register,
@@ -34,24 +52,72 @@ export default function AddModule() {
     reset,
   } = useForm<AddModuleFormInputs>({
     resolver: yupResolver(
-      AddModuleSchema
+      (isEdit ? EditModuleSchema : AddModuleSchema) as any
     ) as unknown as Resolver<AddModuleFormInputs>,
+    defaultValues: {
+      title: '',
+      ModuleNumber: undefined as any,
+      notes: '',
+      additionalResources: '',
+      deliverables: '',
+      workbookFile: [],
+    },
   });
 
-  const onSubmit: SubmitHandler<AddModuleFormInputs> = (data) => {
-    console.log('Module Payload:', data);
-    showToast('Module added successfully', 'success');
-    reset();
+  useEffect(() => {
+    if (module) {
+      reset({
+        title: module.title,
+        ModuleNumber: module.moduleNumber,
+        notes: module.notes,
+        additionalResources: module.additionalResources,
+        deliverables: module.deliverables,
+        workbookFile: [],
+      });
+    }
+  }, [module, reset]);
+
+  const onSubmit: SubmitHandler<AddModuleFormInputs> = async (data) => {
+    try {
+      const formData = new FormData();
+      formData.append('title', data.title);
+      formData.append('moduleNumber', String(data.ModuleNumber));
+      formData.append('notes', data.notes);
+      formData.append('additionalResources', data.additionalResources);
+      formData.append('deliverables', data.deliverables);
+      if (data.workbookFile?.length) {
+        formData.append('workbookFile', data.workbookFile[0]);
+      }
+
+      if (isEdit && module) {
+        await updateModule({ id: module.id, formData }).unwrap();
+        showToast('Module updated successfully', 'success');
+        router.push(`/dashboard/modules/${module.id}?content=${returnTab}`);
+      } else {
+        await createModule(formData).unwrap();
+        showToast('Module added successfully', 'success');
+        reset({
+          title: '',
+          ModuleNumber: undefined as any,
+          notes: '',
+          additionalResources: '',
+          deliverables: '',
+          workbookFile: [],
+        });
+      }
+    } catch (err: any) {
+      showToast(err?.data?.message || 'Failed to save module', 'error');
+    }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <InputForm
         label="Module Title"
-        name="topic"
-        placeholder="Enter Module topic"
+        name="title"
+        placeholder="Enter Module title"
         register={register}
-        error={errors.topic}
+        error={errors.title}
       />
       <InputForm
         label="Module Number"
@@ -75,7 +141,7 @@ export default function AddModule() {
         )}
       />
       <Controller
-        name="resources"
+        name="additionalResources"
         control={control}
         defaultValue=""
         render={({ field }) => (
@@ -83,7 +149,7 @@ export default function AddModule() {
             label="Additional Resources (links to external articles, videos, etc)"
             value={field.value}
             onChange={field.onChange}
-            error={errors.resources?.message}
+            error={errors.additionalResources?.message}
           />
         )}
       />
@@ -101,15 +167,19 @@ export default function AddModule() {
         )}
       />
       <Controller
-        name="workbook"
+        name="workbookFile"
         control={control}
         defaultValue={[]}
         render={() => (
           <FileUpload
-            label="Add Workbook"
-            name="workbook"
+            label={
+              isEdit
+                ? 'Workbook (optional – leave empty to keep current)'
+                : 'Add Workbook'
+            }
+            name="workbookFile"
             register={register}
-            error={errors.workbook as any}
+            error={errors.workbookFile as any}
             accept=".pdf,application/pdf"
             maxSize={10}
           />
@@ -120,9 +190,11 @@ export default function AddModule() {
         type="submit"
         variant="primary"
         fullWidth
+        disabled={isLoading}
+        isLoading={isLoading}
         className="py-4 font-medium"
       >
-        Save
+        {isEdit ? 'Save changes' : 'Save'}
       </Button>
     </form>
   );

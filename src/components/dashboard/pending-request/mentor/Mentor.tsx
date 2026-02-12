@@ -2,11 +2,17 @@
 
 import { GoBackIcon, LoadingIcon } from '@/assets/icons';
 import Empty from '@/components/ui/NotFound/Empty';
-import React from 'react';
+import React, { useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MentorTable from './MentorTable';
 import MentorDetail from '@/components/common/Details/MentorDetails';
-import { useGetMentorRequestsQuery } from '@/store/users/users.api';
+import {
+  useGetMentorRequestsQuery,
+  useUpdateMentorRequestStatusMutation,
+} from '@/store/users/users.api';
+import Button from '@/components/ui/button/Button';
+import useToastify from '@/hooks/useToastify';
+import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
 
 type MentorPending = {
   id: string;
@@ -16,6 +22,12 @@ type MentorPending = {
   phone: string;
   status: string;
   image?: string;
+  dateOfBirth: string;
+  gender: string;
+  occupation: string;
+  inspiration: string;
+  bio: string;
+  linkedinUrl: string;
 };
 
 function mapMentorRequestFromApi(apiRequest: any): MentorPending {
@@ -32,6 +44,12 @@ function mapMentorRequestFromApi(apiRequest: any): MentorPending {
     phone: apiRequest.phoneNumber || '',
     status: statusMap[apiRequest.status] || 'Pending',
     image: apiRequest.pictureUrl || undefined,
+    dateOfBirth: apiRequest.dateOfBirth || 'N/A',
+    gender: apiRequest.gender || 'N/A',
+    occupation: apiRequest.occupation || 'N/A',
+    inspiration: apiRequest.inspiration || 'N/A',
+    bio: apiRequest.bio || 'N/A',
+    linkedinUrl: apiRequest.linkedinUrl || 'N/A',
   };
 }
 
@@ -48,6 +66,50 @@ export default function Mentor() {
     refetch: refetchRequests,
   } = useGetMentorRequestsQuery({ page: 1, limit: 100, status: 'PENDING' });
 
+  const { showToast } = useToastify();
+
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [declineModalOpen, setDeclineModalOpen] = useState(false);
+  const [updateRequestStatus] = useUpdateMentorRequestStatusMutation();
+
+  type MentorRequestStatus = 'APPROVED' | 'REJECTED';
+
+  const handleUpdateStatus = async (
+    status: MentorRequestStatus,
+    reasonForRejection?: string
+  ) => {
+    if (!selectedDetails?.id) return;
+    if (status === 'REJECTED' && !reasonForRejection?.trim()) {
+      showToast('Please provide a reason for declining.', 'error');
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      await updateRequestStatus({
+        id: selectedDetails.id,
+        data: {
+          status,
+          ...(status === 'REJECTED' ? { reasonForRejection } : {}),
+        },
+      }).unwrap();
+
+      showToast(
+        status === 'APPROVED'
+          ? 'Mentor request approved successfully.'
+          : 'Mentor request declined successfully.',
+        'success'
+      );
+      setDeclineModalOpen(false);
+      refetchRequests();
+      handleBack();
+    } catch (error: any) {
+      const message = error?.data?.message || 'Failed to update mentor request';
+      showToast(message, 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const mentorData = requestsResponse?.data?.map(mapMentorRequestFromApi) || [];
   const selectedDetails = selectedId
     ? mentorData.find((a: MentorPending) => a.id === selectedId)
@@ -62,7 +124,9 @@ export default function Mentor() {
   };
 
   const handleBack = () => setParam('listmentor');
-
+  const handleDeclineConfirm = () => {
+    setDeclineModalOpen(true);
+  };
   if (isLoadingRequests && view === 'listmentor') {
     return (
       <div className="flex justify-center items-center py-20">
@@ -105,13 +169,34 @@ export default function Mentor() {
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
-            <MentorDetail
-              selectedDetails={selectedDetails}
-              onRefetch={refetchRequests}
-            />
+            <MentorDetail selectedDetails={selectedDetails} />
+            <div className="rounded-lg flex max-w-[506px] flex-col  gap-4 border border-[#6CBB0180] px-8  py-8 ">
+              <h3 className="text-green-300 font-medium">Request</h3>
+              <div className="flex flex-row gap-4">
+                <Button
+                  onClick={() => handleUpdateStatus('APPROVED')}
+                  isLoading={isProcessing}
+                  className="bg-green-200 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Accept
+                </Button>
+                <Button
+                  onClick={handleDeclineConfirm}
+                  className="bg-red-100 text-white font-semibold  px-8 py-2 flex items-center gap-1 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Decline
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}
+      <DeclineModal
+        isOpen={declineModalOpen}
+        onConfirm={(reason) => handleUpdateStatus('REJECTED', reason)}
+        onCancel={() => setDeclineModalOpen(false)}
+        isLoading={isProcessing}
+      />
 
       {view === 'listmentor' && (
         <div className="rounded-md border border-green-400 py-3">

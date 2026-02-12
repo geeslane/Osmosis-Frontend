@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import clsx from 'clsx';
 
 export type TabItem = {
@@ -27,7 +27,6 @@ const Tabs: React.FC<TabsProps> = ({
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const pathname = usePathname();
 
   const activeTab = searchParams.get(paramKey) || defaultValue || tabs[0].value;
 
@@ -37,7 +36,7 @@ const Tabs: React.FC<TabsProps> = ({
       : new URLSearchParams();
 
     params.set(paramKey, value);
-    
+
     // If basePath is provided, navigate to that path with the param
     // This is useful when switching tabs from detail pages
     if (basePath) {

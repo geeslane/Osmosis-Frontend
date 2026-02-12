@@ -1,22 +1,34 @@
-export interface DashboardResponse {
+export interface Module {
+  id: string;
+  title: string;
+  moduleNumber: number;
+  notes: string;
+  additionalResources: string;
+  deliverables: string;
+  workbookFile: string;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface ModulesResponse {
+  success: boolean;
   message: string;
   data: {
-    completed_lessons: number;
-    certificate: number;
-    hours_spent: number;
-    total_lessons: number;
-    ongoing_course: number;
-    completed_course: number;
-    current_ongoing_course: {
-      title: string;
-      slug: string;
-      completed_lessons: number;
-      total_lessons: number;
-      percentage_completed: number;
-    };
+    data: Module[];
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
   };
 }
 
+export interface GetModuleByIdResponse {
+  success: boolean;
+  data: {
+    message: string;
+    data: Module;
+  };
+  timestamp: string;
+}
 export type RegisterFormData = {
   fullName: string;
   email: string;
@@ -127,3 +139,53 @@ export type Admin = {
   image?: string;
   role?: string;
 };
+
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED';
+}
+
+export interface GetAdminsParams {
+  page?: number;
+  limit?: number;
+  status?: 'ACTIVE' | 'INACTIVE';
+  name?: string;
+}
+
+export interface GetUserListParams {
+  page?: number;
+  limit?: number;
+  status?: 'ACTIVE' | 'INACTIVE';
+  name?: string;
+}
+
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface AdminResponse {
+  success: boolean;
+  message?: string;
+  data?: any;
+  pagination?: PaginationInfo;
+  page?: number;
+  limit?: number;
+  total?: number;
+}
+export interface CreateContactRequest {
+  firstName: string;
+  lastName: string;
+  emailAddress: string;
+  message: string;
+}
+
+export interface CreateContactResponse {
+  success: boolean;
+  message?: string;
+}
