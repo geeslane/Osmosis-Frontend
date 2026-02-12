@@ -7,65 +7,72 @@ import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
 import {
   formatSessionDateTime,
-  getLiveSessions,
   isSessionPast,
-  updateLiveSessionStatus,
   type LiveSessionRecord,
 } from '@/lib/liveSessions';
+import { liveSessionsApi } from '@/lib/liveSessionsApi';
 import useToastify from '@/hooks/useToastify';
 import { useRouter } from 'next/navigation';
-import React, { useMemo, useState, useEffect } from 'react';
-
-const PER_PAGE = 10;
+import React, { useState } from 'react';
 
 type LiveTableProps = {
-  search?: string;
+  data: LiveSessionRecord[];
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  onCancelSuccess: () => void;
 };
 
-export default function LiveTable({ search = '' }: LiveTableProps) {
+export default function LiveTable({
+  data,
+  page,
+  totalPages,
+  onPageChange,
+  onCancelSuccess,
+}: LiveTableProps) {
   const router = useRouter();
   const { showToast } = useToastify();
-  const [page, setPage] = useState(1);
   const [sessionToCancel, setSessionToCancel] = useState<LiveSessionRecord | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const filteredData = useMemo(() => {
-    const list = getLiveSessions();
-    const q = search.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter(
-      (row) =>
-        row.topic.toLowerCase().includes(q) ||
-        row.speakerName.toLowerCase().includes(q) ||
-        formatSessionDateTime(row.date, row.time).toLowerCase().includes(q)
-    );
-  }, [search, refreshKey]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredData.length / PER_PAGE));
-  const paginatedData = useMemo(
-    () =>
-      filteredData.slice((page - 1) * PER_PAGE, page * PER_PAGE),
-    [filteredData, page]
-  );
-
-  useEffect(() => {
-    if (page > totalPages) setPage(1);
-  }, [page, totalPages]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [search]);
-
-  const data = paginatedData;
+  const [cancellationReason, setCancellationReason] = useState('');
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   const statusStyles: Record<LiveSessionRecord['status'], string> = {
-    scheduled: 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold',
+    scheduled:
+      'bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold',
     completed: 'bg-sky-50 text-sky-700 border border-sky-200 font-semibold',
     cancelled: 'bg-red-50 text-red-600 border border-red-200 font-semibold',
   };
 
   const canCancel = (row: LiveSessionRecord) =>
     row.status !== 'cancelled' && !isSessionPast(row.date, row.time);
+
+  const handleConfirmCancel = async () => {
+    if (!sessionToCancel) return;
+    const reason = cancellationReason.trim();
+    if (reason.length < 5) {
+      showToast('Please provide a reason (at least 5 characters).', 'error');
+      return;
+    }
+    setCancelLoading(true);
+    try {
+      await liveSessionsApi.cancel(sessionToCancel.id, { cancellationReason: reason });
+      showToast('Live session cancelled. Users have been notified by email.', 'success');
+      setSessionToCancel(null);
+      setCancellationReason('');
+      onCancelSuccess();
+    } catch (err: unknown) {
+      const message =
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          ? (err as { response: { data: { message: string } } }).response.data.message
+          : 'Failed to cancel session';
+      showToast(String(message), 'error');
+    } finally {
+      setCancelLoading(false);
+    }
+  };
 
   const columns: Column<LiveSessionRecord>[] = [
     {
@@ -82,93 +89,109 @@ export default function LiveTable({ search = '' }: LiveTableProps) {
       key: 'time',
       label: 'DATE & TIME',
       render: (row) => (
-        <div className="space-y-2 min-w-[160px]">
-          <h3 className="text-black-[#808080] font-medium text-sm">
+        <div className="min-w-[160px]">
+          <span className="text-[#282F2E] font-medium text-sm">
             {formatSessionDateTime(row.date, row.time)}
-          </h3>
+          </span>
         </div>
       ),
     },
     {
       key: 'status',
       label: 'STATUS',
-      render: (row) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs capitalize ${statusStyles[row.status]}`}
-        >
-          {row.status}
-        </span>
-      ),
-      className: '',
+      render: (row) => {
+        const displayStatus = isSessionPast(row.date, row.time)
+          ? 'completed'
+          : row.status;
+        return (
+          <span
+            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs capitalize ${statusStyles[displayStatus]}`}
+          >
+            {displayStatus}
+          </span>
+        );
+      },
     },
     {
       key: 'actions',
       label: 'ACTIONS',
       render: (row) => (
         <div
-          className="relative flex items-center space-x-2"
+          className="relative flex items-center gap-2"
           onClick={(e) => e.stopPropagation()}
         >
           <Button
             type="button"
-            className="h-8 bg-green-200 text-white font-medium text-xs px-3 py-2 flex items-center justify-center gap-1 rounded-md"
-            onClick={() =>
-              router.push(`/dashboard/live-sessions/${row.id}`)
-            }
+            className="h-8 font-medium text-xs px-3 flex items-center justify-center gap-1.5 rounded-md !bg-[#1a0838] !text-white hover:!bg-green-300"
+            onClick={() => router.push(`/dashboard/live-sessions/${row.id}`)}
           >
-            <EyeIcon />
-            View
+            <span className="inline-flex items-center justify-center shrink-0 [&_svg]:block -mt-1">
+              <EyeIcon />
+            </span>
+            <span className="leading-none">View</span>
           </Button>
           <Button
             type="button"
             disabled={!canCancel(row)}
-            className="h-8 bg-red-100 text-white font-medium text-xs px-3 py-2 flex items-center gap-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={() => canCancel(row) && setSessionToCancel(row)}
+            className="h-8 bg-red-100 text-white font-medium text-xs px-3 flex items-center gap-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-200"
+            onClick={() => {
+              if (canCancel(row)) {
+                setSessionToCancel(row);
+                setCancellationReason('');
+              }
+            }}
           >
             <CancelIcon />
             Cancel
           </Button>
         </div>
       ),
-      className: '',
     },
   ];
 
-  const handleConfirmCancel = () => {
-    if (sessionToCancel) {
-      updateLiveSessionStatus(sessionToCancel.id, 'cancelled');
-      setRefreshKey((k) => k + 1);
-      showToast('Live session cancelled. Users have been notified by email.', 'success');
-      setSessionToCancel(null);
-    }
-  };
-
   return (
-    <div className="w-full space-y-0">
-      <DataTable
-        columns={columns}
-        data={data}
-        onRowClick={(row) =>
-          router.push(`/dashboard/live-sessions/${row.id}`)
-        }
-      />
-      <div className="flex items-center justify-between">
+    <div className="w-full">
+      <div className="overflow-hidden rounded-lg">
+        <DataTable
+          columns={columns}
+          data={data}
+          onRowClick={(row) => router.push(`/dashboard/live-sessions/${row.id}`)}
+        />
+      </div>
+      <div className="mt-4 flex items-center justify-between pt-4">
         <Pagination
           page={page}
           totalPages={totalPages}
-          onPageChange={setPage}
+          onPageChange={onPageChange}
         />
       </div>
 
       <ActionModal
         isOpen={!!sessionToCancel}
         title="Cancel live session?"
-        description="Emails will be sent to all users across the app. Proceed?"
+        description="Emails will be sent to all users across the app. Please provide a reason."
         confirmText="Proceed"
         cancelText="Go back"
+        isLoading={cancelLoading}
         onConfirm={handleConfirmCancel}
-        onCancel={() => setSessionToCancel(null)}
-      />
+        onCancel={() => {
+          setSessionToCancel(null);
+          setCancellationReason('');
+        }}
+      >
+        <div>
+          <label className="block text-green-300 text-xs font-bold uppercase tracking-wide mb-1">
+            Cancellation reason (required)
+          </label>
+          <textarea
+            value={cancellationReason}
+            onChange={(e) => setCancellationReason(e.target.value)}
+            placeholder="e.g. Speaker unavailable"
+            rows={3}
+            className="w-full text-sm border border-green-200 rounded-lg px-3 py-2 focus:outline-none focus:border-green-300 resize-none"
+          />
+        </div>
+      </ActionModal>
     </div>
   );
 }

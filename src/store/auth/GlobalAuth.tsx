@@ -21,7 +21,7 @@ export default function GlobalAuthHandler() {
           email: '',
         }) */
       showToast('Session expired. Please log in again.', 'error');
-      router.push('/');
+      router.push('/signin');
     };
     window.addEventListener('unauthorized', handleUnauthorized);
     return () => window.removeEventListener('unauthorized', handleUnauthorized);

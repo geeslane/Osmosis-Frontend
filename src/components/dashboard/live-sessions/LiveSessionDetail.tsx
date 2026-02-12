@@ -12,15 +12,14 @@ import Button from '@/components/ui/button/Button';
 import ActionModal from '@/components/ui/modal/ActionModal';
 import type { AddLiveSessionFormInputs } from './AddLive';
 import {
+  apiSessionToRecord,
   formatSessionDateTime,
-  getLiveSessionById,
   isSessionPast,
-  updateLiveSessionNotes,
-  getLiveSessionComments,
-  type LiveSessionComment,
+  type LiveSessionRecord,
 } from '@/lib/liveSessions';
+import { liveSessionsApi, type ApiComment } from '@/lib/liveSessionsApi';
 import useToastify from '@/hooks/useToastify';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import AddLive from './AddLive';
 import { ChevronDownIcon } from 'lucide-react';
@@ -81,21 +80,62 @@ const STATUS_STYLES = {
 
 export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
   const { showToast } = useToastify();
-  const [session, setSession] = useState(() => getLiveSessionById(id));
+  const [session, setSession] = useState<LiveSessionRecord | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [notesModalOpen, setNotesModalOpen] = useState(false);
   const [notesForm, setNotesForm] = useState({
     sessionNotes: '',
     recordingUrl: '',
   });
-  const [comments, setComments] = useState<LiveSessionComment[]>([]);
+  const [comments, setComments] = useState<ApiComment[]>([]);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [commentsPage, setCommentsPage] = useState(1);
+  const [commentsTotalPages, setCommentsTotalPages] = useState(1);
+  const [newCommentText, setNewCommentText] = useState('');
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [notesSaving, setNotesSaving] = useState(false);
+
+  const fetchSession = useCallback(async () => {
+    try {
+      const api = await liveSessionsApi.getById(id);
+      setSession(apiSessionToRecord(api));
+    } catch {
+      setSession(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  const fetchComments = useCallback(async () => {
+    try {
+      const res = await liveSessionsApi.getComments(id, {
+        page: commentsPage,
+        limit: 10,
+      });
+      setComments(res.data);
+      setCommentsTotalPages(res.totalPages);
+    } catch {
+      setComments([]);
+    }
+  }, [id, commentsPage]);
 
   useEffect(() => {
-    const next = getLiveSessionById(id);
-    if (next) setSession(next);
-    setComments(getLiveSessionComments(id));
-  }, [id]);
+    setLoading(true);
+    fetchSession();
+  }, [fetchSession]);
+
+  useEffect(() => {
+    if (session) fetchComments();
+  }, [session, fetchComments]);
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-green-200/60 bg-white px-6 py-8 text-center text-gray-500">
+        Loading session...
+      </div>
+    );
+  }
 
   if (!session) {
     return (
@@ -117,7 +157,7 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
 
   if (isEditing) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-[747px] w-full">
         <div className="flex items-center justify-between">
           <h3 className="text-green-200 text-2xl font-bold">
             Edit Live Session
@@ -131,12 +171,14 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
             Cancel
           </Button>
         </div>
-        <div className="rounded-md
-         px-4 md:px-[64px] border-2 border-[#6CBB0180] py-8 w-full">
+        <div className="max-w-[747px] w-full rounded-xl border border-green-200/60 bg-white px-6 md:px-10 py-8 shadow-sm">
           <AddLive
             initialData={initialFormData}
             sessionId={session.id}
-            onSaved={() => setIsEditing(false)}
+            onSaved={() => {
+              fetchSession();
+              setIsEditing(false);
+            }}
           />
         </div>
       </div>
@@ -167,14 +209,33 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
     setNotesModalOpen(true);
   };
 
-  const saveNotes = () => {
-    updateLiveSessionNotes(session.id, {
-      sessionNotes: notesForm.sessionNotes.trim() || null,
-      recordingUrl: notesForm.recordingUrl.trim() || null,
-    });
-    setSession({ ...getLiveSessionById(session.id)! });
-    showToast('Session notes and recording saved.', 'success');
-    setNotesModalOpen(false);
+  const saveNotes = async () => {
+    const notes = notesForm.sessionNotes.trim();
+    if (notes.length < 5) {
+      showToast('Session notes must be at least 5 characters.', 'error');
+      return;
+    }
+    setNotesSaving(true);
+    try {
+      const updated = await liveSessionsApi.postNotes(session.id, {
+        sessionNotes: notes,
+        recordingUrl: notesForm.recordingUrl.trim() || undefined,
+      });
+      setSession(apiSessionToRecord(updated));
+      showToast('Session notes and recording saved.', 'success');
+      setNotesModalOpen(false);
+    } catch (err: unknown) {
+      const message =
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          ? (err as { response: { data: { message: string } } }).response.data.message
+          : 'Failed to save notes';
+      showToast(String(message), 'error');
+    } finally {
+      setNotesSaving(false);
+    }
   };
 
   const formatCommentTime = (dateString: string) => {
@@ -252,9 +313,16 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
               {sessionDateTime}
             </p>
             {isCancelled && (
-              <p className="mt-2 text-sm text-red-600 font-medium">
-                This session was cancelled. It cannot be edited or cancelled again.
-              </p>
+              <>
+                <p className="mt-2 text-sm text-red-600 font-medium">
+                  This session was cancelled. It cannot be edited or cancelled again.
+                </p>
+                {session.cancellationReason && (
+                  <p className="mt-1 text-sm text-gray-600">
+                    Reason: {session.cancellationReason}
+                  </p>
+                )}
+              </>
             )}
             {isPast && !isCancelled && (
               <p className="mt-2 text-sm text-sky-600 font-medium">
@@ -437,11 +505,100 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
                             <p className="text-sm text-[#282F2E] leading-relaxed break-words">
                               {comment.text}
                             </p>
+                            {comment.replies && comment.replies.length > 0 && (
+                              <div className="mt-3 pl-2 border-l-2 border-green-200 space-y-2">
+                                {comment.replies.map((reply) => (
+                                  <div key={reply.id} className="text-sm">
+                                    <p className="font-medium text-[#282F2E]">
+                                      {reply.authorName}
+                                    </p>
+                                    <p className="text-gray-600 break-words">
+                                      {reply.text}
+                                    </p>
+                                    <span className="text-[10px] text-gray-400">
+                                      {formatCommentTime(reply.createdAt)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
+                  <form
+                    className="mt-4 pt-4 border-t border-green-100"
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      const text = newCommentText.trim();
+                      if (text.length < 2) {
+                        showToast('Comment must be at least 2 characters.', 'error');
+                        return;
+                      }
+                      setCommentSubmitting(true);
+                      try {
+                        await liveSessionsApi.addComment(id, { text });
+                        setNewCommentText('');
+                        showToast('Comment added.', 'success');
+                        fetchComments();
+                      } catch (err: unknown) {
+                        const message =
+                          err &&
+                          typeof err === 'object' &&
+                          'response' in err &&
+                          (err as { response?: { data?: { message?: string } } }).response?.data?.message
+                            ? (err as { response: { data: { message: string } } }).response.data.message
+                            : 'Failed to add comment';
+                        showToast(String(message), 'error');
+                      } finally {
+                        setCommentSubmitting(false);
+                      }
+                    }}
+                  >
+                    <textarea
+                      value={newCommentText}
+                      onChange={(e) => setNewCommentText(e.target.value)}
+                      placeholder="Add a comment (min 2 characters)..."
+                      rows={2}
+                      className="w-full text-sm border border-green-200 rounded-lg px-3 py-2 focus:outline-none focus:border-green-300 resize-none"
+                    />
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      className="mt-2 text-sm"
+                      disabled={commentSubmitting || newCommentText.trim().length < 2}
+                    >
+                      {commentSubmitting ? 'Sending...' : 'Add comment'}
+                    </Button>
+                  </form>
+                  {commentsTotalPages > 1 && (
+                    <div className="mt-4 flex items-center justify-between border-t border-green-100 pt-3">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="text-xs"
+                        disabled={commentsPage <= 1}
+                        onClick={() => setCommentsPage((p) => Math.max(1, p - 1))}
+                      >
+                        Previous
+                      </Button>
+                      <span className="text-xs text-gray-500">
+                        Page {commentsPage} of {commentsTotalPages}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="text-xs"
+                        disabled={commentsPage >= commentsTotalPages}
+                        onClick={() =>
+                          setCommentsPage((p) => Math.min(commentsTotalPages, p + 1))
+                        }
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="text-center text-gray-400 py-8">
@@ -459,9 +616,10 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
             ? 'Edit notes & recording'
             : 'Add notes & recording'
         }
-        description="Add session notes and a link to the recording after the live session."
+        description="Add session notes (min 5 characters) and optional recording URL."
         confirmText="Save"
         cancelText="Cancel"
+        isLoading={notesSaving}
         onConfirm={saveNotes}
         onCancel={() => setNotesModalOpen(false)}
       >

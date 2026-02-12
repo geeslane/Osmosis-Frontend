@@ -10,9 +10,87 @@ export type LiveSessionRecord = {
   bio: string;
   linkedinUrl: string | null;
   status: LiveSessionStatus;
+  cancellationReason?: string | null;
   sessionNotes: string | null;
   recordingUrl: string | null;
 };
+
+/** Convert API session (datetime) to UI record (date + time) */
+export function apiSessionToRecord(api: {
+  id: string;
+  topic: string;
+  datetime: string;
+  url: string;
+  speakerName: string;
+  bio: string;
+  linkedinUrl: string | null;
+  status: LiveSessionStatus;
+  cancellationReason?: string | null;
+  sessionNotes: string | null;
+  recordingUrl: string | null;
+}): LiveSessionRecord {
+  const { date, time } = fromDatetimeISO(api.datetime);
+  return {
+    id: api.id,
+    topic: api.topic,
+    date,
+    time,
+    url: api.url,
+    speakerName: api.speakerName,
+    bio: api.bio,
+    linkedinUrl: api.linkedinUrl ?? null,
+    status: api.status,
+    cancellationReason: api.cancellationReason ?? null,
+    sessionNotes: api.sessionNotes ?? null,
+    recordingUrl: api.recordingUrl ?? null,
+  };
+}
+
+/** Parse ISO datetime to form fields: date (YYYY-MM-DD) and time (e.g. "02:00 PM") */
+export function fromDatetimeISO(iso: string): { date: string; time: string } {
+  const d = new Date(iso);
+  const date = d.toISOString().slice(0, 10);
+  const hour = d.getHours();
+  const minute = d.getMinutes();
+  const hour12 = hour % 12 || 12;
+  const ampm = hour < 12 ? 'AM' : 'PM';
+  const time = `${hour12}:${String(minute).padStart(2, '0')} ${ampm}`;
+  return { date, time };
+}
+
+/** Build ISO datetime from form date (YYYY-MM-DD) and time (e.g. "02:00 PM") (local time → UTC ISO) */
+export function toDatetimeISO(dateStr: string, timeStr: string): string {
+  const [timePart, meridian] = timeStr.trim().split(/\s+/);
+  const [hourStr, minStr] = (timePart || '12:00').split(':');
+  let h = parseInt(hourStr || '12', 10);
+  const m = parseInt(minStr || '0', 10);
+  if ((meridian || '').toUpperCase() === 'PM' && h !== 12) h += 12;
+  if ((meridian || '').toUpperCase() === 'AM' && h === 12) h = 0;
+  const [y, mo, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, (mo || 1) - 1, d || 1, h, m, 0, 0);
+  return date.toISOString();
+}
+
+/** Format ISO datetime for display (e.g. "12/05/24 - 02:00 PM") */
+export function formatSessionDateTimeFromDatetime(datetime: string): string {
+  const d = new Date(datetime);
+  const dateStr = d.toLocaleDateString('en-US', {
+    month: '2-digit',
+    day: '2-digit',
+    year: '2-digit',
+  });
+  const timeStr = d.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+  return `${dateStr} - ${timeStr}`;
+}
+
+/** True if the session datetime is in the past */
+export function isSessionPastFromDatetime(datetime: string): boolean {
+  return new Date(datetime).getTime() < Date.now();
+}
 
 export type LiveSessionComment = {
   id: string;
