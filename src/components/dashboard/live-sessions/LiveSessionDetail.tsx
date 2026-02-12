@@ -461,7 +461,7 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
                   <div className="flex items-center justify-between gap-2 mb-4">
                     <div>
                       <h4 className="text-base font-semibold text-[#282F2E]">
-                        Teenagers' comments
+                        Teenagers&apos; comments
                       </h4>
                       <p className="text-xs text-green-300 mt-0.5">
                         What teenagers are saying about this session
