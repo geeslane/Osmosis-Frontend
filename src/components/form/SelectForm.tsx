@@ -37,7 +37,7 @@ const SelectForm: React.FC<SelectFormProps> = ({
       {label && <label className="text-green-300 font-medium">{label}</label>}
 
       <div
-        className={`flex items-center h-[56px] border rounded-md px-3 focus:outline-none focus:ring-1 focus:ring-gray-300 ${
+        className={`flex items-center h-[56px] border rounded-md px-3 focus-within:outline-none focus-within:border-green-300 ${
           error ? 'border-red-500' : 'border-green-300'
         }`}
       >
