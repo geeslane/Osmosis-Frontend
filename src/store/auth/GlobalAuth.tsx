@@ -11,7 +11,8 @@ export default function GlobalAuthHandler() {
   const { showToast } = useToastify();
 
   useEffect(() => {
-    if (pathname.startsWith('/auth/otp')) return;
+    if (pathname.startsWith('/auth/otp') || pathname.startsWith('/signin'))
+      return;
 
     const handleUnauthorized = async () => {
       await clearSessionCookie();

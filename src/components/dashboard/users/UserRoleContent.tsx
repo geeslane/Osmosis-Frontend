@@ -32,8 +32,9 @@ export default function UserRoleContent() {
   const user = useSelector((state: RootState) => state.profile.user);
   const userRole = user?.role;
   const shouldShowAdminTab = userRole === 'SUPERADMIN';
-  
-  const role = searchParams.get('role') || (shouldShowAdminTab ? 'admins' : 'mentor');
+
+  const role =
+    searchParams.get('role') || (shouldShowAdminTab ? 'admins' : 'mentor');
 
   // Redirect non-SUPERADMIN users away from admins tab
   useEffect(() => {

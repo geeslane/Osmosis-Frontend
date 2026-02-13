@@ -9,9 +9,10 @@ type ActionModalProps = {
   confirmText?: string;
   cancelText?: string;
   isLoading?: boolean;
+  color?: ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
-  children?: ReactNode; 
+  children?: ReactNode;
 };
 
 export default function ActionModal({
@@ -24,6 +25,7 @@ export default function ActionModal({
   onConfirm,
   onCancel,
   children,
+  color = ' text-green-100',
 }: ActionModalProps) {
   if (!isOpen) return null;
 
@@ -36,7 +38,7 @@ export default function ActionModal({
         onClick={(e) => e.stopPropagation()}
         className="w-full mx-3 md:max-w-md rounded-lg bg-white border border-green-100 p-6"
       >
-        <h3 className="text-lg font-semibold text-green-100 mb-2">{title}</h3>
+        <h3 className={`text-lg font-semibold ${color} mb-2`}>{title}</h3>
 
         {description && (
           <p className="text-sm text-green-300 mb-4">{description}</p>
