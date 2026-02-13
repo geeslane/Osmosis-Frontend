@@ -10,6 +10,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
     '/dashboard/mentee',
     '/dashboard/settings',
     '/dashboard/user',
+    '/dashboard/modules',
     '/dashboard/pending-requests',
     '/dashboard/live-sessions',
   ],
