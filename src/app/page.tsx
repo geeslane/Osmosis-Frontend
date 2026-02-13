@@ -10,7 +10,6 @@ import Clarity from '@/components/landing/home/Clarity';
 import Transformation from '@/components/landing/home/Transformation';
 import Program from '@/components/landing/home/Program';
 import HowItWorks from '@/components/landing/home/HowItWorks';
-import Future from '@/components/landing/home/Future';
 import Investment from '@/components/landing/home/Investment';
 import Mentor from '@/components/landing/home/Mentor';
 import StillExploring from '@/components/landing/home/StillExploring';
