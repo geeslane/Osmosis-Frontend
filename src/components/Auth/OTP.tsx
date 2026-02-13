@@ -162,7 +162,7 @@ export default function OtpPage({ sessionId }: { sessionId: string }) {
             height={32}
           />
           <div className="flex flex-col justify-center   mt-6 gap-7">
-            <div className="text-center lg:text-start">
+            <div className="text-center lg:text-center ">
               <h3 className="text-[32px] md:text-[40px] text-green-200 font-bold">
                 Verify Your Account
               </h3>
