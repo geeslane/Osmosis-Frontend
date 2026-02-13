@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 import UpcomingCallTable from './UpComingCallTable';
 import ViewUpcomingCall from './ViewUpcomingCall';

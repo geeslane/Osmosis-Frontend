@@ -9,6 +9,11 @@ export interface Module {
   createdAt: string;
   updatedAt: string;
 }
+export interface AnimatedProps {
+  activeKey: string;
+  children: React.ReactNode;
+  className?: string;
+}
 export interface ModulesResponse {
   success: boolean;
   message: string;

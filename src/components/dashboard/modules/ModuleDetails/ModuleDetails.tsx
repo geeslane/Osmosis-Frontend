@@ -17,16 +17,21 @@ import Link from 'next/link';
 import PageTitle from '@/components/PageTitle';
 import { useGetModuleByIdQuery } from '@/store/dashboard/dashboard.api';
 import Button from '@/components/ui/button/Button';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import Animated from '@/components/common/Animation';
 
 export default function ModuleDetails() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams<{ id: string }>();
-
+  const user = useSelector((state: RootState) => state.profile.user);
   const id = typeof params.id === 'string' ? params.id : (params.id?.[0] ?? '');
-
   const { data, isLoading } = useGetModuleByIdQuery(id, { skip: !id });
-
+  const backPath =
+    user?.role === 'TEENAGER'
+      ? '/dashboard/modules/mentee'
+      : '/dashboard/modules';
   const moduleData = data?.data?.data;
   const currentTab = searchParams.get('content') || 'Note';
 
@@ -67,27 +72,28 @@ export default function ModuleDetails() {
       <div className="mt-10 max-w-[639px]">
         <div className="flex justify-between">
           <Link
-            href="/dashboard/modules"
+            href={backPath}
             className="flex cursor-pointer items-center gap-1"
           >
             <GoBackIcon />
             <h3 className="text-sm text-green-200 font-medium">Back</h3>
           </Link>
-
-          <Button
-            variant="primary"
-            className="font-medium flex gap-1"
-            onClick={() =>
-              router.push(
-                moduleData
-                  ? `/dashboard/modules/${moduleData.id}/edit?content=${currentTab}`
-                  : '/dashboard/modules'
-              )
-            }
-          >
-            <EditIcon />
-            <h3 className="hidden md:flex mr-2">Edit Module</h3>
-          </Button>
+          {user?.role !== 'TEENAGER' && (
+            <Button
+              variant="primary"
+              className="font-medium flex gap-1"
+              onClick={() =>
+                router.push(
+                  moduleData
+                    ? `/dashboard/modules/${moduleData.id}/edit?content=${currentTab}`
+                    : '/dashboard/modules'
+                )
+              }
+            >
+              <EditIcon />
+              <h3 className="hidden md:flex mr-2">Edit Module</h3>
+            </Button>
+          )}
         </div>
 
         <div className="space-y-[37px] mt-[37px]">
@@ -95,9 +101,12 @@ export default function ModuleDetails() {
             title={moduleData ? `Module ${moduleData.moduleNumber}` : 'Module'}
           />
 
-          <div className="rounded-lg flex min-h-[400px] w-full max-w-[639px] flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 overflow-x-hidden">
+          <Animated
+            activeKey={'params'}
+            className="rounded-lg flex min-h-[400px] w-full max-w-[639px] flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 overflow-x-hidden"
+          >
             <ModuleContent module={moduleData} />
-          </div>
+          </Animated>
         </div>
       </div>
     </div>

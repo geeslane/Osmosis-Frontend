@@ -84,7 +84,7 @@ export default function UpcomingCallTable({ onView }: any) {
   const [declineId, setDeclineId] = useState<string | null>(null);
 
   const handleUpdateStatus = async () => {
-    console.log('hellow world');
+    setDeclineModalOpen(false);
   };
 
   const handleDeclineConfirm = async (reason: string) => {

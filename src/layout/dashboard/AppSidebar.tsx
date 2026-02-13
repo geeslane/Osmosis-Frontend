@@ -21,7 +21,7 @@ import {
 
 import { useLogoutHandler } from '@/hooks/useLogout';
 
-type UserRole = 'MENTOR' | 'MENTEE' | 'ADMIN';
+type UserRole = 'MENTOR' | 'TEENAGER' | 'ADMIN';
 type NavItem = {
   name: string;
   icon?: React.ComponentType<{ className?: string; active?: boolean }>;
@@ -34,9 +34,7 @@ const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered } = useSidebar();
   const pathname = usePathname();
   const { handleLogout, isLoggingOut } = useLogoutHandler();
-
   const user = useSelector((state: RootState) => state.profile.user);
-
   const isActive = (path: string) => pathname === path;
 
   const navItems: NavItem[] = [
@@ -44,7 +42,7 @@ const AppSidebar: React.FC = () => {
       icon: DashboardIcon,
       name: 'Dashboard',
       path: '/dashboard',
-      roles: ['MENTOR', 'MENTEE', 'ADMIN'],
+      roles: ['MENTOR', 'TEENAGER', 'ADMIN'],
     },
     {
       icon: DashboardIcon,
@@ -61,8 +59,14 @@ const AppSidebar: React.FC = () => {
     {
       icon: ScheduleIcon,
       name: 'Availability Schedule',
-      path: '/dashboard/availabilty-schedule',
+      path: '/dashboard/availabilty-schedule/mentor',
       roles: ['MENTOR'],
+    },
+    {
+      icon: ScheduleIcon,
+      name: 'Availability Schedule',
+      path: '/dashboard/availabilty-schedule/mentee',
+      roles: ['TEENAGER'],
     },
     {
       icon: PendingRequestIcon,
@@ -80,13 +84,19 @@ const AppSidebar: React.FC = () => {
       icon: ModulesIcon,
       name: 'Modules',
       path: '/dashboard/modules',
-      roles: ['ADMIN', 'MENTOR'],
+      roles: ['MENTOR'],
+    },
+    {
+      icon: ModulesIcon,
+      name: 'Modules',
+      path: '/dashboard/modules/mentee',
+      roles: ['TEENAGER'],
     },
     {
       icon: LiveSessionIcon,
       name: 'Live Sessions',
       path: '/dashboard/live-sessions',
-      roles: ['MENTOR', 'MENTEE'],
+      roles: ['MENTOR', 'TEENAGER'],
     },
   ];
 
@@ -142,9 +152,6 @@ const AppSidebar: React.FC = () => {
     </ul>
   );
 
-  /* -----------------------------
-     Prevent render before user loads
-  ------------------------------*/
   if (!user) return null;
 
   return (
@@ -226,11 +233,9 @@ const AppSidebar: React.FC = () => {
                       </div>
                     )}
                   </div>
-
-                  {/* User Info */}
                   <div className="min-w-0 flex-1">
                     <h3 className="text-sm font-semibold text-green-200 truncate">
-                      {user?.full_name || user?.email || 'User'}
+                      {user?.full_name || user?.email}
                     </h3>
 
                     {user?.email && (

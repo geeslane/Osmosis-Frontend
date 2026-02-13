@@ -25,7 +25,7 @@ export default function ActionModal({
   onConfirm,
   onCancel,
   children,
-  color = ' text-green-100',
+  color = 'text-green-100',
 }: ActionModalProps) {
   if (!isOpen) return null;
 
