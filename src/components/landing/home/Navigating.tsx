@@ -13,11 +13,8 @@ export default function Navigating() {
               Osmosis: Your Trusted Guide on Their Journey{' '}
             </h3>
             <h3 className="text-green-200 md:text-xl">
-              In a world of constant noise and endless pressure, it’s easy for
-              teens to get lost. They have the potential, the talent, and the
-              dreams, but they often lack the clarity and the tools to build
-              their own path forward. Osmosis provides the map and the compass.
-              We don’t give them the answers we guide them to discover them.
+              Amid noise and pressure, teens get lost. They have potential and dreams but lack the clarity and tools to move forward. Osmosis is their map and compass.
+              We don’t just give them the answers we guide them to discover them.
             </h3>
             <div className="">
               <Link

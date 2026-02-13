@@ -33,7 +33,6 @@ export default function Page() {
         <Transformation />
         <Program />
         <HowItWorks />
-        <Future />
         <Investment />
         <Mentor />
         <StillExploring />

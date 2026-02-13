@@ -15,7 +15,37 @@ export default function LookLike() {
   }, []);
 
   return (
-    <div className="lg:-mt-40 lg:mb-40 flex md:max-w-[1233px] md:mx-auto gap-12 montserrat px-2 md:px-10 items-center lg:px-[90px]">
+    <div className="lg:-mt-40 lg:mb-40 flex flex-col md:flex-row md:max-w-[1233px] md:mx-auto gap-8 md:gap-12 montserrat px-2 md:px-10 items-center lg:px-[90px]">
+      {/* Mobile: horizontal mentor slideshow */}
+      <div className="w-full md:hidden overflow-hidden">
+        <div
+          className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 -mx-2 px-2"
+          style={{ scrollSnapType: 'x mandatory' }}
+        >
+          {mentors.map((m, i) => (
+            <div
+              key={i}
+              className="flex-shrink-0 w-[280px] snap-center bg-white flex flex-col gap-3 border-2 border-[#68624E] p-4 rounded-3xl"
+            >
+              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
+                <Image
+                  src={m.image}
+                  alt={m.name}
+                  fill
+                  sizes="280px"
+                  className="object-cover"
+                />
+              </div>
+              <div className="flex flex-col">
+                <h3 className="text-green-200 text-lg font-bold">{m.name}</h3>
+                <p className="text-green-100 text-sm font-medium">{m.role}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop: vertical sliding stack */}
       <div className="md:flex-1/3 lg:flex hidden">
         <div className="relative hidden md:flex items-center">
           <div className="bg-white flex flex-col gap-6 border-[#68624E] p-4 border-2 w-[301px] ml-6 absolute h-[695px] rounded-[40px] overflow-hidden">
@@ -52,31 +82,31 @@ export default function LookLike() {
         </div>
       </div>
 
-      <div className="md:flex-2/3 gap-8 flex flex-col md:max-w-[751px] ">
-        <h3 className="font-montserrat text-green-200 montserrat text-[24px] md:leading-14   md:text-[48px]   font-bold  lg:text-start text-center  ">
-          What Our Mentoring Looks Like{' '}
+      <div className="md:flex-2/3 gap-8 flex flex-col md:max-w-[751px] w-full">
+        <h3 className="font-montserrat text-green-200 montserrat text-[24px] md:leading-14 md:text-[48px] font-bold text-left lg:text-start px-4 md:px-0">
+          What Our Mentoring Looks Like
         </h3>
         <div className="flex flex-col gap-5 md:px-0 px-4">
-          <p className="text-black-200 montserrat   lg:text-start text-center  md:text-xl">
+          <p className="text-black-200 montserrat text-left lg:text-start md:text-xl">
             At Osmosis, each mentor selects 2–3 topics they are passionate about
             mentoring teenagers on.
           </p>
-          <p className="text-black-200 montserrat lg:text-start text-center  md:text-xl">
+          <p className="text-black-200 montserrat text-left lg:text-start md:text-xl">
             After choosing their topics, mentors set up their availability by
             uploading their calendars to the Osmosis platform. This allows
             teenagers to view open time slots and schedule mentoring sessions
             only at the mentor’s preferred times.
           </p>
-          <p className="text-black-200 montserrat   lg:text-start text-center  md:text-xl">
+          <p className="text-black-200 montserrat text-left lg:text-start md:text-xl">
             Mentor commitment is flexible and intentionally light: just 2–4
             hours per month, depending on the topics selected, across the
             3-month mentorship cycle.
           </p>
-          <p className="text-black-200 montserrat  lg:text-start text-center  md:text-xl">
+          <p className="text-black-200 montserrat text-left lg:text-start md:text-xl">
             This structure ensures mentors can contribute meaningfully without
             disrupting their professional schedule.
           </p>
-          <p className="text-black-200 montserrat   lg:text-start text-center  md:text-xl">
+          <p className="text-black-200 montserrat text-left lg:text-start md:text-xl">
             Mentors receive structured training, onboarding, and support from
             the Osmosis team throughout the experience.
           </p>
