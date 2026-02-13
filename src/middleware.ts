@@ -10,13 +10,9 @@ const ROLE_ACCESS: Record<string, string[]> = {
     '/dashboard/mentee',
     '/dashboard/settings',
     '/dashboard/user',
-  ],
-  ADMIN: [
-    '/dashboard',
-    '/dashboard/users',
     '/dashboard/pending-requests',
-    '/dashboard/users',
   ],
+  ADMIN: ['/dashboard', '/dashboard/users', '/dashboard/pending-requests'],
   MENTOR: [
     '/dashboard',
     '/dashboard/mentee',

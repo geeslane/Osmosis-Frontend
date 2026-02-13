@@ -21,7 +21,7 @@ import {
 
 import { useLogoutHandler } from '@/hooks/useLogout';
 
-type UserRole = 'MENTOR' | 'TEENAGER' | 'ADMIN';
+type UserRole = 'SUPERADMIN' | 'MENTOR' | 'TEENAGER' | 'ADMIN';
 type NavItem = {
   name: string;
   icon?: React.ComponentType<{ className?: string; active?: boolean }>;
@@ -42,7 +42,7 @@ const AppSidebar: React.FC = () => {
       icon: DashboardIcon,
       name: 'Dashboard',
       path: '/dashboard',
-      roles: ['MENTOR', 'TEENAGER', 'ADMIN'],
+      roles: ['SUPERADMIN', 'MENTOR', 'TEENAGER', 'ADMIN'],
     },
     {
       icon: DashboardIcon,
@@ -72,19 +72,19 @@ const AppSidebar: React.FC = () => {
       icon: PendingRequestIcon,
       name: 'Pending Requests',
       path: '/dashboard/pending-requests',
-      roles: ['ADMIN'],
+      roles: ['SUPERADMIN', 'ADMIN'],
     },
     {
       icon: UserManagementIcon,
       name: 'Users',
       path: '/dashboard/users',
-      roles: ['ADMIN'],
+      roles: ['SUPERADMIN', 'ADMIN'],
     },
     {
       icon: ModulesIcon,
       name: 'Modules',
       path: '/dashboard/modules',
-      roles: ['MENTOR'],
+      roles: ['SUPERADMIN', 'MENTOR'],
     },
     {
       icon: ModulesIcon,
@@ -96,7 +96,7 @@ const AppSidebar: React.FC = () => {
       icon: LiveSessionIcon,
       name: 'Live Sessions',
       path: '/dashboard/live-sessions',
-      roles: ['MENTOR', 'TEENAGER'],
+      roles: ['SUPERADMIN', 'MENTOR', 'TEENAGER'],
     },
   ];
 
