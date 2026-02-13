@@ -75,8 +75,8 @@ export const ProfileApi = createApi({
               userType: response.data.userType,
               data: {
                 id: apiData.id,
-                fullName: apiData.fullName,
-                email: apiData.email,
+                fullName: apiData.fullName || apiData.teenagerFullName,
+                email: apiData.email || apiData.teenagerEmail,
                 role: role.userType,
                 pictureUrl: apiData.pictureUrl || null,
                 phoneNumber: apiData.phoneNumber || null,

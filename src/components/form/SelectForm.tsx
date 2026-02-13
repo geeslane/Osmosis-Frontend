@@ -46,11 +46,7 @@ const SelectForm: React.FC<SelectFormProps> = ({
           disabled={disabled}
           className="w-full text-sm h-full bg-transparent focus:outline-none"
         >
-          {placeholder && (
-            <option value="" >
-              {placeholder}
-            </option>
-          )}
+          {placeholder && <option value="">{placeholder}</option>}
 
           {options.map((option) => (
             <option key={option.value} value={option.value}>

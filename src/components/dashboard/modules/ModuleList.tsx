@@ -5,6 +5,8 @@ import useToastify from '@/hooks/useToastify';
 import { useDeleteModuleMutation } from '@/store/dashboard/dashboard.api';
 import { useState } from 'react';
 import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 export default function ModuleList({ modules }: { modules: Module[] }) {
   const router = useRouter();
@@ -12,6 +14,7 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
   const [deleteModule, { isLoading }] = useDeleteModuleMutation();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
+  const user = useSelector((state: RootState) => state.profile.user);
 
   const openDeleteModal = (id: string) => {
     setSelectedModuleId(id);
@@ -44,8 +47,9 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
           <div className="flex flex-col gap-3 ">
             <div className="flex flex-col gap-3 md:flex-row justify-between md:items-center w-full">
               <div>
-                <h2 className="font-medium  text-[#282F2E]">
-                  Module {module.moduleNumber}: {module.title}
+                <h2 className="font-bold  text-green-300">
+                  Module {module.moduleNumber}:
+                  <span className="font-medium"> {module.title}</span>
                 </h2>
               </div>
               <div className="flex gap-3">
@@ -55,13 +59,14 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
                 >
                   View Module
                 </button>
-
-                <button
-                  onClick={() => openDeleteModal(module.id)}
-                  className="bg-green-100 text-white px-2 md:px-6 py-3 rounded-md text-xs font-medium"
-                >
-                  Remove Module
-                </button>
+                {user?.role !== 'TEENAGER' && (
+                  <button
+                    onClick={() => openDeleteModal(module.id)}
+                    className="bg-green-100 text-white px-2 md:px-6 py-3 rounded-md text-xs font-medium"
+                  >
+                    Remove Module
+                  </button>
+                )}
               </div>
             </div>
           </div>

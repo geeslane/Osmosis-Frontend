@@ -3,14 +3,20 @@ import type { NextRequest } from 'next/server';
 import { getSessionCookie } from '@/lib/session';
 
 const ROLE_ACCESS: Record<string, string[]> = {
-  superadmin: [
+  SUPERADMIN: [
     '/dashboard',
     '/dashboard/admin',
     '/dashboard/mentor',
     '/dashboard/mentee',
     '/dashboard/settings',
+    '/dashboard/user',
   ],
-  ADMIN: ['/dashboard', '/dashboard/pending-requests', '/dashboard/modules'],
+  ADMIN: [
+    '/dashboard',
+    '/dashboard/users',
+    '/dashboard/pending-requests',
+    '/dashboard/users',
+  ],
   MENTOR: [
     '/dashboard',
     '/dashboard/mentee',
@@ -19,7 +25,12 @@ const ROLE_ACCESS: Record<string, string[]> = {
     '/dashboard/calls/mentee',
     '/dashboard/availabilty-schedule',
   ],
-  MENTEE: ['/dashboard'],
+  TEENAGER: [
+    '/dashboard',
+    '/dashboard/availabilty-schedule/mentee',
+    '/dashboard/modules/mentee',
+    '/dashboard/modules',
+  ],
 };
 
 const authPages = ['/signin', '/signup'];

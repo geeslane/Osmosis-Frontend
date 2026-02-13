@@ -4,12 +4,12 @@ import AddModule from './AddModule';
 import { useGetModuleByIdQuery } from '@/store/dashboard/dashboard.api';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Animated from '@/components/common/Animation';
 
 export default function EditModuleView() {
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
-  const id =
-    typeof params.id === 'string' ? params.id : params.id?.[0] ?? '';
+  const id = typeof params.id === 'string' ? params.id : (params.id?.[0] ?? '');
   const { data, isLoading } = useGetModuleByIdQuery(id, { skip: !id });
   const moduleData = data?.data?.data;
   const returnTab = searchParams.get('content') || 'Note';
@@ -42,7 +42,7 @@ export default function EditModuleView() {
   }
 
   return (
-    <div className="space-y-9">
+    <Animated activeKey={'params'} className="space-y-9">
       <Link
         href={`/dashboard/modules/${moduleData.id}?content=${returnTab}`}
         className="flex cursor-pointer items-center gap-1"
@@ -54,6 +54,6 @@ export default function EditModuleView() {
       <div className="rounded-md max-w-[747px] px-4 md:px-[64px] border-2 border-[#6CBB0180] py-8 w-full">
         <AddModule module={moduleData} />
       </div>
-    </div>
+    </Animated>
   );
 }
