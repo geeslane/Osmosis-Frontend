@@ -15,7 +15,7 @@ export default function Sechedules() {
             View all <ArrowLeft />
           </p>
         </div>
-        <div className="flex flex-col md:flex-row items-center gap-3 justify-between">
+        <div className="flex flex-col md:flex-row md:items-center gap-3 justify-between">
           <div>
             <h3 className="text-sm text-green-300 font-medium">Mentor Name</h3>
             <h3 className="text-lg text-green-200 font-semibold">
@@ -27,7 +27,7 @@ export default function Sechedules() {
           </Button>
         </div>
 
-        <div className="mt-10 flex gap-6">
+        <div className="mt-10 grid grid-cols-2 md:grid-cols-3  gap-6">
           <Meta label={'Date'} value={'12 Dec., 2025'} />
           <Meta label={'Time'} value={'12:00 am'} />
           <Meta label={'Topic'} value={'Joy in Chaos'} />

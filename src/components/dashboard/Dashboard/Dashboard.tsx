@@ -5,14 +5,19 @@ import WelcomeNote from '@/components/dashboard/Dashboard/WelcomeNote';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import Sechedules from './Sechedules';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import Admins from './Admins';
 
 export default function Dashboard() {
   const pathname = usePathname();
-
+  const user = useSelector((state: RootState) => state.profile.user);
+  const role = user?.role === 'SUPERADMIN';
+  console.log(user);
   return (
     <Animated
       activeKey={pathname}
-      className="relative space-y-[56px] py-[38px] pr-[58px]"
+      className="relative space-y-[56px] py-[38px] md:pr-[58px]"
     >
       <WelcomeNote />
       <div className="w-full">
@@ -24,8 +29,7 @@ export default function Dashboard() {
           className="absolute top-20 right-20"
         />
       </div>
-
-      <Teenager />
+      {role ? <Admins /> : <Teenager />}
 
       <Sechedules />
     </Animated>
