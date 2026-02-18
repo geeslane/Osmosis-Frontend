@@ -12,7 +12,7 @@ export default function Mentor() {
         </h3>
         <div>
           <p className="max-w-[754px] mx-auto text-center md:text-xl text-green-200">
-            Behind every confident teen is a mentor who believes in them.Our
+            Behind every confident teen is a mentor who believes in them. Our
             mentors are skilled professionals and passionate individuals who
             guide teenagers with empathy, accountability, and experience.
           </p>
