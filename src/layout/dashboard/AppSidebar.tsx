@@ -57,6 +57,12 @@ const AppSidebar: React.FC = () => {
       roles: ['MENTOR'],
     },
     {
+      icon: CallIcon,
+      name: 'Mentorship Calls',
+      path: '/dashboard/calls/mentor',
+      roles: ['TEENAGER'],
+    },
+    {
       icon: ScheduleIcon,
       name: 'Availability Schedule',
       path: '/dashboard/availabilty-schedule/mentor',
