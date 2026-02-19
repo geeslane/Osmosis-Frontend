@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { useSearchParams } from 'next/navigation';
-import PreviousCall from './Mentee/PreviousCall/PreviousCall';
-import UpcomingCall from './Mentee/UpComingCall/UpcomingCall';
-import CallRequest from './Mentee/CallRequest/CallRequest';
+import PreviousCall from './PreviousCall/PreviousCall';
+import UpcomingCall from './UpComingCall/UpcomingCall';
+import CallRequest from './CallRequest/CallRequest';
 
 const PreviousView: React.FC = () => (
   <div className="mt-6">
