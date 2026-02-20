@@ -13,7 +13,7 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 
 interface MagicLinkRequest {
   email: string;
-  userType: 'ADMIN' | 'TEENAGER' | 'MENTOR';
+  userType?: 'ADMIN' | 'TEENAGER' | 'MENTOR';
 }
 
 interface MagicLinkVerifyRequest {

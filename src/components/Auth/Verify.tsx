@@ -11,9 +11,9 @@ export default function VerifyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [verifyMagicLink] = useVerifyMagicLinkMutation();
-  const [status, setStatus] = useState<'verifying' | 'success' | 'error'>(
-    'verifying'
-  );
+  const [status, setStatus] = useState<
+    'verifying' | 'success' | 'error' | 'already_used'
+  >('verifying');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const hasVerified = useRef(false);
 
@@ -60,9 +60,22 @@ export default function VerifyPage() {
             }, 1500);
           }
         }
-      } catch (error: any) {
-        setStatus('error');
-        setErrorMessage(error || 'Failed to verify magic link');
+      } catch (err: unknown) {
+        const message =
+          err &&
+          typeof err === 'object' &&
+          'data' in err &&
+          err.data &&
+          typeof (err.data as { message?: string }).message === 'string'
+            ? (err.data as { message: string }).message
+            : err && typeof err === 'object' && 'message' in err && typeof (err as { message: string }).message === 'string'
+              ? (err as { message: string }).message
+              : 'Failed to verify magic link. The link may be invalid or expired.';
+        setErrorMessage(message);
+        const isAlreadyUsed =
+          /already\s+used|has\s+been\s+used|link\s+used/i.test(message) ||
+          (err && typeof err === 'object' && 'status' in err && (err as { status?: number }).status === 401);
+        setStatus(isAlreadyUsed ? 'already_used' : 'error');
       }
     };
 
@@ -112,6 +125,42 @@ export default function VerifyPage() {
             <p className="text-[#37445D] font-medium text-lg">
               You&apos;ve been successfully signed in. Redirecting...
             </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'already_used') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-6 max-w-md mx-5">
+          <Image
+            src={'/image/logo.png'}
+            alt="Osmosis Logo"
+            width={151}
+            height={32}
+            className="mb-4"
+          />
+          <div className="flex flex-col items-center gap-4 text-center">
+            <h2 className="text-2xl font-bold text-[#282F2E] mb-2">
+              This link has already been used or has expired
+            </h2>
+            <p className="text-[#37445D] font-medium mb-6">
+              Request a new link below to sign in.
+            </p>
+            <Link
+              href="/auth/magic-link"
+              className="w-full bg-green-100 text-white px-6 py-3 rounded-xl hover:bg-green-200 font-medium text-center transition"
+            >
+              Generate a new magic link
+            </Link>
+            <Link
+              href="/signin"
+              className="text-green-200 hover:text-green-300 font-medium text-sm"
+            >
+              Go to Sign In
+            </Link>
           </div>
         </div>
       </div>

@@ -28,7 +28,11 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error?.response?.status === 401 && typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('unauthorized'));
+      const requestUrl = error?.config?.url ?? '';
+      const isMagicLinkVerify = String(requestUrl).includes('/auth/magic-link/verify');
+      if (!isMagicLinkVerify) {
+        window.dispatchEvent(new CustomEvent('unauthorized'));
+      }
     }
     return Promise.reject(error);
   }

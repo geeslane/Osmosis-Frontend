@@ -17,7 +17,7 @@ export default function GlobalAuthHandler() {
     const handleUnauthorized = async () => {
       await clearSessionCookie();
       showToast('Session expired. Please log in again.', 'error');
-      router.push('/');
+      router.push('/signin');
     };
 
     window.addEventListener('unauthorized', handleUnauthorized);
