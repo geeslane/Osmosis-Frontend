@@ -1,18 +1,37 @@
 'use client';
+
 import { Controller, useForm, type SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import type { InferType } from 'yup';
+import { useState } from 'react';
 import InputForm from '@/components/form/InputForm';
+import TimePicker from '@/components/form/TimePicker';
 import Button from '@/components/ui/button/Button';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import useToastify from '@/hooks/useToastify';
+import { toDatetimeISO } from '@/lib/liveSessions';
+import { liveSessionsApi } from '@/lib/liveSessionsApi';
 import { AddLiveSessionSchema } from '@/validation/schema';
 
 export type AddLiveSessionFormInputs = InferType<typeof AddLiveSessionSchema>;
 
-export default function AddLive() {
+type AddLiveProps = {
+  initialData?: AddLiveSessionFormInputs;
+  sessionId?: string;
+  onSuccess?: () => void;
+  onSaved?: () => void;
+};
+
+export default function AddLive({
+  initialData,
+  sessionId,
+  onSuccess,
+  onSaved,
+}: AddLiveProps) {
   const { showToast } = useToastify();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isEditMode = Boolean(sessionId && initialData);
 
   const {
     register,
@@ -23,11 +42,51 @@ export default function AddLive() {
     reset,
   } = useForm<AddLiveSessionFormInputs>({
     resolver: yupResolver(AddLiveSessionSchema) as any,
+    defaultValues: initialData ?? { time: '12:00 AM' },
   });
 
-  const onSubmit: SubmitHandler<AddLiveSessionFormInputs> = () => {
-    showToast('Live session added successfully', 'success');
-    reset();
+  const onSubmit: SubmitHandler<AddLiveSessionFormInputs> = async (values) => {
+    const datetime = toDatetimeISO(values.date, values.time);
+    setIsSubmitting(true);
+    try {
+      if (isEditMode && sessionId) {
+        await liveSessionsApi.update(sessionId, {
+          topic: values.topic,
+          datetime,
+          url: values.url,
+          speakerName: values.speakerName,
+          bio: values.bio,
+          linkedinUrl: values.linkedinUrl || undefined,
+        });
+        showToast('Live session updated successfully', 'success');
+        onSaved?.();
+      } else {
+        await liveSessionsApi.create({
+          topic: values.topic,
+          datetime,
+          url: values.url,
+          speakerName: values.speakerName,
+          bio: values.bio,
+          linkedinUrl: values.linkedinUrl || undefined,
+        });
+        showToast('Live session added successfully', 'success');
+        reset();
+        onSuccess?.();
+      }
+    } catch (err: unknown) {
+      const message =
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          ? (err as { response: { data: { message: string } } }).response.data.message
+          : isEditMode
+            ? 'Failed to update session'
+            : 'Failed to create session';
+      showToast(String(message), 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -66,13 +125,13 @@ export default function AddLive() {
                     field.onChange('');
                   }
                 }}
+                minDate={new Date()}
                 dateFormat="yyyy-MM-dd"
-                maxDate={new Date()}
                 showYearDropdown
                 showMonthDropdown
                 dropdownMode="select"
-                placeholderText="Select date of birth"
-                className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 ${
+                placeholderText="Select date"
+                className={`w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:border-green-300 focus-within:outline-none px-3 ${
                   errors.date ? 'border-red-500' : 'border-green-300'
                 }`}
               />
@@ -82,17 +141,26 @@ export default function AddLive() {
             <p className="text-red-500 text-xs mt-1">
               {typeof errors.date.message === 'string'
                 ? errors.date.message
-                : 'Date of birth is required'}
+                : 'Date is required'}
             </p>
           )}
         </div>
 
-        <InputForm
-          label="Time"
+        <Controller
           name="time"
-          register={register}
-          error={errors.time}
-          type="time"
+          control={control}
+          render={({ field }) => (
+            <TimePicker
+              label="Time"
+              value={field.value}
+              onChange={(value) => {
+                field.onChange(value);
+                setValue('time', value, { shouldValidate: true });
+              }}
+              onBlur={field.onBlur}
+              error={errors.time}
+            />
+          )}
         />
       </div>
 
@@ -135,8 +203,9 @@ export default function AddLive() {
         variant="primary"
         fullWidth
         className="py-4 font-medium"
+        isLoading={isSubmitting}
       >
-        Save
+        {isEditMode ? 'Update' : 'Save'}
       </Button>
     </form>
   );

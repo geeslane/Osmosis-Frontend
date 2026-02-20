@@ -65,46 +65,39 @@ export default function Lead() {
             <h3 className="text-green-200 text-[26px] leading-8 md:leading-14 md:text-5xl font-bold">
               They’re Drowning in Noise. You’re Looking for a Lifeline.
             </h3>
-            <h3 className="text-green-200 md:text-xl">
-              You see it every day. The pressure to choose the
-              &rdquo;right&rdquo; university, the &rdquo;right&rdquo; career,
-              the &rdquo;right&rdquo; friends. The constant comparison on social
-              media. The gap between the confident child you know and the
-              uncertain young adult struggling to find their place.
-            </h3>
+            <p className="text-green-200 md:text-xl">
+              You see it daily: pressure to pick the &rdquo;right&rdquo; school, career, friends. Constant comparison. The gap between the confident kid you know and the uncertain teen struggling to find their place.
+            </p>
             <div className="flex flex-col gap-4">
               <h3 className="text-green-200 md:text-xl">This leads to:</h3>
-              <div className="flex gap-3 ">
-                <div className="w-[30px]">
+              <div className="flex gap-3">
+                <div className="w-[30px] shrink-0">
                   <CheckedIcon />
                 </div>
-                <h3 className="text-green-200  md:text-xl font-semibold">
-                  Anxiety-fueled decisions instead of confident choices.
-                </h3>
+                <p className="text-green-200 md:text-xl font-semibold">
+                  Anxious decisions instead of confident choices.
+                </p>
               </div>
               <div className="flex gap-3">
-                <div className="w-[30px]">
-                  <CheckedIcon />
-                </div>{' '}
-                <h3 className="text-green-200 md:text-xl font-semibold">
-                  A search for external validation instead of building internal
-                  self-worth.{' '}
-                </h3>
-              </div>
-              <div className="flex gap-3">
-                <div className="w-[30px]">
+                <div className="w-[30px] shrink-0">
                   <CheckedIcon />
                 </div>
-                <h3 className="text-green-200 md:text-xl font-semibold">
-                  A feeling of being alone in their struggles, even when
-                  surrounded by people.
-                </h3>
+                <p className="text-green-200 md:text-xl font-semibold">
+                  Chasing external validation instead of building self-worth.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <div className="w-[30px] shrink-0">
+                  <CheckedIcon />
+                </div>
+                <p className="text-green-200 md:text-xl font-semibold">
+                  Feeling alone in their struggles, even when surrounded by others.
+                </p>
               </div>
             </div>
-            <h3 className="text-green-200 md:text-xl">
-              You want to help, but you know they need guidance from someone
-              other than a parent. You need a trusted partner in their corner.
-            </h3>
+            <p className="text-green-200 md:text-xl">
+              You want to help. They need guidance from someone besides a parent. You need a trusted partner in their corner.
+            </p>
           </div>
         </div>
       </div>
