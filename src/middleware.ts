@@ -34,6 +34,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
     '/dashboard/availabilty-schedule/mentee',
     '/dashboard/modules/mentee',
     '/dashboard/modules',
+    '/dashboard/calls/mentor',
   ],
 };
 

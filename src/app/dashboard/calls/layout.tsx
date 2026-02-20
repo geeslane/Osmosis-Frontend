@@ -1,4 +1,3 @@
-import CallTabs from '@/components/dashboard/calls/CallTabs';
 import React from 'react';
 
 export default function CallsLayout({
@@ -6,10 +5,5 @@ export default function CallsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="flex flex-col ">
-      <CallTabs />
-      {children}
-    </div>
-  );
+  return <div className="flex flex-col ">{children}</div>;
 }

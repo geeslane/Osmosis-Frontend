@@ -1,5 +1,5 @@
-import CallRoleContent from '@/components/dashboard/calls/Mentee/CallRoleContent';
-import CallTabs from '@/components/dashboard/calls/Mentee/CallTabs';
+import CallRoleContent from '@/components/dashboard/calls/Mentor/CallRoleContent';
+import CallTabs from '@/components/dashboard/calls/Mentor/CallTabs';
 import PageTitle from '@/components/PageTitle';
 import { generateMetadata } from '@/utils/metadata';
 import { Metadata } from 'next';
@@ -13,7 +13,7 @@ export const metadata: Metadata = generateMetadata({
 export default function page() {
   return (
     <div>
-      <PageTitle title="Mentee" />
+      <PageTitle title="Mentorship Calls" />
       <CallTabs />
       <CallRoleContent />
     </div>
