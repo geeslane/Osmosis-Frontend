@@ -2,9 +2,8 @@
 
 import React from 'react';
 import { useSearchParams } from 'next/navigation';
-import PreviousCall from './Mentee/PreviousCall/PreviousCall';
-import UpcomingCall from './Mentee/UpComingCall/UpcomingCall';
-import CallRequest from './Mentee/CallRequest/CallRequest';
+import PreviousCall from './PreviousCall/PreviousCall';
+import UpcomingCall from './UpComingCall/UpcomingCall';
 
 const PreviousView: React.FC = () => (
   <div className="mt-6">
@@ -18,12 +17,6 @@ const UpcomingView: React.FC = () => (
   </div>
 );
 
-const RequestsView: React.FC = () => (
-  <div className="mt-6">
-    <CallRequest />
-  </div>
-);
-
 export default function CallRoleContent() {
   const searchParams = useSearchParams();
 
@@ -34,8 +27,6 @@ export default function CallRoleContent() {
       return <PreviousView />;
     case 'upcoming':
       return <UpcomingView />;
-    case 'requests':
-      return <RequestsView />;
     default:
       return <PreviousView />;
   }

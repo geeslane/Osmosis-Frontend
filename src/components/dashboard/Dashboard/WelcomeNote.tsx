@@ -10,31 +10,40 @@ import { Star } from '@/assets/icons';
 export default function WelcomeNote() {
   const user = useSelector((state: RootState) => state.profile.user);
 
-  const avatarSrc = user?.avatar || '/image/default-avatar.png';
-
   return (
-    <div className="">
-      <div className="flex items-center justify-between">
-        {/* LEFT */}
-        <div className="max-w-[250px] md:max-w-[333px] w-full">
+    <div className=" w-full">
+      <div className="flex flex-col-reverse md:flex-row w-full gap-5 items-center justify-between">
+        <div className="md:max-w-[333px] w-full">
           <h3 className="text-[rgba(0,40,37,1)] font-bold text-2xl md:text-[40px]">
             Good morning, {truncateText(user?.full_name, 10)},
           </h3>
-
           <h2 className="text-lg md:text-2xl font-medium text-green-300">
             How are you doing today?!
           </h2>
         </div>
-
-        {/* RIGHT */}
-        <div className="flex items-center gap-3">
-          <Image
-            src={avatarSrc}
-            alt={user?.full_name || 'User'}
-            width={48}
-            height={48}
-            className="rounded-full object-cover"
-          />
+        <div className="flex  w-full justify-end items-center gap-3">
+          <div className="h-[100px] w-[100px] rounded-full">
+            {user?.avatar ? (
+              <Image
+                src={user.avatar}
+                alt={user.full_name || user.email || 'User'}
+                width={36}
+                height={36}
+                className="rounded-full w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center">
+                <span className="text-white text-xs font-semibold">
+                  {(user?.full_name || user?.email || 'U')
+                    .split(' ')
+                    .map((w) => w[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2)}
+                </span>
+              </div>
+            )}
+          </div>
           <div>
             <h2 className="text-[#1D2026] font-medium text-lg ">
               {user?.full_name || ''}
