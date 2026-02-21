@@ -40,7 +40,7 @@ export const RegisterFormSchema = yup.object({
 
   address: yup.string().required('Address is required'),
 
-  hobbies: yup.string().required('Hobbies are required'),
+  hobbies: yup.string().optional().default(''),
 
   class: yup.string().required('Class is required'),
 });

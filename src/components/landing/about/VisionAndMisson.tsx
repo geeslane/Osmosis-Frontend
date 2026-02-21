@@ -25,10 +25,12 @@ export default function VisionAndMisson() {
           Mission Statement{' '}
         </h3>
         <h3 className=" mb-3 text-[#282F2E] px-4 text-lg md:text-2xl">
-          To build a nurturing ecosystem where teenagers discover their
+          {/* To build a nurturing ecosystem where teenagers discover their
           authentic identity, develop emotional and self-leadership skills, and
           harness the power of conscious choice through expert mentorship and
-          transformative learning experiences.
+          transformative learning experiences. */}
+          To empower teenagers to live a centered life. ( a life guided by
+          values, driven by purpose, and obsessed with mission )
         </h3>
       </div>
     </div>

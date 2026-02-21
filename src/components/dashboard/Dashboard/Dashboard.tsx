@@ -12,7 +12,7 @@ import Admins from './Admins';
 export default function Dashboard() {
   const pathname = usePathname();
   const user = useSelector((state: RootState) => state.profile.user);
-  const role = user?.role === 'SUPERADMIN';
+  const role = user?.role === 'TEENAGER';
   console.log(user);
   return (
     <Animated
@@ -29,7 +29,7 @@ export default function Dashboard() {
           className="absolute top-20 right-20"
         />
       </div>
-      {role ? <Admins /> : <Teenager />}
+      {role ? <Teenager /> : <Admins />}
 
       <Sechedules />
     </Animated>

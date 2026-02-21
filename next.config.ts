@@ -35,6 +35,7 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: 'res.cloudinary.com',
       },
+      { protocol: 'https', hostname: 'osmosis-backend.onrender.com' },
     ],
   },
   // Optimize dev server performance
