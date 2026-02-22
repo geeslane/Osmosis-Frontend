@@ -51,9 +51,9 @@ export const TeenagerSignupForm = () => {
   const nextStep = async () => {
     const stepFields: Record<number, (keyof TeenagerRegisterFormData)[]> = {
       1: ['fullName', 'email', 'phoneNumber'],
-      2: ['parentFullName', 'parentEmail', 'parentPhoneNumber'],
-      3: ['dateOfBirth', 'gender'],
-      4: ['class', 'address', 'hobbies'],
+      2: ['dateOfBirth', 'gender'],
+      3: ['class', 'address', 'hobbies'],
+      4: ['parentFullName', 'parentEmail', 'parentPhoneNumber'],
     };
 
     const isValid = await trigger(stepFields[currentStep]);
@@ -159,9 +159,9 @@ export const TeenagerSignupForm = () => {
           <div className="text-start mt-5">
             <h2 className="text-sm font-bold text-green-200">
               {currentStep === 1 && "Teenager's Information"}
-              {currentStep === 2 && "Parent /Guardian's Details"}
-              {currentStep === 3 && "Teenager's Personal Details"}
-              {currentStep === 4 && "Teenager's Contact & Location"}
+              {currentStep === 2 && "Teenager's Personal Details"}
+              {currentStep === 3 && "Teenager's Contact & Location"}
+              {currentStep === 4 && "Parent /Guardian's Details"}
             </h2>
           </div>
         </div>
@@ -200,7 +200,7 @@ export const TeenagerSignupForm = () => {
                 />
               </div>
             )}
-            {currentStep === 2 && (
+            {currentStep === 4 && (
               <div className="space-y-6">
                 <InputForm
                   label="Parent/Guardian's Full Name"

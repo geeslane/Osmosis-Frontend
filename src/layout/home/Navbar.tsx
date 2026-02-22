@@ -126,7 +126,7 @@ const Navbar = () => {
                     </span>
                   </span>
                 </div>
-                <ul className="absolute  right-0 mt-2  w-44  text-black rounded-lg shadow-lg opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transform transition-all duration-200 translate-y-1 z-10">
+                <ul className="absolute z-9999 bg-[#F2F2F2]  right-0 mt-2  w-44  text-black rounded-lg shadow-lg opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transform transition-all duration-200 translate-y-1 ">
                   <li className="flex items-center  gap-2 mt-2 hover:bg-green-100 px-3 py-2 rounded-lg">
                     <Link
                       href="/dashboard"
