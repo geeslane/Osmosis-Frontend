@@ -12,7 +12,7 @@ import Admins from './Admins';
 export default function Dashboard() {
   const pathname = usePathname();
   const user = useSelector((state: RootState) => state.profile.user);
-  const role = user?.role === 'SUPERADMIN';
+  const role = user?.role === 'TEENAGER';
   console.log(user);
   return (
     <div>Dashboard</div>
