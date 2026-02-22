@@ -8,7 +8,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
     '/dashboard/admin',
     '/dashboard/mentor',
     '/dashboard/mentee',
-    '/dashboard/settings',
+    '/dashboard/account-settings',
     '/dashboard/user',
     '/dashboard/modules',
     '/dashboard/pending-requests',
@@ -18,7 +18,10 @@ const ROLE_ACCESS: Record<string, string[]> = {
     '/dashboard',
     '/dashboard/users',
     '/dashboard/pending-requests',
+    '/dashboard/pending-requests',
     '/dashboard/live-sessions',
+    '/dashboard/account-settings',
+    '/dashboard/modules',
   ],
   MENTOR: [
     '/dashboard',
@@ -28,6 +31,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
     '/dashboard/calls/mentee',
     '/dashboard/availabilty-schedule',
     '/dashboard/live-sessions',
+    '/dashboard/account-settings',
   ],
   TEENAGER: [
     '/dashboard',
@@ -35,6 +39,8 @@ const ROLE_ACCESS: Record<string, string[]> = {
     '/dashboard/modules/mentee',
     '/dashboard/modules',
     '/dashboard/calls/mentor',
+    '/dashboard/account-settings',
+    '/dashboard/live-sessions',
   ],
 };
 

@@ -38,42 +38,42 @@ const AppSidebar: React.FC = () => {
   const isActive = (path: string) => pathname === path;
 
   const navItems: NavItem[] = [
-    {
-      icon: DashboardIcon,
-      name: 'Dashboard',
-      path: '/dashboard',
-      roles: ['SUPERADMIN', 'MENTOR', 'TEENAGER', 'ADMIN'],
-    },
-    {
-      icon: DashboardIcon,
-      name: 'Mentee',
-      path: '/dashboard/mentee',
-      roles: ['MENTOR'],
-    },
-    {
-      icon: CallIcon,
-      name: 'Calls',
-      path: '/dashboard/calls/mentee',
-      roles: ['MENTOR'],
-    },
-    {
-      icon: CallIcon,
-      name: 'Mentorship Calls',
-      path: '/dashboard/calls/mentor',
-      roles: ['TEENAGER'],
-    },
-    {
-      icon: ScheduleIcon,
-      name: 'Availability Schedule',
-      path: '/dashboard/availabilty-schedule/mentor',
-      roles: ['MENTOR'],
-    },
-    {
-      icon: ScheduleIcon,
-      name: 'Availability Schedule',
-      path: '/dashboard/availabilty-schedule/mentee',
-      roles: ['TEENAGER'],
-    },
+    // {
+    //   icon: DashboardIcon,
+    //   name: 'Dashboard',
+    //   path: '/dashboard',
+    //   roles: ['SUPERADMIN', 'MENTOR', 'TEENAGER', 'ADMIN'],
+    // },
+    // {
+    //   icon: DashboardIcon,
+    //   name: 'Mentee',
+    //   path: '/dashboard/mentee',
+    //   roles: ['MENTOR'],
+    // },
+    // {
+    //   icon: CallIcon,
+    //   name: 'Calls',
+    //   path: '/dashboard/calls/mentee',
+    //   roles: ['MENTOR'],
+    // },
+    // {
+    //   icon: CallIcon,
+    //   name: 'Mentorship Calls',
+    //   path: '/dashboard/calls/mentor',
+    //   roles: ['TEENAGER'],
+    // },
+    // {
+    //   icon: ScheduleIcon,
+    //   name: 'Availability Schedule',
+    //   path: '/dashboard/availabilty-schedule/mentor',
+    //   roles: ['MENTOR'],
+    // },
+    // {
+    //   icon: ScheduleIcon,
+    //   name: 'Availability Schedule',
+    //   path: '/dashboard/availabilty-schedule/mentee',
+    //   roles: ['TEENAGER'],
+    // },
     {
       icon: PendingRequestIcon,
       name: 'Pending Requests',
@@ -90,7 +90,7 @@ const AppSidebar: React.FC = () => {
       icon: ModulesIcon,
       name: 'Modules',
       path: '/dashboard/modules',
-      roles: ['SUPERADMIN', 'MENTOR'],
+      roles: ['SUPERADMIN', 'ADMIN', 'MENTOR'],
     },
     {
       icon: ModulesIcon,
@@ -102,7 +102,7 @@ const AppSidebar: React.FC = () => {
       icon: LiveSessionIcon,
       name: 'Live Sessions',
       path: '/dashboard/live-sessions',
-      roles: ['SUPERADMIN', 'MENTOR', 'TEENAGER'],
+      roles: ['SUPERADMIN', 'MENTOR', 'TEENAGER', 'ADMIN'],
     },
   ];
 
