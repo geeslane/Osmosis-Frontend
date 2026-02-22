@@ -270,7 +270,7 @@
   --shadow-theme-xl: 0px 20px 24px -4px rgba(16, 24, 40, 0.08),
     0px 8px 8px -4px rgba(16, 24, 40, 0.03);
   --shadow-datepicker: -5px 0 0 #262d3c, 5px 0 0 #262d3c;
-  --shadow-focus-ring: 0px 0px 0px 4px rgba(70, 95, 255, 0.12);
+  --shadow-focus-ring: 0px 0px 0px 4px rgba(134, 239, 172, 0.25);
   --shadow-slider-navigation: 0px 1px 2px 0px rgba(16, 24, 40, 0.1),
     0px 1px 3px 0px rgba(16, 24, 40, 0.1);
   --shadow-tooltip: 0px 4px 6px -2px rgba(16, 24, 40, 0.05),
@@ -468,7 +468,7 @@ html::-webkit-scrollbar-track {
 }
 
 .react-datepicker__input-container input {
-  @apply w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-1 focus-within:ring-gray-300 px-3 font-montserrat;
+  @apply w-full h-[56px] text-sm focus:outline-none bg-transparent border rounded-md focus-within:ring-2 focus-within:ring-green-300 focus-within:outline-none px-3 font-montserrat;
 }
 
 .react-datepicker {
@@ -634,7 +634,7 @@ html::-webkit-scrollbar-track {
 }
 
 .react-datepicker__input-container input:focus {
-  @apply ring-2 ring-green-200 border-green-400;
+  @apply outline-none border-green-300;
 }
 
 /* third-party libraries CSS */

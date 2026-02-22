@@ -12,10 +12,12 @@ export default function StillExploring() {
           For your teen, by them. Let them take the first step.
         </h3>
         <Link
-          href="/"
-          className="justify-center text-green-100 pt-6 gap-1  text-lg md:text-2xl font-medium transition-colors"
+          href="https://www.16personalities.com/free-personality-test"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="justify-center text-green-100 pt-6 gap-1  text-lg md:text-2xl font-medium transition-colors hover:text-green-200"
         >
-          Take a Free Personality Test.{' '}
+          Take a Free Personality Test.
         </Link>
       </div>
     </section>

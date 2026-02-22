@@ -12,7 +12,7 @@ export default function Benefits() {
       </p>
       <div className="w-full max-w-[750px]">
         <AccordionItem
-          title={`"My child seems lost / I feel lost."`}
+          title={`My child seems lost / I feel lost.`}
           className="text-white"
         >
           <p className=" max-w-[600px] text-green-100">
@@ -21,7 +21,7 @@ export default function Benefits() {
           </p>
         </AccordionItem>
         <AccordionItem
-          title={`"They struggle with making choices / I'm terrified of making the wrong move."`}
+          title={`They struggle with making choices / I'm terrified of making the wrong move.`}
           className="text-white "
         >
           <p className=" max-w-[600px] text-green-100">
@@ -31,7 +31,7 @@ export default function Benefits() {
         </AccordionItem>
         <AccordionItem
           subcolor={'#6cbb01'}
-          title={`"They lack motivation and direction for the future."`}
+          title={`They lack motivation and direction for the future.`}
           className="text-white "
         >
           <p className=" max-w-[600px] text-green-100">
@@ -41,7 +41,7 @@ export default function Benefits() {
         </AccordionItem>
         <AccordionItem
           subcolor={'#6cbb01'}
-          title={`"They need positive role models outside the family."`}
+          title={`They need positive role models outside the family.`}
           className="text-white  border-none"
         >
           <p className=" max-w-[600px] text-green-100">

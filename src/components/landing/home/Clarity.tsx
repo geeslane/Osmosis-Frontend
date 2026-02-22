@@ -6,57 +6,52 @@ export default function Clarity() {
     <div className="max-w-[856px] mx-auto pt-16  md:pt-24 px-8 lg:px-6">
       <div className="w-full  font-montserrat montserrat  flex flex-col justify-center gap-6 md:gap-8">
         <h3 className="text-green-200 text-[26px] leading-8 md:leading-14 md:text-5xl font-bold">
-          At Osmosis, Clarity is Absorbed, Not Forced.{' '}
+          At Osmosis, Clarity is Absorbed, Not Forced.
         </h3>
-        <h3 className="text-green-200 md:text-xl">
-          Just like the biological process, our program creates the perfect
-          environment for growth. We surround your teenager with positive
-          influences, powerful tools, and personalized mentorship, allowing them
-          to naturally absorb what they need to thrive.
-        </h3>
-        <div className="">
+        <p className="text-green-200 md:text-xl">
+          Like the biological process, we create the right environment for growth. Your teen gets positive influences, strong tools, and mentorship so they absorb what they need to thrive.
+        </p>
+        <div>
           <div className="flex flex-col gap-4">
-            <h3 className="text-green-200 md:text-xl font-medium">
-              We help them bridge the gap between &#34;I don&rsquo;t know&#34;
-              and &#34;I know myself.&#34;
-            </h3>
-            <div className="flex gap-3 ">
-              <div className="w-[30px]">
+            <p className="text-green-200 md:text-xl font-medium">
+              We bridge &#34;I don&rsquo;t know&#34; and &#34;I know myself.&#34;
+            </p>
+            <div className="flex gap-3">
+              <div className="w-[30px] shrink-0">
                 <CheckedIcon />
               </div>
               <div className="flex flex-col gap-2">
-                <h3 className="text-green-200  md:text-xl font-semibold">
-                  Confusion → Clarity:{' '}
+                <h3 className="text-green-200 md:text-xl font-semibold">
+                  Confusion → Clarity
                 </h3>
                 <p className="text-green-200 md:text-xl">
-                  By defining their core values and personal mission.
+                  Through defining core values and a personal mission.
                 </p>
               </div>
             </div>
-            <div className="flex gap-3 ">
-              <div className="w-[30px]">
+            <div className="flex gap-3">
+              <div className="w-[30px] shrink-0">
                 <CheckedIcon />
               </div>
               <div className="flex flex-col gap-2">
-                <h3 className="text-green-200  md:text-xl font-semibold">
-                  Overwhelm → Action:{' '}
+                <h3 className="text-green-200 md:text-xl font-semibold">
+                  Overwhelm → Action
                 </h3>
                 <p className="text-green-200 md:text-xl max-w-[537px]">
-                  By learning a powerful framework for making confident
-                  decisions.{' '}
+                  Through a framework for confident decisions.
                 </p>
               </div>
             </div>
-            <div className="flex gap-3 ">
-              <div className="w-[30px]">
+            <div className="flex gap-3">
+              <div className="w-[30px] shrink-0">
                 <CheckedIcon />
               </div>
               <div className="flex flex-col gap-2">
-                <h3 className="text-green-200  md:text-xl font-semibold">
-                  Aimlessness → Purpose:{' '}
+                <h3 className="text-green-200 md:text-xl font-semibold">
+                  Aimlessness → Purpose
                 </h3>
                 <p className="text-green-200 md:text-xl max-w-[537px]">
-                  By designing an actionable roadmap for their future.
+                  Through an actionable roadmap for their future.
                 </p>
               </div>
             </div>
