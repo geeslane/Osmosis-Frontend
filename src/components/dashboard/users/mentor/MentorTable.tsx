@@ -47,8 +47,8 @@ export default function MentorTable({
   onViewMentor,
 }: MentorTableProps) {
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  const [selectedAdmin, setSelectedAdmin] = useState<Mentor | null>(null);
-  const [newStatus, setNewStatus] = useState<Mentor['status']>('Active');
+  const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<'Active' | 'Inactive'>('Active');
   const [openStatusModal, setOpenStatusModal] = useState(false);
   const { showToast } = useToastify();
 
@@ -56,20 +56,31 @@ export default function MentorTable({
     useUpdateMentorStatusMutation();
 
   const handleUpdateStatus = async () => {
-    if (!selectedAdmin) return;
+    if (!selectedMentor) return;
 
     try {
       await updateMentorStatus({
-        id: selectedAdmin.id,
-        status: newStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE',
+        id: selectedMentor.id,
+        status: pendingStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE',
       }).unwrap();
-      showToast('Mentor updated Sucessfully ', 'success');
+      showToast('Mentor updated successfully', 'success');
       setOpenStatusModal(false);
-      setSelectedAdmin(null);
-      setNewStatus('Active');
+      setSelectedMentor(null);
     } catch (error) {
       console.error('Failed to update mentor status', error);
     }
+  };
+
+  const openActivateModal = (row: Mentor) => {
+    setSelectedMentor(row);
+    setPendingStatus('Active');
+    setOpenStatusModal(true);
+  };
+
+  const openDeactivateModal = (row: Mentor) => {
+    setSelectedMentor(row);
+    setPendingStatus('Inactive');
+    setOpenStatusModal(true);
   };
 
   const statusStyles: Record<Mentor['status'], string> = {
@@ -166,48 +177,61 @@ export default function MentorTable({
           onClick={(e) => e.stopPropagation()}
           className="flex relative items-center space-x-2"
         >
-          <div className="">
-            <div
-              onClick={() =>
-                setOpenDropdownId((prev) => (prev === row.id ? null : row.id))
-              }
-              className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer"
-            >
-              <MoreIcon />
-            </div>
-
-            {openDropdownId === row.id && (
-              <div className="absolute  top-8 right-0 z-50 flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg text-sm text-green-300 py-2 pointer-events-auto">
-                <button
-                  type="button"
-                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                  onClick={() => {
-                    onViewMentor(row);
-                    setOpenDropdownId(null);
-                  }}
-                >
-                  View
-                </button>
-
-                <button
-                  type="button"
-                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                  onClick={() => {
-                    setSelectedAdmin(row);
-                    setNewStatus(row.status);
-                    setOpenStatusModal(true);
-                    setOpenDropdownId(null);
-                  }}
-                >
-                  Update Status
-                </button>
-              </div>
-            )}
+          <div
+            onClick={() =>
+              setOpenDropdownId((prev) => (prev === row.id ? null : row.id))
+            }
+            className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer"
+          >
+            <MoreIcon />
           </div>
+
+          {openDropdownId === row.id && (
+            <div className="absolute top-8 right-0 z-50 flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg text-sm text-green-300 py-2 pointer-events-auto">
+              <button
+                type="button"
+                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
+                onClick={() => {
+                  onViewMentor(row);
+                  setOpenDropdownId(null);
+                }}
+              >
+                View
+              </button>
+              {row.status === 'Active' ? (
+                <button
+                  type="button"
+                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md text-[#B42318]"
+                  onClick={() => {
+                    openDeactivateModal(row);
+                    setOpenDropdownId(null);
+                  }}
+                >
+                  Deactivate
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
+                  onClick={() => {
+                    openActivateModal(row);
+                    setOpenDropdownId(null);
+                  }}
+                >
+                  Activate
+                </button>
+              )}
+            </div>
+          )}
         </div>
       ),
     },
   ];
+  const modalDescription =
+    pendingStatus === 'Active'
+      ? 'Are you sure you want to Activate this user?'
+      : 'Are you sure you want to Deactivate this user?';
+
   return (
     <div className="space-y-3 mt-2" onClick={() => setOpenDropdownId(null)}>
       <div className="flex flex-col mx-4 md:flex-row md:items-center md:justify-between gap-2">
@@ -253,35 +277,14 @@ export default function MentorTable({
       </div>
       <ActionModal
         isOpen={openStatusModal}
-        title="Update Status"
-        description="Change the user's status and provide a reason for this action."
-        confirmText="Update"
+        title={pendingStatus === 'Active' ? 'Activate user' : 'Deactivate user'}
+        description={modalDescription}
+        cancelText="Cancel"
+        confirmText="Proceed"
         isLoading={isUpdating}
         onCancel={() => setOpenStatusModal(false)}
         onConfirm={handleUpdateStatus}
-      >
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="mentor-status"
-              className="block text-sm font-medium text-green-200 mb-1"
-            >
-              Status
-            </label>
-            <select
-              id="mentor-status"
-              value={newStatus}
-              onChange={(e) =>
-                setNewStatus(e.target.value as 'Active' | 'Inactive')
-              }
-              className="w-full rounded-md border border-[#D0D5DD] px-3 py-2 text-sm"
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
-      </ActionModal>
+      />
       {data.length === 0 ? (
         <NoResult
           title="Data not found"

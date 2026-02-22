@@ -200,36 +200,7 @@ export const TeenagerSignupForm = () => {
                 />
               </div>
             )}
-            {currentStep === 4 && (
-              <div className="space-y-6">
-                <InputForm
-                  label="Parent/Guardian's Full Name"
-                  name="parentFullName"
-                  placeholder="Enter full name"
-                  register={register}
-                  error={errors.parentFullName}
-                />
-
-                <InputForm
-                  label="Parent/Guardian's Email"
-                  name="parentEmail"
-                  type="email"
-                  placeholder="Enter email address"
-                  register={register}
-                  error={errors.parentEmail}
-                  icon={<EmailIcon />}
-                />
-                <InputForm
-                  label="Parent/Guardian's Phone Number"
-                  name="parentPhoneNumber"
-                  placeholder="Enter phone nunber"
-                  register={register}
-                  error={errors.parentPhoneNumber}
-                  icon={<PhoneIcon />}
-                />
-              </div>
-            )}
-            {currentStep === 3 && (
+            {currentStep === 2 && (
               <div className="space-y-6">
                 <div className="flex font-montserrat montserrat flex-col gap-1">
                   <label className="text-green-300 font-medium">
@@ -300,7 +271,7 @@ export const TeenagerSignupForm = () => {
                 />
               </div>
             )}
-            {currentStep === 4 && (
+            {currentStep === 3 && (
               <div className="space-y-6">
                 <InputForm
                   label="Teenager's Address"
@@ -324,6 +295,35 @@ export const TeenagerSignupForm = () => {
                   placeholder="Enter current class at school"
                   register={register}
                   error={errors.class}
+                />
+              </div>
+            )}
+            {currentStep === 4 && (
+              <div className="space-y-6">
+                <InputForm
+                  label="Parent/Guardian's Full Name"
+                  name="parentFullName"
+                  placeholder="Enter full name"
+                  register={register}
+                  error={errors.parentFullName}
+                />
+
+                <InputForm
+                  label="Parent/Guardian's Email"
+                  name="parentEmail"
+                  type="email"
+                  placeholder="Enter email address"
+                  register={register}
+                  error={errors.parentEmail}
+                  icon={<EmailIcon />}
+                />
+                <InputForm
+                  label="Parent/Guardian's Phone Number"
+                  name="parentPhoneNumber"
+                  placeholder="Enter phone nunber"
+                  register={register}
+                  error={errors.parentPhoneNumber}
+                  icon={<PhoneIcon />}
                 />
               </div>
             )}

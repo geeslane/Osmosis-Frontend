@@ -2,6 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useRouter, useSearchParams } from 'next/navigation';
 import InputForm from '@/components/form/InputForm';
 import Button from '@/components/ui/button/Button';
 import { EmailIcon, PhoneIcon, LocationIcon, CameraIcon } from '@/assets/icons';
@@ -18,6 +19,8 @@ interface AddAdminFormInputs {
 }
 export default function AddAdmin() {
   const { showToast } = useToastify();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [createAdmin, { isLoading }] = useCreateAdminMutation();
 
   const {
@@ -55,12 +58,13 @@ export default function AddAdmin() {
         formData.append('picture', file);
       }
       const response = await createAdmin(formData).unwrap();
-      showToast(response?.data?.message, 'success');
+      showToast('Admin Invited Successfully"', 'success');
       reset();
       setFile(null);
-      /* const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams.toString());
       params.set('viewadmin', 'listadmin');
-      router.replace(`?${params.toString()}`); */
+      params.delete('id');
+      router.replace(`/dashboard/users?${params.toString()}`);
     } catch (error: any) {
       const message =
         error?.data?.message || error?.error || 'Failed to invite admin';

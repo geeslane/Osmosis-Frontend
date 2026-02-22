@@ -56,7 +56,7 @@ export default function AdminListPage({
   const [state, setState] = useState({
     selectedAdmin: null as Admin | null,
     openDropdownId: null as string | null,
-    newStatus: 'Active' as 'Active' | 'Inactive',
+    pendingStatus: 'Active' as 'Active' | 'Inactive',
     open: false,
   });
 
@@ -65,18 +65,25 @@ export default function AdminListPage({
     try {
       const response = await updateAdmin({
         id: state.selectedAdmin.id,
-        status: state.newStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE',
+        status: state.pendingStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE',
       }).unwrap();
-      showToast(response?.data?.message, 'success');
+      showToast(response?.data?.message ?? 'Admin updated successfully', 'success');
       setState((prev) => ({
         ...prev,
         open: false,
         selectedAdmin: null,
-        newStatus: 'Active',
       }));
     } catch (error) {
-      console.error('Failed to update mentor status', error);
+      console.error('Failed to update admin status', error);
     }
+  };
+
+  const openActivateModal = (row: Admin) => {
+    setState((prev) => ({ ...prev, selectedAdmin: row, pendingStatus: 'Active', open: true }));
+  };
+
+  const openDeactivateModal = (row: Admin) => {
+    setState((prev) => ({ ...prev, selectedAdmin: row, pendingStatus: 'Inactive', open: true }));
   };
 
   const statusStyles: Record<Admin['status'], string> = {
@@ -197,21 +204,29 @@ export default function AdminListPage({
               >
                 View
               </button>
-
-              <button
-                type="button"
-                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                onClick={() => {
-                  setState((prev) => ({
-                    ...prev,
-                    selectedAdmin: row,
-                    open: true,
-                    openDropdownId: null,
-                  }));
-                }}
-              >
-                Update Status
-              </button>
+              {row.status === 'Active' ? (
+                <button
+                  type="button"
+                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md text-[#B42318]"
+                  onClick={() => {
+                    openDeactivateModal(row);
+                    setState((prev) => ({ ...prev, openDropdownId: null }));
+                  }}
+                >
+                  Deactivate
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
+                  onClick={() => {
+                    openActivateModal(row);
+                    setState((prev) => ({ ...prev, openDropdownId: null }));
+                  }}
+                >
+                  Activate
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -274,38 +289,18 @@ export default function AdminListPage({
       </div>
       <ActionModal
         isOpen={state.open}
-        title="Update Status"
-        description="Change the user's status and provide a reason for this action."
-        confirmText="Update"
+        title={state.pendingStatus === 'Active' ? 'Activate user' : 'Deactivate user'}
+        description={
+          state.pendingStatus === 'Active'
+            ? 'Are you sure you want to Activate this user?'
+            : 'Are you sure you want to Deactivate this user?'
+        }
+        cancelText="Cancel"
+        confirmText="Proceed"
         isLoading={isUpdating}
         onCancel={() => setState((prev) => ({ ...prev, open: false }))}
         onConfirm={handleUpdateStatus}
-      >
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="mentor-status"
-              className="block text-sm font-medium text-green-200 mb-1"
-            >
-              Status
-            </label>
-            <select
-              id="mentor-status"
-              value={state.newStatus}
-              onChange={(e) =>
-                setState((prev) => ({
-                  ...prev,
-                  newStatus: e.target.value as 'Active' | 'Inactive',
-                }))
-              }
-              className="w-full rounded-md border border-[#D0D5DD] px-3 py-2 text-sm"
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
-      </ActionModal>
+      />
       {data.length === 0 ? (
         <NoResult
           title="Data not found"

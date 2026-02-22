@@ -46,12 +46,12 @@ export default function MenteeTable({
   onStatusFilterChange,
 }: MenteeTableProps) {
   const router = useRouter();
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [selectedMentee, setSelectedMentee] = useState<Mentee | null>(null);
   const [updateTeenager, { isLoading: isUpdating }] =
     useUpdateTeenagerStatusMutation();
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [openStatusModal, setOpenStatusModal] = useState(false);
-  const [newStatus, setNewStatus] = useState<'Active' | 'Inactive'>('Active');
+  const [pendingStatus, setPendingStatus] = useState<'Active' | 'Inactive'>('Active');
   const { showToast } = useToastify();
 
   const handleUpdateStatus = async () => {
@@ -61,16 +61,27 @@ export default function MenteeTable({
       await updateTeenager({
         id: selectedMentee.id,
         data: {
-          status: newStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE',
+          status: pendingStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE',
         },
       }).unwrap();
-      showToast('Teneeger updated Sucessfully ', 'success');
+      showToast('Mentee updated successfully', 'success');
       setOpenStatusModal(false);
       setSelectedMentee(null);
-      setNewStatus('Active');
     } catch (error) {
-      console.error('Failed to update mentor status', error);
+      console.error('Failed to update mentee status', error);
     }
+  };
+
+  const openActivateModal = (row: Mentee) => {
+    setSelectedMentee(row);
+    setPendingStatus('Active');
+    setOpenStatusModal(true);
+  };
+
+  const openDeactivateModal = (row: Mentee) => {
+    setSelectedMentee(row);
+    setPendingStatus('Inactive');
+    setOpenStatusModal(true);
   };
 
   const statusStyles: Record<Mentee['status'], string> = {
@@ -177,7 +188,7 @@ export default function MenteeTable({
           </div>
 
           {openDropdownId === row.id && (
-            <div className="absolute top-8 right-0 z-50 flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg text-sm text-green-300 py-2">
+            <div className="absolute top-8 right-0 z-50 flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg text-sm text-green-300 py-2 pointer-events-auto">
               <button
                 type="button"
                 className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
@@ -188,24 +199,40 @@ export default function MenteeTable({
               >
                 View
               </button>
-
-              <button
-                type="button"
-                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                onClick={() => {
-                  setSelectedMentee(row);
-                  setOpenStatusModal(true);
-                  setOpenDropdownId(null);
-                }}
-              >
-                Update Status
-              </button>
+              {row.status === 'Active' ? (
+                <button
+                  type="button"
+                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md text-[#B42318]"
+                  onClick={() => {
+                    openDeactivateModal(row);
+                    setOpenDropdownId(null);
+                  }}
+                >
+                  Deactivate
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
+                  onClick={() => {
+                    openActivateModal(row);
+                    setOpenDropdownId(null);
+                  }}
+                >
+                  Activate
+                </button>
+              )}
             </div>
           )}
         </div>
       ),
     },
   ];
+  const modalDescription =
+    pendingStatus === 'Active'
+      ? 'Are you sure you want to Activate this user?'
+      : 'Are you sure you want to Deactivate this user?';
+
   return (
     <div className="space-y-3 mt-2" onClick={() => setOpenDropdownId(null)}>
       <div className="flex flex-col mx-4 md:flex-row md:items-center md:justify-between gap-2">
@@ -250,35 +277,14 @@ export default function MenteeTable({
       </div>
       <ActionModal
         isOpen={openStatusModal}
-        title="Update Status"
-        description="Change the user's status and provide a reason for this action."
-        confirmText="Update"
+        title={pendingStatus === 'Active' ? 'Activate user' : 'Deactivate user'}
+        description={modalDescription}
+        cancelText="Cancel"
+        confirmText="Proceed"
         isLoading={isUpdating}
         onCancel={() => setOpenStatusModal(false)}
         onConfirm={handleUpdateStatus}
-      >
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="mentor-status"
-              className="block text-sm font-medium text-green-200 mb-1"
-            >
-              Status
-            </label>
-            <select
-              id="mentor-status"
-              value={newStatus}
-              onChange={(e) =>
-                setNewStatus(e.target.value as 'Active' | 'Inactive')
-              }
-              className="w-full rounded-md border border-[#D0D5DD] px-3 py-2 text-sm"
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
-      </ActionModal>
+      />
       {data.length === 0 ? (
         <NoResult
           title="Data not found"

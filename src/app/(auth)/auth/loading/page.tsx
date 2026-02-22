@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch } from 'react-redux';
-import { useGetMeQuery, ProfileApi } from '@/store/profile/profile.api';
+import { useGetMeQuery } from '@/store/profile/profile.api';
 import { setUser, clearUser } from '@/store/profile/profile.slice';
 import { LoadingIcon } from '@/assets/icons';
 import Image from 'next/image';
@@ -17,9 +17,9 @@ export default function LoadingPage() {
   
   useEffect(() => {
     dispatch(clearUser());
-    dispatch(ProfileApi.util.invalidateTags(['profile']));
+    // Don't invalidate so we can use prefetched getMe from OTP/sign-in and avoid double fetch
   }, [dispatch]);
-  
+
   const { data, error, isSuccess, isError } = useGetMeQuery();
 
   useEffect(() => {

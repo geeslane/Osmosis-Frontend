@@ -9,6 +9,8 @@ import { useLoginMutation } from '@/store/auth/auth.api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useToastify from '@/hooks/useToastify';
 import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '@/store';
+import { ProfileApi } from '@/store/profile/profile.api';
 import { clearUser } from '@/store/profile/profile.slice';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -23,7 +25,7 @@ export default function SignInForm() {
   const { showToast } = useToastify();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const redirectPath = searchParams.get('redirect') || '/dashboard';
   const [UserSignIn, { isLoading }] = useLoginMutation();
   const [signupMenuOpen, setSignupMenuOpen] = useState(false);
@@ -127,6 +129,8 @@ export default function SignInForm() {
             role: loginData.userType,
           });
           showToast(responseMessage || 'Login successful', 'success');
+          // Prefetch profile so loading page can use cached data and redirect faster
+          dispatch(ProfileApi.endpoints.getMe.initiate(undefined));
 
           try {
             const loadingPath = redirectPath

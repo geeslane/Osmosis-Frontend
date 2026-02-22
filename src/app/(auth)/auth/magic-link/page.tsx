@@ -4,7 +4,6 @@ import { EmailIcon, LoadingIcon } from '@/assets/icons';
 import Image from 'next/image';
 import React, { useState } from 'react';
 import InputForm from '@/components/form/InputForm';
-import SelectForm from '@/components/form/SelectForm';
 import { useRequestMagicLinkMutation } from '@/store/auth/auth.api';
 import useToastify from '@/hooks/useToastify';
 import { useForm } from 'react-hook-form';
@@ -15,15 +14,10 @@ import { ArrowBackIcon } from '@/assets/icons';
 
 const magicLinkSchema = yup.object({
   email: yup.string().email('Invalid email').required('Email is required'),
-  userType: yup
-    .string()
-    .oneOf(['ADMIN', 'TEENAGER', 'MENTOR'], 'Please select a valid user type')
-    .required('User type is required'),
 });
 
 type MagicLinkFormInputs = {
   email: string;
-  userType: 'ADMIN' | 'TEENAGER' | 'MENTOR';
 };
 
 export default function MagicLinkPage() {
@@ -43,7 +37,6 @@ export default function MagicLinkPage() {
     try {
       await requestMagicLink({
         email: formData.email,
-        userType: formData.userType,
       }).unwrap();
       setSuccess(true);
       showToast(
@@ -106,20 +99,6 @@ export default function MagicLinkPage() {
                 className="w-full space-y-6"
               >
                 <div className="grid grid-cols-1 gap-5">
-                  <div className="sm:col-span-1">
-                    <SelectForm
-                      label="User Type"
-                      name="userType"
-                      placeholder="Select your user type"
-                      register={register}
-                      error={errors.userType}
-                      options={[
-                        { label: 'Teenager', value: 'TEENAGER' },
-                        { label: 'Mentor', value: 'MENTOR' },
-                        { label: 'Admin', value: 'ADMIN' },
-                      ]}
-                    />
-                  </div>
                   <div className="sm:col-span-1">
                     <InputForm
                       label="Email"
