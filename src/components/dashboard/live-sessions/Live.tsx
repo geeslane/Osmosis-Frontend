@@ -41,7 +41,7 @@ export default function Live() {
       const message = err && typeof err === 'object' && 'response' in err
         ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
         : 'Failed to load live sessions';
-      showToast(String(message), 'error');
+      showToast(message, 'error');
       setData([]);
       setTotal(0);
       setTotalPages(1);
@@ -79,14 +79,14 @@ export default function Live() {
             Add Live Session
           </h3>
 
-          <div className="max-w-[747px] w-full rounded-xl border border-green-200/60 bg-white px-6 md:px-10 py-8 shadow-sm">
+          <div className="max-w-[747px] w-full rounded-xl border border-green-400 bg-white px-6 md:px-10 py-8 shadow-sm">
             <AddLive onSuccess={() => { setAddLiveSession(false); fetchList(); }} />
           </div>
         </div>
       ) : (
-        <div className="rounded-xl border border-green-200/60 bg-white px-4 md:px-6 py-6 shadow-sm">
+        <div className="rounded-xl border border-green-400 bg-white px-4 md:px-6 py-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-green-200 text-2xl font-semibold">
                 Live Sessions
               </h2>

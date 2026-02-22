@@ -61,7 +61,7 @@ export default function Mentor() {
   const userList = useUserList({ defaultLimit: 10 });
   const { queryParams, search, statusFilter, limit } = userList;
 
-  const { data: mentorsResponse, isLoading: isLoadingMentors } =
+  const { data: mentorsResponse, isLoading: isLoadingMentors, isError: isMentorsError } =
     useGetMentorsQuery(queryParams);
 
   const mentorData = useMemo(
@@ -72,26 +72,31 @@ export default function Mentor() {
   const total = mentorsResponse?.pagination?.total ?? 0;
   const totalPages = mentorsResponse?.pagination?.totalPages ?? 1;
 
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    const currentView = params.get('viewmentor') || 'listmentor';
-    const currentSelectedId = params.get('id');
+  const currentView = searchParams.get('viewmentor') || 'listmentor';
+  const currentSelectedId = searchParams.get('id');
 
+  useEffect(() => {
     if (
       mentorData.length > 0 &&
       currentView === 'viewmentor' &&
       currentSelectedId &&
       !mentorData.find((m: any) => m.id === currentSelectedId)
     ) {
-      router.replace('?viewmentor=listmentor');
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('viewmentor', 'listmentor');
+      params.delete('id');
+      router.replace(`?${params.toString()}`);
     } else if (
       currentView !== 'listmentor' &&
       mentorData.length === 0 &&
       !isLoadingMentors
     ) {
-      router.replace('?viewmentor=listmentor');
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('viewmentor', 'listmentor');
+      params.delete('id');
+      router.replace(`?${params.toString()}`);
     }
-  }, [mentorData, isLoadingMentors, searchParams, router]);
+  }, [mentorData.length, currentView, currentSelectedId, isLoadingMentors, searchParams, router]);
 
   const setParam = (newView: string, id?: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -103,7 +108,7 @@ export default function Mentor() {
 
   const handleBack = () => setParam('listmentor');
 
-  if (isLoadingMentors && view === 'listmentor') {
+  if (isLoadingMentors && view === 'listmentor' && !isMentorsError) {
     return (
       <div className="flex justify-center items-center py-20">
         <LoadingIcon

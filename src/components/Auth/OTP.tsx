@@ -7,6 +7,9 @@ import {
   useVerifyOtpMutation,
   useResendOtpMutation,
 } from '@/store/auth/auth.api';
+import type { AppDispatch } from '@/store';
+import { ProfileApi } from '@/store/profile/profile.api';
+import { useDispatch } from 'react-redux';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useToastify from '@/hooks/useToastify';
 import Link from 'next/link';
@@ -17,6 +20,7 @@ export default function OtpPage({ sessionId }: { sessionId: string }) {
   const { showToast } = useToastify();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const dispatch = useDispatch<AppDispatch>();
   const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
   const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -100,6 +104,8 @@ export default function OtpPage({ sessionId }: { sessionId: string }) {
             );
           } else {
             showToast('OTP verified successfully!', 'success');
+            // Prefetch profile so loading page can use cached data and redirect faster
+            dispatch(ProfileApi.endpoints.getMe.initiate(undefined));
             const redirectParam = searchParams.get('redirect');
             const loadingPath = redirectParam
               ? `/auth/loading?redirect=${encodeURIComponent(redirectParam)}`
