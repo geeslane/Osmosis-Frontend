@@ -38,12 +38,12 @@ const AppSidebar: React.FC = () => {
   const isActive = (path: string) => pathname === path;
 
   const navItems: NavItem[] = [
-    // {
-    //   icon: DashboardIcon,
-    //   name: 'Dashboard',
-    //   path: '/dashboard',
-    //   roles: ['SUPERADMIN', 'MENTOR', 'TEENAGER', 'ADMIN'],
-    // },
+    {
+      icon: DashboardIcon,
+      name: 'Dashboard',
+      path: '/dashboard',
+      roles: ['SUPERADMIN', 'MENTOR', 'TEENAGER', 'ADMIN'],
+    },
     // {
     //   icon: DashboardIcon,
     //   name: 'Mentee',
