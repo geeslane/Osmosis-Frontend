@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 
 export default function Dashboard() {
-  const user = useSelector((state: RootState) => state.profile.user);
+  // const user = useSelector((state: RootState) => state.profile.user);
   return (
     <div>Dashboard</div>
     // <Animated
