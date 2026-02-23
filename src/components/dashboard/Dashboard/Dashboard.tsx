@@ -1,19 +1,9 @@
 'use client';
-import Animated from '@/components/common/Animation';
-import Teenager from '@/components/dashboard/Dashboard/Teenager';
-import WelcomeNote from '@/components/dashboard/Dashboard/WelcomeNote';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import Sechedules from './Sechedules';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import Admins from './Admins';
 
 export default function Dashboard() {
-  const pathname = usePathname();
   const user = useSelector((state: RootState) => state.profile.user);
-  const role = user?.role === 'TEENAGER';
-  console.log(user);
   return (
     <div>Dashboard</div>
     // <Animated
