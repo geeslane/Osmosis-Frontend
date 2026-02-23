@@ -104,8 +104,8 @@ export default function OtpPage({ sessionId }: { sessionId: string }) {
             );
           } else {
             showToast('OTP verified successfully!', 'success');
-            // Prefetch profile so loading page can use cached data and redirect faster
-            dispatch(ProfileApi.endpoints.getMe.initiate(undefined));
+            // Await getMe so loading page has cached data and redirects immediately
+            await dispatch(ProfileApi.endpoints.getMe.initiate(undefined));
             const redirectParam = searchParams.get('redirect');
             const loadingPath = redirectParam
               ? `/auth/loading?redirect=${encodeURIComponent(redirectParam)}`
