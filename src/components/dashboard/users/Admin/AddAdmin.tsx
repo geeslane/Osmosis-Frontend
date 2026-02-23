@@ -57,8 +57,8 @@ export default function AddAdmin() {
       if (file) {
         formData.append('picture', file);
       }
-      const response = await createAdmin(formData).unwrap();
-      showToast('Admin Invited Successfully"', 'success');
+      await createAdmin(formData).unwrap();
+      showToast('Admin Invited Successfully', 'success');
       reset();
       setFile(null);
       const params = new URLSearchParams(searchParams.toString());

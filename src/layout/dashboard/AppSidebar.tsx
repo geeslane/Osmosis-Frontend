@@ -8,13 +8,11 @@ import { RootState } from '@/store';
 import Image from 'next/image';
 
 import {
-  CallIcon,
   DashboardIcon,
   LiveSessionIcon,
   LogoutIcon,
   ModulesIcon,
   PendingRequestIcon,
-  ScheduleIcon,
   UserManagementIcon,
   UserSettingsIcon,
 } from '@/assets/icons';

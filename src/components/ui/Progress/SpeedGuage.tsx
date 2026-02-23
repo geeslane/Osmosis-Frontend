@@ -50,6 +50,8 @@ const Speedometer: React.FC<SpeedometerProps> = ({
     } else {
       setCurrentValue(value);
     }
+  // currentValue intentionally omitted to avoid restarting animation on every tick
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, animated]);
 
   const clampedValue = Math.max(0, Math.min(currentValue, maxValue));

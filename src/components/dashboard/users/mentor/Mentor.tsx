@@ -96,7 +96,7 @@ export default function Mentor() {
       params.delete('id');
       router.replace(`?${params.toString()}`);
     }
-  }, [mentorData.length, currentView, currentSelectedId, isLoadingMentors, searchParams, router]);
+  }, [mentorData, currentView, currentSelectedId, isLoadingMentors, searchParams, router]);
 
   const setParam = (newView: string, id?: string) => {
     const params = new URLSearchParams(searchParams.toString());
