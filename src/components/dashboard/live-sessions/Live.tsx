@@ -41,7 +41,7 @@ export default function Live() {
       const message = err && typeof err === 'object' && 'response' in err
         ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
         : 'Failed to load live sessions';
-      showToast(message, 'error');
+      showToast(message ?? 'Failed to load live sessions', 'error');
       setData([]);
       setTotal(0);
       setTotalPages(1);
