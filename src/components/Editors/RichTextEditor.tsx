@@ -34,10 +34,6 @@ const Toolbar = ({
     onOpenUrlModal('link', linkUrl || '');
   };
 
-  const handleRemoveLink = () => {
-    editor.chain().focus().extendMarkRange('link').unsetLink().run();
-  };
-
   const buttonClass =
     'p-2 rounded text-gray-600 hover:bg-green-100/80 hover:text-green-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors';
   const activeClass = 'bg-green-100 text-green-800';

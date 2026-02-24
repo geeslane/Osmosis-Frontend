@@ -6,7 +6,7 @@ import {
   type SubmitHandler,
 } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import InputForm from '@/components/form/InputForm';
 import Button from '@/components/ui/button/Button';
@@ -38,9 +38,7 @@ type AddModuleProps = {
 
 export default function AddModule({ module = null }: AddModuleProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { showToast } = useToastify();
-  const returnTab = searchParams.get('content') || 'Note';
   const [createModule, { isLoading: isCreating }] = useCreateModuleMutation();
   const [updateModule, { isLoading: isUpdating }] = useUpdateModuleMutation();
   const isEdit = !!module;
