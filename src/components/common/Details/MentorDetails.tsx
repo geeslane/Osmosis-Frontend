@@ -102,12 +102,12 @@ export default function MentorDetail({
               value={formatDate(selectedDetails.dateOfBirth) || undefined}
             />
             <Info
-              icon={<UserIcon />}
+              icon={<UserIcon width={20} height={20} />}
               label="Gender"
               value={selectedDetails.gender}
             />
             <Info
-              icon={<CourseIcon />}
+              icon={<CourseIcon width={20} height={20} />}
               label="Occupation"
               value={selectedDetails.occupation}
             />
@@ -115,7 +115,7 @@ export default function MentorDetail({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <Info
-              icon={<CourseIcon />}
+              icon={<CourseIcon width={20} height={20} />}
               label="Mentorship Topics of Interest"
               value={
                 selectedDetails.topics || selectedDetails.topicsOfInterest

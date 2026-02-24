@@ -192,7 +192,7 @@ export default function Detail() {
                     value={dateOfBirthDisplay}
                   />
                   <Info
-                    icon={<UserIcon />}
+                    icon={<UserIcon width={20} height={20} />}
                     label="Gender"
                     value={mentee.gender}
                   />
@@ -202,7 +202,7 @@ export default function Detail() {
                     value={mentee.hobbies}
                   />
                   <Info
-                    icon={<CourseIcon />}
+                    icon={<CourseIcon width={20} height={20} />}
                     label="Class"
                     value={mentee.class}
                   />

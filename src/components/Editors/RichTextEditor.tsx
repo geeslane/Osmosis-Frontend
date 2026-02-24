@@ -307,7 +307,7 @@ export default function RichTextEditor({
     } else if (type === 'image') {
       editor.chain().focus().setImage({ src: url.trim() }).run();
     } else if (type === 'youtube') {
-      (editor.chain().focus() as { setYoutubeVideo: (attrs: { src: string }) => ReturnType<Editor['chain']> }).setYoutubeVideo({ src: url.trim() }).run();
+      (editor.chain().focus() as unknown as { setYoutubeVideo: (attrs: { src: string }) => { run: () => boolean } }).setYoutubeVideo({ src: url.trim() }).run();
     }
     setUrlModal(null);
   };
