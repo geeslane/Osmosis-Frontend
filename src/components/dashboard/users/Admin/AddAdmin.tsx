@@ -2,7 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import InputForm from '@/components/form/InputForm';
 import Button from '@/components/ui/button/Button';
 import { EmailIcon, PhoneIcon, LocationIcon, CameraIcon } from '@/assets/icons';
@@ -20,7 +20,6 @@ interface AddAdminFormInputs {
 export default function AddAdmin() {
   const { showToast } = useToastify();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [createAdmin, { isLoading }] = useCreateAdminMutation();
 
   const {
@@ -61,10 +60,7 @@ export default function AddAdmin() {
       showToast('Admin Invited Successfully', 'success');
       reset();
       setFile(null);
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('viewadmin', 'listadmin');
-      params.delete('id');
-      router.replace(`/dashboard/users?${params.toString()}`);
+      router.replace('/dashboard/users?role=admins&viewadmin=listadmin');
     } catch (error: any) {
       const message =
         error?.data?.message || error?.error || 'Failed to invite admin';
@@ -99,15 +95,18 @@ export default function AddAdmin() {
           type="file"
           accept="image/*"
           hidden
-          onChange={(e) => onFileChange(e.target.files?.[0] || null)}
+          onChange={(e) => {
+            onFileChange(e.target.files?.[0] || null);
+            e.target.value = '';
+          }}
         />
 
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="text-sm  text-start text-green-100 font-medium mt-1"
+          className="text-sm text-start text-green-100 font-medium mt-1 hover:underline"
         >
-          Upload Photo
+          {preview ? 'Change picture' : 'Upload Photo'}
         </button>
 
         {file && <p className="text-xs text-gray-500 mt-1">{file.name}</p>}

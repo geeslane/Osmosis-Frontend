@@ -9,10 +9,12 @@ export type LiveSessionRecord = {
   speakerName: string;
   bio: string;
   linkedinUrl: string | null;
+  pictureUrl?: string | null;
   status: LiveSessionStatus;
   cancellationReason?: string | null;
   sessionNotes: string | null;
   recordingUrl: string | null;
+  createdAt?: string;
 };
 
 /** Convert API session (datetime) to UI record (date + time) */
@@ -24,10 +26,12 @@ export function apiSessionToRecord(api: {
   speakerName: string;
   bio: string;
   linkedinUrl: string | null;
+  pictureUrl?: string | null;
   status: LiveSessionStatus;
   cancellationReason?: string | null;
   sessionNotes: string | null;
   recordingUrl: string | null;
+  createdAt?: string;
 }): LiveSessionRecord {
   const { date, time } = fromDatetimeISO(api.datetime);
   return {
@@ -39,10 +43,12 @@ export function apiSessionToRecord(api: {
     speakerName: api.speakerName,
     bio: api.bio,
     linkedinUrl: api.linkedinUrl ?? null,
+    pictureUrl: api.pictureUrl ?? null,
     status: api.status,
     cancellationReason: api.cancellationReason ?? null,
     sessionNotes: api.sessionNotes ?? null,
     recordingUrl: api.recordingUrl ?? null,
+    createdAt: api.createdAt,
   };
 }
 
@@ -56,6 +62,12 @@ export function fromDatetimeISO(iso: string): { date: string; time: string } {
   const ampm = hour < 12 ? 'AM' : 'PM';
   const time = `${hour12}:${String(minute).padStart(2, '0')} ${ampm}`;
   return { date, time };
+}
+
+/** Sort key for a session: createdAt if present, else ISO from date+time (for ordering) */
+export function sessionSortKey(record: LiveSessionRecord): string {
+  if (record.createdAt) return record.createdAt;
+  return toDatetimeISO(record.date, record.time);
 }
 
 /** Build ISO datetime from form date (YYYY-MM-DD) and time (e.g. "02:00 PM") (local time → UTC ISO) */

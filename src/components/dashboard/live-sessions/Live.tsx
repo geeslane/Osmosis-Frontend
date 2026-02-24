@@ -10,8 +10,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import AddLive from './AddLive';
 import LiveTable from './LiveTable';
 
-const LIST_LIMIT = 10;
+const PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 400;
+
+export type DateSortDirection = 'asc' | 'desc' | null;
 
 export default function Live() {
   const { showToast } = useToastify();
@@ -22,6 +24,7 @@ export default function Live() {
   const [data, setData] = useState<LiveSessionRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [dateSort, setDateSort] = useState<DateSortDirection>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchList = useCallback(async () => {
@@ -31,16 +34,19 @@ export default function Live() {
       const res = await liveSessionsApi.list({
         search: q || undefined,
         page,
-        limit: LIST_LIMIT,
+        limit: PAGE_SIZE,
+        ...(dateSort != null && { orderBy: dateSort }),
       });
       const list = Array.isArray(res.data) ? res.data : [];
       setData(list.map(apiSessionToRecord));
       setTotal(typeof res.total === 'number' ? res.total : 0);
       setTotalPages(Math.max(1, typeof res.totalPages === 'number' ? res.totalPages : 1));
     } catch (err: unknown) {
-      const message = err && typeof err === 'object' && 'response' in err
-        ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-        : 'Failed to load live sessions';
+      const message =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data
+              ?.message
+          : 'Failed to load live sessions';
       showToast(message ?? 'Failed to load live sessions', 'error');
       setData([]);
       setTotal(0);
@@ -48,7 +54,7 @@ export default function Live() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, page, showToast]);
+  }, [searchQuery, page, dateSort, showToast]);
 
   useEffect(() => {
     fetchList();
@@ -61,6 +67,11 @@ export default function Live() {
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [search]);
+
+  const handleSortChange = useCallback((direction: DateSortDirection) => {
+    setDateSort(direction);
+    setPage(1);
+  }, []);
 
   const itemLabel = total === 1 ? '1 item' : `${total} items`;
 
@@ -141,6 +152,8 @@ export default function Live() {
                 totalPages={totalPages}
                 onPageChange={setPage}
                 onCancelSuccess={fetchList}
+                dateSort={dateSort}
+                onDateSortChange={handleSortChange}
               />
             </div>
           )}

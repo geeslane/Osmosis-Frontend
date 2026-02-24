@@ -49,8 +49,34 @@ export default function ModuleDetails() {
 
   return (
     <div>
+      <div className="flex justify-between max-w-[639px]">
+        <Link
+          href={backPath}
+          className="flex cursor-pointer items-center gap-1"
+        >
+          <GoBackIcon />
+          <h3 className="text-sm text-green-200 font-medium">Back</h3>
+        </Link>
+        {user?.role !== 'TEENAGER' && (
+          <Button
+            variant="primary"
+            className="font-medium flex gap-1"
+            onClick={() =>
+              router.push(
+                moduleData
+                  ? `/dashboard/modules/${moduleData.id}/edit?content=${currentTab}`
+                  : '/dashboard/modules'
+              )
+            }
+          >
+            <EditIcon />
+            <h3 className="hidden md:flex mr-2">Edit Module</h3>
+          </Button>
+        )}
+      </div>
+
       <Tabs
-        containerClassName="w-full md:max-w-[550px]"
+        containerClassName="w-full max-w-[639px] mt-10"
         paramKey="content"
         defaultValue="Note"
         tabs={[
@@ -69,34 +95,8 @@ export default function ModuleDetails() {
         ]}
       />
 
-      <div className="mt-10 max-w-[639px]">
-        <div className="flex justify-between">
-          <Link
-            href={backPath}
-            className="flex cursor-pointer items-center gap-1"
-          >
-            <GoBackIcon />
-            <h3 className="text-sm text-green-200 font-medium">Back</h3>
-          </Link>
-          {user?.role !== 'TEENAGER' && (
-            <Button
-              variant="primary"
-              className="font-medium flex gap-1"
-              onClick={() =>
-                router.push(
-                  moduleData
-                    ? `/dashboard/modules/${moduleData.id}/edit?content=${currentTab}`
-                    : '/dashboard/modules'
-                )
-              }
-            >
-              <EditIcon />
-              <h3 className="hidden md:flex mr-2">Edit Module</h3>
-            </Button>
-          )}
-        </div>
-
-        <div className="space-y-[37px] mt-[37px]">
+      <div className="mt-2 max-w-[639px]">
+        <div className="space-y-[37px] mt-6">
           <PageTitle
             title={moduleData ? `Module ${moduleData.moduleNumber}` : 'Module'}
           />

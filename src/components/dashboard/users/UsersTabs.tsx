@@ -12,8 +12,8 @@ export default function UsersTabs() {
 
   const allTabs = [
     { title: 'Admins', value: 'admins', icon: <AdminsIcon /> },
-    { title: 'Mentor', value: 'mentor', icon: <MentorIcon /> },
-    { title: 'Mentee', value: 'mentee', icon: <MentteeIcon /> },
+    { title: 'Mentors', value: 'mentor', icon: <MentorIcon /> },
+    { title: 'Mentees', value: 'mentee', icon: <MentteeIcon /> },
   ];
 
   const roleTabsMap: Record<string, string[]> = {

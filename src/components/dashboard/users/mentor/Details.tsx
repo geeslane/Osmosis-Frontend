@@ -15,41 +15,45 @@ export default function Details({
   return (
     <div>
       {call ? (
-        <div className="flex flex-col gap-[37px]">
-          <div
-            onClick={handleBack}
-            className="flex cursor-pointer w-20  items-center gap-1"
-          >
-            <GoBackIcon />
-            <h3 className="text-sm text-green-200 font-medium">Back</h3>
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-wrap items-center gap-4">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="flex cursor-pointer items-center gap-2 text-green-200 font-medium hover:opacity-80 transition-opacity"
+            >
+              <GoBackIcon />
+              <span className="text-sm">Back</span>
+            </button>
           </div>
           <CallHistoryTable />
         </div>
       ) : (
-        <div className="flex flex-col gap-[37px]">
-          <div
-            onClick={handleBack}
-            className="flex cursor-pointer w-20  items-center gap-1"
-          >
-            <GoBackIcon />
-            <h3 className="text-sm text-green-200 font-medium">Back</h3>
-          </div>
-          <div className="flex justify-between items-center ">
-            <h3
-              onClick={handleBack}
-              className="text-green-200 text-3xl font-bold"
-            >
-              Mentee Details
-            </h3>
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-wrap items-center gap-4">
             <button
-              onClick={() => setCall(true)}
-              className="font-medium flex items-center py-3 justify-center px-8 rounded-xl gap-2 bg-[#DCFFAD91]"
+              type="button"
+              onClick={handleBack}
+              className="flex cursor-pointer items-center gap-2 text-green-200 font-medium hover:opacity-80 transition-opacity shrink-0"
             >
-              <h3 className="hidden font-semibold text-green-300 md:flex ">
-                View Call History
-              </h3>
-              <PhoneIcon color={'#002825'} />
-            </button>{' '}
+              <GoBackIcon />
+              <span className="text-sm">Back</span>
+            </button>
+            <h3 className="text-green-200 text-2xl md:text-3xl font-bold">
+              Mentor Details
+            </h3>
+            <div className="flex-1 flex justify-end">
+              <button
+                onClick={() => setCall(true)}
+                type="button"
+                className="font-medium flex items-center py-2.5 px-6 rounded-xl gap-2 bg-[#DCFFAD91] hover:opacity-90 transition-opacity"
+              >
+                <span className="hidden font-semibold text-green-300 md:inline">
+                  View Call History
+                </span>
+                <PhoneIcon color="#002825" />
+              </button>
+            </div>
           </div>
           <MentorDetail selectedDetails={selectedDetails} />
         </div>

@@ -114,15 +114,18 @@ export default function EditDetail({
           type="file"
           accept="image/*"
           hidden
-          onChange={(e) => onFileChange(e.target.files?.[0] || null)}
+          onChange={(e) => {
+            onFileChange(e.target.files?.[0] || null);
+            e.target.value = '';
+          }}
         />
 
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="text-sm text-start text-green-100 font-medium mt-1"
+          className="text-sm text-start text-green-100 font-medium mt-1 hover:underline"
         >
-          Upload Photo
+          {preview ? 'Change picture' : 'Upload Photo'}
         </button>
 
         {file && <p className="text-xs text-gray-500 mt-1">{file.name}</p>}

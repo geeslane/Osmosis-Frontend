@@ -42,7 +42,16 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
       {modules.map((module) => (
         <div
           key={module.id}
-          className="flex flex-col gap-5  border-b px-5 border-green-100 pb-4"
+          role="button"
+          tabIndex={0}
+          onClick={() => router.push(`/dashboard/modules/${module.id}`)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              router.push(`/dashboard/modules/${module.id}`);
+            }
+          }}
+          className="flex flex-col gap-5 border-b px-5 border-green-100 pb-4 cursor-pointer hover:bg-green-50/50 transition-colors rounded-md"
         >
           <div className="flex flex-col gap-3 ">
             <div className="flex flex-col gap-3 md:flex-row justify-between md:items-center w-full">
@@ -52,7 +61,7 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
                   <span className="font-medium"> {module.title}</span>
                 </h2>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={() => router.push(`/dashboard/modules/${module.id}`)}
                   className="bg-green-200 text-white px-2 md:px-6 py-3 rounded-md text-xs font-medium"

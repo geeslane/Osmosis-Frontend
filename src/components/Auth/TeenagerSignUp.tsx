@@ -282,7 +282,7 @@ export const TeenagerSignupForm = () => {
                 />
 
                 <InputForm
-                  label="Teenager's Hobbies"
+                  label="Teenager's Hobbies (optional)"
                   name="hobbies"
                   placeholder="Enter hobbies"
                   register={register}
@@ -395,12 +395,6 @@ export const TeenagerSignupForm = () => {
             Kindly check the registered Parent or Guardian&apos;s email (
             {parentEmail}) for more details regarding the onboarding process.
           </h3>
-          <Link
-            href={'/'}
-            className="mt-7 underline text-green-100 text-center"
-          >
-            View Our Brochure & Pricing Here{' '}
-          </Link>
         </div>
       </Modal>
     </div>

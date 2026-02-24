@@ -12,6 +12,7 @@ export type ApiLiveSession = {
   speakerName: string;
   bio: string;
   linkedinUrl: string | null;
+  pictureUrl: string | null;
   status: LiveSessionStatus;
   cancellationReason: string | null;
   sessionNotes: string | null;
@@ -49,6 +50,7 @@ export type UpdateLiveSessionBody = Partial<{
   speakerName: string;
   bio: string;
   linkedinUrl: string;
+  pictureUrl: string;
   status: LiveSessionStatus;
   cancellationReason: string;
   sessionNotes: string;
@@ -110,7 +112,12 @@ function unwrap<T>(r: { data: T | { success?: boolean; data?: T } }): T {
 }
 
 export const liveSessionsApi = {
-  list(params?: { search?: string; page?: number; limit?: number }) {
+  list(params?: {
+    search?: string;
+    page?: number;
+    limit?: number;
+    orderBy?: 'asc' | 'desc';
+  }) {
     return axiosInstance.get(BASE, { params }).then((r) => unwrap<LiveSessionsListResponse>(r));
   },
 
@@ -118,11 +125,34 @@ export const liveSessionsApi = {
     return axiosInstance.get(`${BASE}/${id}`).then((r) => unwrap<ApiLiveSession>(r));
   },
 
-  create(body: CreateLiveSessionBody) {
+  create(body: CreateLiveSessionBody, picture?: File | null) {
+    if (picture) {
+      const form = new FormData();
+      form.append('topic', body.topic);
+      form.append('datetime', body.datetime);
+      form.append('url', body.url);
+      form.append('speakerName', body.speakerName);
+      form.append('bio', body.bio);
+      if (body.linkedinUrl) form.append('linkedinUrl', body.linkedinUrl);
+      form.append('picture', picture);
+      return axiosInstance
+        .post(BASE, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+        .then((r) => unwrap<ApiLiveSession>(r));
+    }
     return axiosInstance.post(BASE, body).then((r) => unwrap<ApiLiveSession>(r));
   },
 
-  update(id: string, body: UpdateLiveSessionBody) {
+  update(id: string, body: UpdateLiveSessionBody, picture?: File | null) {
+    if (picture) {
+      const form = new FormData();
+      Object.entries(body).forEach(([k, v]) => {
+        if (v !== undefined && v !== null && k !== 'pictureUrl') form.append(k, String(v));
+      });
+      form.append('picture', picture);
+      return axiosInstance
+        .put(`${BASE}/${id}`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+        .then((r) => unwrap<ApiLiveSession>(r));
+    }
     return axiosInstance.put(`${BASE}/${id}`, body).then((r) => unwrap<ApiLiveSession>(r));
   },
 

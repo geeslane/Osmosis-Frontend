@@ -40,7 +40,7 @@ export const RegisterFormSchema = yup.object({
 
   address: yup.string().required('Address is required'),
 
-  hobbies: yup.string().required('Hobbies is required'),
+  hobbies: yup.string().optional().default(''),
 
   class: yup.string().required('Class is required'),
 });
@@ -132,6 +132,8 @@ export const AddLiveSessionSchema = yup.object({
     .nullable()
     .notRequired()
     .url('Enter a valid LinkedIn URL'),
+
+  pictureUrl: yup.string().nullable().notRequired(),
 });
 
 export const AddModuleSchema = yup.object({

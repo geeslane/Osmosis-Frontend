@@ -1,5 +1,5 @@
-// @/components/form/FileUpload.tsx
-import { CVS } from '@/assets/icons';
+// @/components/Editors/FileUpload.tsx
+import { CVS, FileIcon } from '@/assets/icons';
 import React, { useState } from 'react';
 import { UseFormRegister, FieldError } from 'react-hook-form';
 
@@ -12,6 +12,8 @@ interface FileUploadProps {
   maxSize?: number; // in MB
   labelClassName?: string;
   containerClassName?: string;
+  /** Use "document" for PDF/Word workbook uploads (shows doc icon and hint). */
+  variant?: 'file' | 'document';
 }
 
 export default function FileUpload({
@@ -23,6 +25,7 @@ export default function FileUpload({
   maxSize = 10,
   labelClassName,
   containerClassName,
+  variant = 'file',
 }: FileUploadProps) {
   const [fileName, setFileName] = useState<string>('');
   const [isDragging, setIsDragging] = useState(false);
@@ -31,6 +34,8 @@ export default function FileUpload({
     const file = e.target.files?.[0];
     if (file) {
       setFileName(file.name);
+    } else {
+      setFileName('');
     }
   };
 
@@ -86,15 +91,24 @@ export default function FileUpload({
         onDrop={handleDrop}
       >
         <div className="flex flex-col items-center gap-2">
-          <CVS />
+          {variant === 'document' ? (
+            <FileIcon width="48" height="48" className="text-green-200" fill="#6CBB01" />
+          ) : (
+            <CVS />
+          )}
 
           <div>
-            <p className=" text-green-300 font-medium">
+            <p className="text-green-300 font-medium">
               Drag & drop or click to choose files
             </p>
             <p className="text-xs text-green-300 font-medium mt-1">
-              Max file size {maxSize}MB
+              {variant === 'document' ? 'PDF or Word (DOC/DOCX) only' : `Max file size ${maxSize}MB`}
             </p>
+            {variant === 'document' && (
+              <p className="text-xs text-gray-500 mt-0.5">
+                Max file size {maxSize}MB. You can change the file anytime by clicking below.
+              </p>
+            )}
           </div>
 
           <input
@@ -111,7 +125,7 @@ export default function FileUpload({
             htmlFor={name}
             className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
           >
-            Choose File
+            {fileName ? 'Change file' : 'Choose File'}
           </label>
 
           {fileName && (

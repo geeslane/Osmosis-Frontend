@@ -50,7 +50,7 @@ export default function EditModuleView() {
         <GoBackIcon />
         <h3 className="text-sm text-green-200 font-medium">Back</h3>
       </Link>
-      <h3 className="text-green-200 text-2xl font-bold">Edit Module</h3>
+      <h3 className="text-green-200 text-2xl font-bold my-4">Edit Module</h3>
       <div className="rounded-md max-w-[747px] px-4 md:px-[64px] border-2 border-[#6CBB0180] py-8 w-full">
         <AddModule module={moduleData} />
       </div>

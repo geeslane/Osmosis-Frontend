@@ -34,6 +34,12 @@ function mapMentorFromApi(apiMentor: any): Mentor {
     PENDING: 'Pending',
   };
 
+  const topics = apiMentor.mentorshipTopics;
+  const topicsStr = Array.isArray(topics)
+    ? topics.join(', ')
+    : typeof topics === 'string'
+      ? topics
+      : '—';
   return {
     id: apiMentor.id,
     name: apiMentor.fullName || '',
@@ -43,12 +49,12 @@ function mapMentorFromApi(apiMentor: any): Mentor {
     status: statusMap[apiMentor.status] || 'Active',
     image: apiMentor.pictureUrl || undefined,
     dateOfBirth: apiMentor.dateOfBirth || '',
-    gender: apiMentor.gender,
-    occupation: apiMentor.occupation || 'N/A',
-    inspiration: apiMentor.inspiration || 'N/A',
-    bio: apiMentor.bio || 'N/A',
-    topics: apiMentor.mentorshipTopics || 'N/A',
-    linkedinUrl: apiMentor.linkedinUrl || 'N/A',
+    gender: apiMentor.gender || '—',
+    occupation: apiMentor.occupation || '—',
+    inspiration: apiMentor.inspiration || '—',
+    bio: apiMentor.bio || '—',
+    topics: topicsStr,
+    linkedinUrl: apiMentor.linkedinUrl || '',
   };
 }
 

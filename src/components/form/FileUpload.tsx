@@ -67,13 +67,23 @@ const FileUpload: React.FC<FileUploadProps> = ({
       )}
       {preview ? (
         isImage ? (
-          <Image
-            src={preview}
-            alt="Preview"
-            width={200}
-            height={100}
-            className="rounded-md object-cover"
-          />
+          <div className="flex flex-col gap-2">
+            <Image
+              src={preview}
+              alt="Preview"
+              width={200}
+              height={100}
+              className="rounded-md object-cover"
+            />
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="text-sm font-medium text-[#2699BF] hover:underline w-fit"
+              disabled={disabled}
+            >
+              Change picture
+            </button>
+          </div>
         ) : (
           <div className="flex items-center justify-between rounded-lg border border-[#C2E6F2] bg-[#F1F9FC] px-4 py-3">
             <div className="flex items-center gap-3">
@@ -123,7 +133,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
         accept={accept}
         disabled={disabled}
         hidden
-        onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
+        onChange={(e) => {
+          const file = e.target.files?.[0] || null;
+          handleFileChange(file);
+          e.target.value = '';
+        }}
       />
 
       {error && <p className="text-xs text-red-500">{error}</p>}

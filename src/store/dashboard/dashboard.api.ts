@@ -52,6 +52,19 @@ export const DashboardApi = createApi({
       }),
       invalidatesTags: ['Modules'],
     }),
+
+    /** Upload file to Cloudinary. Returns URL for use in editor (e.g. images). */
+    uploadFile: builder.mutation<
+      { message: string; url: string; publicId: string },
+      { formData: FormData; folder?: string; resourceType?: 'image' | 'raw' }
+    >({
+      query: ({ formData, folder = 'uploads', resourceType = 'image' }) => ({
+        url: '/api/upload',
+        method: 'POST',
+        data: formData,
+        params: { folder, resourceType },
+      }),
+    }),
   }),
 });
 
@@ -61,4 +74,5 @@ export const {
   useUpdateModuleMutation,
   useGetModuleByIdQuery,
   useDeleteModuleMutation,
+  useUploadFileMutation,
 } = DashboardApi;

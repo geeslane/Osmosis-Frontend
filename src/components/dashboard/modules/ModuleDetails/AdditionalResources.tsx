@@ -28,7 +28,7 @@ export default function AdditionalResources({
       )}
       {additionalResources && (
         <div
-          className="text-green-200 font-medium break-words [&_strong]:font-semibold [&_p]:mb-3 [&_p:last-child]:mb-0 [&_*]:break-words"
+          className="rich-text-content text-green-200 font-medium break-words [&_strong]:font-semibold [&_p]:mb-3 [&_p:last-child]:mb-0 [&_*]:break-words"
           dangerouslySetInnerHTML={{ __html: additionalResources }}
         />
       )}

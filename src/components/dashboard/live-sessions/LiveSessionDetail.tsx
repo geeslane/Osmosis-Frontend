@@ -23,6 +23,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import AddLive from './AddLive';
 import { ChevronDownIcon } from 'lucide-react';
+import { normalizeImageUrl } from '@/utils/helper';
 
 type LiveSessionDetailProps = {
   id: string;
@@ -153,6 +154,7 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
     speakerName: session.speakerName,
     bio: session.bio,
     linkedinUrl: session.linkedinUrl ?? '',
+    pictureUrl: session.pictureUrl ?? '',
   };
 
   if (isEditing) {
@@ -187,6 +189,10 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
 
   const sessionDateTime = formatSessionDateTime(session.date, session.time);
   const speakerInitial = session.speakerName?.charAt(0)?.toUpperCase() ?? '?';
+  const speakerImageUrl =
+    session.pictureUrl && session.pictureUrl.trim()
+      ? normalizeImageUrl(session.pictureUrl)
+      : null;
   const isPast = isSessionPast(session.date, session.time);
   const isCancelled = session.status === 'cancelled';
   const displayStatus = isCancelled
@@ -354,8 +360,18 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
                 Speaker
               </h4>
               <div className="flex flex-col md:flex-row md:items-start gap-6">
-                <div className="flex-shrink-0 w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-200 font-bold text-xl">
-                  {speakerInitial}
+                <div className="flex-shrink-0 w-14 h-14 rounded-full overflow-hidden bg-green-100 flex items-center justify-center text-green-200 font-bold text-xl border border-green-200/60">
+                  {speakerImageUrl ? (
+                    <Image
+                      src={speakerImageUrl}
+                      alt={session.speakerName ?? 'Guest speaker'}
+                      width={56}
+                      height={56}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    speakerInitial
+                  )}
                 </div>
                 <div className="space-y-5 flex-1 min-w-0">
                   <DetailRow

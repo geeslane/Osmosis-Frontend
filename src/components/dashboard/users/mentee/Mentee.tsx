@@ -86,9 +86,9 @@ export default function Mentee() {
               <GoBackIcon />
               <h3 className="text-sm text-green-200 font-medium">Back</h3>
             </div>
-            <h3 className="text-green-200 text-2xl font-bold">Add Mentor</h3>
+            <h3 className="text-green-200 text-2xl font-bold">Add Mentee</h3>
             <div className="rounded-md border px-4 md:px-[64px] border-green-400 py-5 w-full">
-              Add Mentor Incoming Design
+              Add Mentee Incoming Design
             </div>
           </div>
         </div>
@@ -111,7 +111,7 @@ export default function Mentee() {
           statusFilter === 'All' ? (
             <div className="max-w-[400px] mx-auto my-[65px]">
               <Empty
-                title="No Mentor for now."
+                title="No Mentee for now."
                 description="Check Back Later"
               />
             </div>
