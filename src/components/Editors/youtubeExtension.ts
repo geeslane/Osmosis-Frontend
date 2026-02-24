@@ -1,4 +1,4 @@
-import { Node, mergeAttributes } from '@tiptap/core';
+import { Node, mergeAttributes, type RawCommands } from '@tiptap/core';
 
 export function getYoutubeVideoId(url: string): string | null {
   if (!url || typeof url !== 'string') return null;
@@ -130,14 +130,13 @@ export const YoutubeExtension = Node.create({
     ];
   },
 
-  addCommands() {
+  addCommands(): Partial<RawCommands> {
     return {
       setYoutubeVideo:
         (options: { src: string; width?: number; height?: number }) =>
-        ({ commands }) => {
+        ({ commands }: { commands: { insertContent: (content: unknown) => boolean } }) => {
           const videoId = getYoutubeVideoId(options.src);
           if (!videoId) return false;
-          // Insert at cursor: YouTube block + empty paragraph so existing content is not replaced
           return commands.insertContent([
             {
               type: this.name,
@@ -151,6 +150,6 @@ export const YoutubeExtension = Node.create({
             { type: 'paragraph' },
           ]);
         },
-    };
+    } as Partial<RawCommands>;
   },
 });
