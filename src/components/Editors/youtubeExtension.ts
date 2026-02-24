@@ -56,8 +56,7 @@ export const YoutubeExtension = Node.create({
   },
 
   parseHTML() {
-    const getAttrsFromDiv = (dom: Node) => {
-      const el = dom as HTMLElement;
+    const getAttrsFromDiv = (el: HTMLElement): false | { videoId: string; src: string } => {
       const dataVideoId = el.getAttribute?.('data-video-id');
       const dataSrc = el.getAttribute?.('data-youtube-src');
       if (dataVideoId) {
@@ -80,17 +79,16 @@ export const YoutubeExtension = Node.create({
       },
       {
         tag: 'div',
-        getAttrs: (dom) => {
-          const el = dom as HTMLElement;
-          if (el.getAttribute?.('data-video-id')) return getAttrsFromDiv(dom);
-          if (!el.querySelector?.('iframe[src*="youtube"]')) return false;
+        getAttrs: (dom: HTMLElement) => {
+          if (dom.getAttribute?.('data-video-id')) return getAttrsFromDiv(dom);
+          if (!dom.querySelector?.('iframe[src*="youtube"]')) return false;
           return getAttrsFromDiv(dom);
         },
       },
       {
         tag: 'iframe[src*="youtube.com"], iframe[src*="youtube-nocookie.com"]',
-        getAttrs: (dom) => {
-          const src = (dom as HTMLElement).getAttribute('src') || '';
+        getAttrs: (dom: HTMLElement) => {
+          const src = dom.getAttribute('src') || '';
           const videoId = getYoutubeVideoId(src);
           return videoId ? { videoId, src } : false;
         },
