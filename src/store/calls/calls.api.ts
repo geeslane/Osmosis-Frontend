@@ -52,7 +52,44 @@ export const CallsApi = createApi({
       }),
       providesTags: ['Calls'],
     }),
+
+    /** Mentee: upcoming calls (for booking eligibility – cannot book if any upcoming). */
+    getMenteeUpcomingCalls: builder.query<GetCallsResponse, void>({
+      queryFn: async (_arg, _queryApi, _extraOptions, fetchWithBQ) => {
+        const result = await fetchWithBQ({
+          url: '/teenager/me/calls/upcoming',
+          method: 'GET',
+        });
+        if (!result.error && result.data) {
+          const res = result.data as GetCallsResponse | undefined;
+          return { data: res ?? { data: [] } };
+        }
+        return { data: { data: [] } };
+      },
+      providesTags: ['Calls'],
+    }),
+
+    /** Mentee: previous calls (for booking eligibility – cannot book if had a call in last 7 days). */
+    getMenteePreviousCalls: builder.query<GetCallsResponse, void>({
+      queryFn: async (_arg, _queryApi, _extraOptions, fetchWithBQ) => {
+        const result = await fetchWithBQ({
+          url: '/teenager/me/calls/previous',
+          method: 'GET',
+          params: { limit: 50 },
+        });
+        if (!result.error && result.data) {
+          const res = result.data as GetCallsResponse | undefined;
+          return { data: res ?? { data: [] } };
+        }
+        return { data: { data: [] } };
+      },
+      providesTags: ['Calls'],
+    }),
   }),
 });
 
-export const { useGetCallsQuery } = CallsApi;
+export const {
+  useGetCallsQuery,
+  useGetMenteeUpcomingCallsQuery,
+  useGetMenteePreviousCallsQuery,
+} = CallsApi;

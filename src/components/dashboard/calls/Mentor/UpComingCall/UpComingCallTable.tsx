@@ -17,6 +17,8 @@ export type UpcomingCall = {
   notes?: string;
   status: 'Active' | 'Inactive' | 'Pending';
   image?: string;
+  /** Meeting/call URL – Join call opens this in a new tab */
+  callUrl?: string;
 };
 
 export default function UpcomingCallTable({ onView, onRowClick }: { onView?: () => void; onRowClick?: (row: UpcomingCall) => void }) {
@@ -147,7 +149,13 @@ export default function UpcomingCallTable({ onView, onRowClick }: { onView?: () 
       label: '',
       render: (row) => (
         <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-          <Button className="bg-green-100 text-white px-8 py-2 rounded-xl">
+          <Button
+            className="bg-green-100 text-white px-8 py-2 rounded-xl"
+            onClick={() => {
+              const url = row.callUrl;
+              if (url) window.open(url, '_blank', 'noopener,noreferrer');
+            }}
+          >
             Join call
           </Button>
         </div>

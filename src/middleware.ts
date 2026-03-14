@@ -36,10 +36,11 @@ const ROLE_ACCESS: Record<string, string[]> = {
   ],
   TEENAGER: [
     '/dashboard',
-    '/dashboard/availabilty-schedule/mentee',
+    '/dashboard/book-a-call',
     '/dashboard/modules/mentee',
     '/dashboard/modules',
     '/dashboard/calls/mentee',
+    '/dashboard/live-sessions',
     '/dashboard/account-settings',
   ],
 };

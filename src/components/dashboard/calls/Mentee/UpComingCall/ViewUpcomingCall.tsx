@@ -34,7 +34,12 @@ export default function ViewUpcomingCall({ call, onBack }: ViewUpcomingCallProps
             </div>
             <p className="text-green-200 font-semibold text-lg">{call.name}</p>
           </div>
-          <Button className="bg-green-100 text-white px-6 py-2 rounded-xl shrink-0">
+          <Button
+            className="bg-green-100 text-white px-6 py-2 rounded-xl shrink-0"
+            onClick={() => {
+              if (call.callUrl) window.open(call.callUrl, '_blank', 'noopener,noreferrer');
+            }}
+          >
             Join call
           </Button>
         </div>

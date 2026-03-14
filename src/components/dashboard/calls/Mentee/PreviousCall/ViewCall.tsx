@@ -52,16 +52,6 @@ export default function ViewCall({ onBack }: ViewCallProps) {
             <p className="text-sm font-medium text-[#101828]">Joy in Chaos</p>
           </div>
         </div>
-
-        <div className="pt-2 border-t border-gray-100">
-          <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider mb-1">
-            Comment
-          </p>
-          <p className="text-sm font-medium text-[#101828]">
-            Demonstrates strong active listening skills, ensuring people needs
-            are fully understood before offering solutions.
-          </p>
-        </div>
       </div>
     </div>
   );

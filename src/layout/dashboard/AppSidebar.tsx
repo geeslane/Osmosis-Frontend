@@ -56,24 +56,18 @@ const AppSidebar: React.FC = () => {
       path: '/dashboard/calls/mentor',
       roles: ['MENTOR'],
     },
-    // {
-    //   icon: CallIcon,
-    //   name: 'Mentorship Calls',
-    //   path: '/dashboard/calls/mentor',
-    //   roles: ['TEENAGER'],
-    // },
     {
       icon: ScheduleIcon,
       name: 'Availability Schedule',
       path: '/dashboard/availabilty-schedule/mentor',
       roles: ['MENTOR'],
     },
-    // {
-    //   icon: ScheduleIcon,
-    //   name: 'Availability Schedule',
-    //   path: '/dashboard/availabilty-schedule/mentee',
-    //   roles: ['TEENAGER'],
-    // },
+    {
+      icon: CallIcon,
+      name: 'My calls',
+      path: '/dashboard/calls/mentee',
+      roles: ['TEENAGER'],
+    },
 
     {
       icon: PendingRequestIcon,
@@ -92,18 +86,6 @@ const AppSidebar: React.FC = () => {
       name: 'Modules',
       path: '/dashboard/modules',
       roles: ['SUPERADMIN', 'ADMIN'],
-    },
-    {
-      icon: ModulesIcon,
-      name: 'Modules',
-      path: '/dashboard/modules/mentee',
-      roles: ['TEENAGER'],
-    },
-    {
-      icon: ModulesIcon,
-      name: 'Modules',
-      path: '/dashboard/modules/mentee',
-      roles: ['TEENAGER'],
     },
     {
       icon: ModulesIcon,

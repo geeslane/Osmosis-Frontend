@@ -1,11 +1,10 @@
 'use client';
-import { DownloadIcon, SearchIcon } from '@/assets/icons';
+import { SearchIcon, StarIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
 import { useEffect, useState } from 'react';
 import useToastify from '@/hooks/useToastify';
-import { downloadCallReport } from '@/utils/downloadCallReport';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
 import ActionModal from '@/components/ui/modal/ActionModal';
 
@@ -16,7 +15,7 @@ type PreviousCall = {
   time?: string;
   topic: string;
   phone: string;
-  status: 'Active' | 'Inactive' | 'Pending';
+  status: 'Active' | 'Inactive' | 'Pending' | 'Completed';
   image?: string;
 };
 
@@ -80,9 +79,23 @@ export default function PreviousCallTable({ onView }: any) {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [declineModalOpen, setDeclineModalOpen] = useState(false);
   const [declineId, setDeclineId] = useState<string | null>(null);
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState('');
 
-  const handleUpdateStatus = async () => {
-    console.log('hellow world');
+  const handleSubmitFeedback = async () => {
+    // TODO: API e.g. POST /teenager/me/calls/:callId/feedback with { rating, comment }
+    setOpenModal(false);
+    setSelectedRow(null);
+    setFeedbackRating(0);
+    setFeedbackComment('');
+    showToast('Feedback submitted. Thank you!', 'success');
+  };
+
+  const handleCloseFeedbackModal = () => {
+    setOpenModal(false);
+    setSelectedRow(null);
+    setFeedbackRating(0);
+    setFeedbackComment('');
   };
 
   const handleDeclineConfirm = async (reason: string) => {
@@ -150,14 +163,14 @@ export default function PreviousCallTable({ onView }: any) {
       render: (row) => {
         const isProcessing = processingId === row.id;
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Button
               onClick={() => {
                 setSelectedRow(row);
                 setOpenModal(true);
               }}
               disabled={isProcessing}
-              className="bg-green-200 text-white px-8 py-2 rounded-xl"
+              className="bg-green-200 text-white px-6 py-2 rounded-xl"
             >
               Give feedback
             </Button>
@@ -196,57 +209,55 @@ export default function PreviousCallTable({ onView }: any) {
             Call History
           </h3>
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="relative flex items-center h-[44px] gap-3 w-[363px] bg-[#DCFFAD91] px-2 rounded-lg">
-            <SearchIcon className="text-gray-400" />
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name"
-              className="w-full h-full text-sm bg-transparent focus:outline-none"
-            />
-          </div>
-          <Button
-            variant="primary"
-            onClick={() => {
-              const reportData = filtered.map((r) => ({
-                'Mentor Name': r.name,
-                'Date & Time': r.time ? `${r.date}, ${r.time}` : r.date,
-                Topic: r.topic,
-                Status: r.status,
-              }));
-              downloadCallReport(reportData, 'call-history.csv');
-            }}
-            leftIcon={<DownloadIcon width="18" height="18" className="text-white" />}
-            className="shrink-0"
-          >
-            Print call history
-          </Button>
+        <div className="relative flex items-center h-[44px] gap-3 w-[363px] bg-[#DCFFAD91] px-2 rounded-lg">
+          <SearchIcon className="text-gray-400" />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name"
+            className="w-full h-full text-sm bg-transparent focus:outline-none"
+          />
         </div>
       </div>
 
       <ActionModal
         isOpen={openModal}
-        title="How was the call?"
-        description={
-          selectedRow
-            ? `Share your feedback about ${selectedRow.name.split(' ')[0]}. What should the Osmosis team and their parents know?`
-            : 'Share your feedback. What should the Osmosis team and their parents know?'
-        }
-        confirmText="Continue"
+        title="How was your call?"
+        description="Rate your mentor and share how the call went."
+        confirmText="Submit feedback"
         color="text-green-200"
-        onCancel={() => {
-          setOpenModal(false);
-          setSelectedRow(null);
-        }}
-        onConfirm={handleUpdateStatus}
+        onCancel={handleCloseFeedbackModal}
+        onConfirm={handleSubmitFeedback}
       >
-        <div className="mt-10">
+        <div className="mt-6 space-y-4">
           <div>
-            <input
-              placeholder="Type your comment here."
-              className="rounded-lg border text-[#ACACAC] focus:outline-none h-[38px] px-2 border-green-200 w-full"
+            <p className="text-sm font-medium text-gray-700 mb-2">Rate your mentor</p>
+            <div className="flex gap-1 items-center">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setFeedbackRating(star)}
+                  className="p-0.5 focus:outline-none"
+                  aria-label={`${star} star${star > 1 ? 's' : ''}`}
+                >
+                  <StarIcon
+                    fill={star <= feedbackRating ? '#F59E0B' : '#E5E7EB'}
+                  />
+                </button>
+              ))}
+              <span className="ml-2 text-sm text-gray-500">{feedbackRating}/5</span>
+            </div>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-2">Your feedback (optional)</p>
+            <textarea
+              value={feedbackComment}
+              onChange={(e) => setFeedbackComment(e.target.value)}
+              placeholder="How did the call go?"
+              rows={3}
+              className="rounded-lg border border-green-200 text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-200/50 w-full px-3 py-2 text-sm"
             />
           </div>
         </div>

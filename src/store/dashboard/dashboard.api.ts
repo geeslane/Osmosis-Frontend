@@ -53,6 +53,29 @@ export const DashboardApi = createApi({
       invalidatesTags: ['Modules'],
     }),
 
+    /** Mentor dashboard: rating (average) and total calls. Backend: GET /mentor/me/stats or derive from calls. */
+    getMentorDashboardStats: builder.query<
+      { averageRating?: number; totalCalls?: number },
+      void
+    >({
+      queryFn: async (_arg, _queryApi, _extraOptions, fetchWithBQ) => {
+        const result = await fetchWithBQ({
+          url: '/mentor/me/stats',
+          method: 'GET',
+        });
+        if (!result.error && result.data) {
+          const d = result.data as { data?: { averageRating?: number; totalCalls?: number } };
+          return {
+            data: {
+              averageRating: d?.data?.averageRating ?? 0,
+              totalCalls: d?.data?.totalCalls ?? 0,
+            },
+          };
+        }
+        return { data: { averageRating: 0, totalCalls: 0 } };
+      },
+    }),
+
     /** Upload file to Cloudinary. Returns URL for use in editor (e.g. images). */
     uploadFile: builder.mutation<
       { message: string; url: string; publicId: string },
@@ -75,4 +98,5 @@ export const {
   useGetModuleByIdQuery,
   useDeleteModuleMutation,
   useUploadFileMutation,
+  useGetMentorDashboardStatsQuery,
 } = DashboardApi;

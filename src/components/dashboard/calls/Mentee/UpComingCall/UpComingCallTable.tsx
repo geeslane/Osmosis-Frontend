@@ -6,7 +6,6 @@ import { Column, DataTable } from '@/components/ui/table';
 import { useEffect, useState } from 'react';
 import useToastify from '@/hooks/useToastify';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
-import ActionModal from '@/components/ui/modal/ActionModal';
 
 export type UpcomingCall = {
   id: string;
@@ -18,6 +17,8 @@ export type UpcomingCall = {
   notes?: string;
   status: 'Active' | 'Inactive' | 'Pending';
   image?: string;
+  /** Meeting/call URL – Join call opens this in a new tab */
+  callUrl?: string;
 };
 
 export default function UpcomingCallTable({ onRowClick }: { onRowClick?: (row: UpcomingCall) => void }) {
@@ -77,7 +78,6 @@ export default function UpcomingCallTable({ onRowClick }: { onRowClick?: (row: U
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [openModal, setOpenModal] = useState(false);
   const [statusFilter] = useState<'All' | UpcomingCall['status']>('All');
 
   const [perPage] = useState(5);
@@ -85,8 +85,9 @@ export default function UpcomingCallTable({ onRowClick }: { onRowClick?: (row: U
   const [declineModalOpen, setDeclineModalOpen] = useState(false);
   const [declineId, setDeclineId] = useState<string | null>(null);
 
-  const handleUpdateStatus = async () => {
-    setDeclineModalOpen(false);
+  const handleJoinCall = (row: UpcomingCall) => {
+    const url = row.callUrl || '#';
+    if (url !== '#') window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleDeclineConfirm = async (reason: string) => {
@@ -137,34 +138,18 @@ export default function UpcomingCallTable({ onRowClick }: { onRowClick?: (row: U
       ),
     },
     {
-      key: 'notes',
-      label: 'Notes',
-      render: (row) => (
-        <span
-          className="text-sm text-[#101828] line-clamp-2 max-w-[200px] block cursor-default"
-          title={row.notes || undefined}
-        >
-          {row.notes || '—'}
-        </span>
-      ),
-    },
-    {
       key: 'status',
       label: '',
-      render: (row) => {
-        const isProcessing = processingId === row.id;
-        return (
-          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-            <Button
-              onClick={() => setOpenModal(true)}
-              disabled={isProcessing}
-              className="bg-green-100 text-white px-8 py-2 rounded-xl"
-            >
-              Join call
-            </Button>
-          </div>
-        );
-      },
+      render: (row) => (
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          <Button
+            onClick={() => handleJoinCall(row)}
+            className="bg-green-100 text-white px-8 py-2 rounded-xl"
+          >
+            Join call
+          </Button>
+        </div>
+      ),
     },
   ];
 
@@ -208,26 +193,6 @@ export default function UpcomingCallTable({ onRowClick }: { onRowClick?: (row: U
           />
         </div>
       </div>
-
-      <ActionModal
-        isOpen={openModal}
-        title="How was the call"
-        description="Give feedback about the mentee, what Osmosis team &  parents might need to be aware of about them."
-        confirmText="Continue"
-        color="text-green-200"
-        //isLoading={isUpdating}
-        onCancel={() => setOpenModal(false)}
-        onConfirm={handleUpdateStatus}
-      >
-        <div className="mt-10">
-          <div>
-            <input
-              placeholder="Type your comment here."
-              className="rounded-lg border text-[#ACACAC] focus:outline-none h-[38px] px-2 border-green-200 w-full"
-            />
-          </div>
-        </div>
-      </ActionModal>
 
       <DeclineModal
         isOpen={declineModalOpen}

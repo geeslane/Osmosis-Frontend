@@ -1,26 +1,28 @@
 'use client';
 
-export default function Dashboard() {
-  // const user = useSelector((state: RootState) => state.profile.user);
-  return (
-    <div>Dashboard</div>
-    // <Animated
-    //   activeKey={pathname}
-    //   className="relative space-y-[56px] py-[38px] md:pr-[58px]"
-    // >
-    //   <WelcomeNote />
-    //   <div className="w-full">
-    //     <Image
-    //       src={'/image/Artboard1.png'}
-    //       alt="image"
-    //       width={400}
-    //       height={400}
-    //       className="absolute top-20 right-20"
-    //     />
-    //   </div>
-    //   {role ? <Admins /> : <Teenager />}
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import AdminDashboard from './AdminDashboard';
+import MentorDashboard from './MentorDashboard';
+import TeenagerDashboard from './TeenagerDashboard';
 
-    //   <Sechedules />
-    // </Animated>
+export default function Dashboard() {
+  const user = useSelector((state: RootState) => state.profile.user);
+  const role = user?.role;
+
+  if (role === 'TEENAGER') {
+    return <TeenagerDashboard />;
+  }
+  if (role === 'MENTOR') {
+    return <MentorDashboard />;
+  }
+  if (role === 'ADMIN' || role === 'SUPERADMIN') {
+    return <AdminDashboard />;
+  }
+
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-gray-500">
+      <p>Welcome. Select a role or sign in to see your dashboard.</p>
+    </div>
   );
 }

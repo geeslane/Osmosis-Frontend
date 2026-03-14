@@ -1,12 +1,14 @@
 'use client';
 
-import { AddsIcon, GoBackIcon, SearchIcon } from '@/assets/icons';
+import { AddsIcon, GoBackIcon, LoadingIcon, SearchIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import Empty from '@/components/ui/NotFound/Empty';
 import { apiSessionToRecord, type LiveSessionRecord } from '@/lib/liveSessions';
 import { liveSessionsApi } from '@/lib/liveSessionsApi';
 import useToastify from '@/hooks/useToastify';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import AddLive from './AddLive';
 import LiveTable from './LiveTable';
 
@@ -17,6 +19,8 @@ export type DateSortDirection = 'asc' | 'desc' | null;
 
 export default function Live() {
   const { showToast } = useToastify();
+  const user = useSelector((state: RootState) => state.profile.user);
+  const canManageSessions = user?.role !== 'TEENAGER'; // Mentees can only view
   const [addLiveSession, setAddLiveSession] = useState(false);
   const [search, setSearch] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -77,7 +81,7 @@ export default function Live() {
 
   return (
     <div className="mb-10 mt-5">
-      {addLiveSession ? (
+      {addLiveSession && canManageSessions ? (
         <div className="space-y-6">
           <div
             onClick={() => setAddLiveSession(false)}
@@ -106,14 +110,16 @@ export default function Live() {
               </span>
             </div>
 
-            <Button
-              variant="primary"
-              className="font-medium flex gap-1 shrink-0"
-              onClick={() => setAddLiveSession(true)}
-            >
-              <AddsIcon />
-              <span className="hidden md:inline">Add Live Session</span>
-            </Button>
+            {canManageSessions && (
+              <Button
+                variant="primary"
+                className="font-medium flex gap-1 shrink-0"
+                onClick={() => setAddLiveSession(true)}
+              >
+                <AddsIcon />
+                <span className="hidden md:inline">Add Live Session</span>
+              </Button>
+            )}
           </div>
 
           <div className="mt-6 flex w-full justify-center">
@@ -130,8 +136,9 @@ export default function Live() {
           </div>
 
           {loading ? (
-            <div className="mt-6 py-12 text-center text-gray-500 text-sm">
-              Loading...
+            <div className="mt-6 py-12 flex flex-col items-center justify-center gap-4 text-gray-600">
+              <LoadingIcon width="40" height="40" className="animate-spin text-green-200" />
+              <p className="text-sm font-medium">Loading sessions</p>
             </div>
           ) : total === 0 ? (
             <div className="mt-6 flex justify-center py-8">
@@ -154,6 +161,7 @@ export default function Live() {
                 onCancelSuccess={fetchList}
                 dateSort={dateSort}
                 onDateSortChange={handleSortChange}
+                canManage={canManageSessions}
               />
             </div>
           )}

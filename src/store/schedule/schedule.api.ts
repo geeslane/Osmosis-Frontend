@@ -43,7 +43,7 @@ const setStoredAvailability = (data: MentorAvailability) => {
 export const ScheduleApi = createApi({
   reducerPath: 'scheduleApi',
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['MentorAvailability'],
+  tagTypes: ['MentorAvailability', 'Calls'],
   endpoints: (builder) => ({
     getMentorAvailability: builder.query<MentorAvailability | null, void>({
       queryFn: async (_arg, _queryApi, _extraOptions, fetchWithBQ) => {
@@ -111,6 +111,51 @@ export const ScheduleApi = createApi({
       },
       invalidatesTags: ['MentorAvailability'],
     }),
+
+    /** Mentee booking: get available slots for a mentor on a given date */
+    getAvailableSlots: builder.query<
+      { slots: { start: string; end: string }[] },
+      { mentorId: string; date: string }
+    >({
+      queryFn: async ({ mentorId, date }, _queryApi, _extraOptions, fetchWithBQ) => {
+        const result = await fetchWithBQ({
+          url: `/mentor/${mentorId}/available-slots`,
+          method: 'GET',
+          params: { date, duration: 30 },
+        });
+        if (!result.error && result.data) {
+          const data = result.data as { success?: boolean; data?: { slots?: { start: string; end: string }[] } };
+          const slots = data?.data?.slots ?? [];
+          return { data: { slots } };
+        }
+        return { data: { slots: [] } };
+      },
+    }),
+
+    /** Mentee booking: create call request with optional message */
+    createCallRequest: builder.mutation<
+      { success: boolean; message?: string; data?: unknown },
+      { mentorId: string; date: string; time: string; message?: string }
+    >({
+      queryFn: async (body, _queryApi, _extraOptions, fetchWithBQ) => {
+        const result = await fetchWithBQ({
+          url: '/call-requests',
+          method: 'POST',
+          data: body,
+        });
+        if (!result.error && result.data) {
+          const data = result.data as { success?: boolean; message?: string };
+          return { data: { success: data?.success ?? true, message: data?.message } };
+        }
+        return {
+          data: {
+            success: false,
+            message: (result.error as { data?: { message?: string } })?.data?.message ?? 'Failed to send request',
+          },
+        };
+      },
+      invalidatesTags: ['Calls'],
+    }),
   }),
 });
 
@@ -118,4 +163,6 @@ export const {
   useGetMentorAvailabilityQuery,
   useSaveMentorAvailabilityMutation,
   useSyncGoogleCalendarMutation,
+  useGetAvailableSlotsQuery,
+  useCreateCallRequestMutation,
 } = ScheduleApi;
