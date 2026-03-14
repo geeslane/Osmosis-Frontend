@@ -53,6 +53,7 @@ export default function MentorCallRequestTable() {
   const [declineId, setDeclineId] = useState<string | null>(null);
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [viewingNote, setViewingNote] = useState<{ name: string; note: string } | null>(null);
+  const [detailRequest, setDetailRequest] = useState<CallRequestRow | null>(null);
 
   const handleAccept = async (id: string) => {
     setProcessingId(id);
@@ -121,7 +122,10 @@ export default function MentorCallRequestTable() {
         const isLong = note.length > 80;
         return (
           <div className="max-w-[240px]">
-            <span className="text-sm text-gray-600 line-clamp-2 block">
+            <span
+              className="text-sm text-gray-600 line-clamp-2 block cursor-default"
+              title={note || undefined}
+            >
               {note || '—'}
             </span>
             {note && isLong && (
@@ -159,7 +163,7 @@ export default function MentorCallRequestTable() {
           );
         }
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Button
               onClick={() => handleAccept(row.id)}
               disabled={isProcessing}
@@ -267,7 +271,90 @@ export default function MentorCallRequestTable() {
         </div>
       )}
 
-      <DataTable columns={columns} data={paginated} compact />
+      {/* Call request detail modal */}
+      {detailRequest && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-sm"
+          onClick={() => setDetailRequest(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="mx-4 w-full max-w-md rounded-xl border border-green-200/60 bg-white p-5 shadow-lg"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-green-200">Call request detail</h3>
+              <button
+                type="button"
+                onClick={() => setDetailRequest(null)}
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+              >
+                Close
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">Name</p>
+                <p className="text-sm font-medium text-[#101828]">{detailRequest.name}</p>
+              </div>
+              <div>
+                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">Email</p>
+                <p className="text-sm text-[#101828]">{detailRequest.email}</p>
+              </div>
+              <div>
+                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">Note</p>
+                <p className="text-sm text-[#101828] whitespace-pre-wrap">
+                  {detailRequest.note || '—'}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">Status</p>
+                <span
+                  className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
+                    detailRequest.status === 'Accepted'
+                      ? 'bg-green-50 text-green-600'
+                      : detailRequest.status === 'Rejected'
+                        ? 'bg-red-50 text-red-600'
+                        : 'bg-amber-50 text-amber-600'
+                  }`}
+                >
+                  {detailRequest.status}
+                </span>
+              </div>
+              {detailRequest.status === 'Pending' && (
+                <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    onClick={() => {
+                      setDetailRequest(null);
+                      handleAccept(detailRequest.id);
+                    }}
+                    disabled={!!processingId}
+                    className="bg-green-200 text-white px-6 py-2 rounded-xl flex-1"
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setDetailRequest(null);
+                      handleDeclineClick(detailRequest.id);
+                    }}
+                    disabled={!!processingId}
+                    className="bg-red-100 text-white px-6 py-2 rounded-xl flex-1"
+                  >
+                    Reject
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <DataTable
+        columns={columns}
+        data={paginated}
+        compact
+        onRowClick={(row) => setDetailRequest(row)}
+      />
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

@@ -8,18 +8,19 @@ import useToastify from '@/hooks/useToastify';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
 import ActionModal from '@/components/ui/modal/ActionModal';
 
-type UpcomingCall = {
+export type UpcomingCall = {
   id: string;
   name: string;
   date: string;
   time: string;
   topic: string;
   phone: string;
+  notes?: string;
   status: 'Active' | 'Inactive' | 'Pending';
   image?: string;
 };
 
-export default function UpcomingCallTable({ onView }: any) {
+export default function UpcomingCallTable({ onRowClick }: { onRowClick?: (row: UpcomingCall) => void }) {
   const { showToast } = useToastify();
   const [data, setData] = useState<UpcomingCall[]>([
     {
@@ -29,6 +30,7 @@ export default function UpcomingCallTable({ onView }: any) {
       time: '10am',
       topic: 'Hope',
       phone: '08012345678',
+      notes: 'Wants to focus on study habits and time management.',
       status: 'Pending',
     },
     {
@@ -36,9 +38,9 @@ export default function UpcomingCallTable({ onView }: any) {
       name: 'Mary Johnson',
       date: '12 Dec., 2025',
       time: '10am',
-
       topic: 'Hope',
       phone: '08087654321',
+      notes: 'Interested in career guidance and goal-setting.',
       status: 'Active',
     },
     {
@@ -47,8 +49,8 @@ export default function UpcomingCallTable({ onView }: any) {
       date: '12 Dec., 2025',
       topic: 'Hope',
       time: '10am',
-
       phone: '08123456789',
+      notes: '',
       status: 'Inactive',
     },
     {
@@ -57,8 +59,8 @@ export default function UpcomingCallTable({ onView }: any) {
       date: '12 Dec., 2025',
       topic: 'Hope',
       time: '10am',
-
       phone: '08099887766',
+      notes: 'Follow-up on previous session about confidence.',
       status: 'Pending',
     },
     {
@@ -67,8 +69,8 @@ export default function UpcomingCallTable({ onView }: any) {
       date: '12 Dec., 2025',
       topic: 'Hope',
       time: '10am',
-
       phone: '08111112222',
+      notes: 'First call – introduction and expectations.',
       status: 'Pending',
     },
   ]);
@@ -110,18 +112,10 @@ export default function UpcomingCallTable({ onView }: any) {
   const columns: Column<UpcomingCall>[] = [
     {
       key: 'name',
-      label: 'Mentors Name',
-      render: (row) => {
-        return (
-          <button
-            type="button"
-            onClick={onView}
-            className="flex cursor-pointer items-center gap-2 w-[100px] text-left font-medium text-sm text-[#101828] underline underline-offset-2 hover:text-green-600"
-          >
-            {row.name}
-          </button>
-        );
-      },
+      label: 'Mentor Name',
+      render: (row) => (
+        <span className="font-medium text-sm text-[#101828]">{row.name}</span>
+      ),
     },
     {
       key: 'date',
@@ -138,13 +132,21 @@ export default function UpcomingCallTable({ onView }: any) {
     {
       key: 'topic',
       label: 'Topic',
-      render: (row) => {
-        return (
-          <div className="flex items-center gap-2 w-[100px] ">
-            <p className="font-medium text-sm text-[#101828]">{row.topic}</p>
-          </div>
-        );
-      },
+      render: (row) => (
+        <p className="font-medium text-sm text-[#101828]">{row.topic}</p>
+      ),
+    },
+    {
+      key: 'notes',
+      label: 'Notes',
+      render: (row) => (
+        <span
+          className="text-sm text-[#101828] line-clamp-2 max-w-[200px] block cursor-default"
+          title={row.notes || undefined}
+        >
+          {row.notes || '—'}
+        </span>
+      ),
     },
     {
       key: 'status',
@@ -152,7 +154,7 @@ export default function UpcomingCallTable({ onView }: any) {
       render: (row) => {
         const isProcessing = processingId === row.id;
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Button
               onClick={() => setOpenModal(true)}
               disabled={isProcessing}
@@ -174,7 +176,8 @@ export default function UpcomingCallTable({ onView }: any) {
       row.name.toLowerCase().includes(q) ||
       row.date.toLowerCase().includes(q) ||
       row.topic.toLowerCase().includes(q) ||
-      row.phone.toLowerCase().includes(q)
+      row.phone.toLowerCase().includes(q) ||
+      (row.notes ?? '').toLowerCase().includes(q)
     );
   });
 
@@ -235,7 +238,12 @@ export default function UpcomingCallTable({ onView }: any) {
         }}
         isLoading={processingId === declineId}
       />
-      <DataTable columns={columns} data={paginated} compact />
+      <DataTable
+        columns={columns}
+        data={paginated}
+        compact
+        onRowClick={onRowClick}
+      />
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

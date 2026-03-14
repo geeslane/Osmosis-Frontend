@@ -73,6 +73,7 @@ export default function PreviousCallTable({ onView }: any) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [openModal, setOpenModal] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<PreviousCall | null>(null);
   const [statusFilter] = useState<'All' | PreviousCall['status']>('All');
 
   const [perPage] = useState(5);
@@ -82,6 +83,13 @@ export default function PreviousCallTable({ onView }: any) {
 
   const handleUpdateStatus = async () => {
     setOpenModal(false);
+    setSelectedRow(null);
+  };
+
+  const openFeedbackModal = (row: PreviousCall, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedRow(row);
+    setOpenModal(true);
   };
 
   const handleDeclineConfirm = async (reason: string) => {
@@ -113,7 +121,7 @@ export default function PreviousCallTable({ onView }: any) {
           <button
             type="button"
             onClick={onView}
-            className="flex cursor-pointer items-center gap-2 w-[200px] text-left font-medium text-sm text-[#101828] underline underline-offset-2 hover:text-green-600"
+            className="flex cursor-pointer items-center gap-2 w-[200px] text-left font-medium text-sm text-[#101828] hover:text-green-600"
           >
             {row.name}
           </button>
@@ -149,13 +157,13 @@ export default function PreviousCallTable({ onView }: any) {
       render: (row) => {
         const isProcessing = processingId === row.id;
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Button
-              onClick={() => setOpenModal(true)}
+              onClick={(e) => openFeedbackModal(row, e)}
               disabled={isProcessing}
               className="bg-green-200 text-white px-8 py-2 rounded-xl"
             >
-              Give Feedback
+              Add feedback
             </Button>
           </div>
         );
@@ -217,28 +225,29 @@ export default function PreviousCallTable({ onView }: any) {
               leftIcon={<DownloadIcon width="18" height="18" className="text-white" />}
               className="shrink-0"
             >
-              Download Report
+              Print call history
             </Button>
           </div>
         </div>
 
       <ActionModal
         isOpen={openModal}
-        title="How was the call"
-        description="Give Feedback about the mentee, what Osmosis team &  parents might need to be aware of about them."
-        confirmText="Continue"
+        title="How was the call?"
+        description={selectedRow ? `Share how ${selectedRow.name.split(' ')[0]} is doing and anything the Osmosis team or their parents should know.` : 'Share how the teenager is doing and anything the Osmosis team &  or their parents should know.'}
+        confirmText="Save feedback"
         color="text-green-200"
-        //isLoading={isUpdating}
-        onCancel={() => setOpenModal(false)}
+        onCancel={() => {
+          setOpenModal(false);
+          setSelectedRow(null);
+        }}
         onConfirm={handleUpdateStatus}
       >
-        <div className="mt-10">
-          <div>
-            <input
-              placeholder="Type your comment here."
-              className="rounded-lg border text-[#ACACAC] focus:outline-none h-[38px] px-2 border-green-200 w-full"
-            />
-          </div>
+        <div className="mt-6">
+          <textarea
+            placeholder="E.g. how they're doing overall, any concerns or wins, and what the team or parents should know..."
+            rows={4}
+            className="rounded-lg border border-green-200/60 text-[#101828] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-200/40 w-full p-3 text-sm"
+          />
         </div>
       </ActionModal>
 
@@ -251,7 +260,12 @@ export default function PreviousCallTable({ onView }: any) {
         }}
         isLoading={processingId === declineId}
       />
-      <DataTable columns={columns} data={paginated} compact />
+      <DataTable
+        columns={columns}
+        data={paginated}
+        onRowClick={() => onView()}
+        compact
+      />
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

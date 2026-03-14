@@ -8,18 +8,19 @@ import useToastify from '@/hooks/useToastify';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
 import ActionModal from '@/components/ui/modal/ActionModal';
 
-type RequestCall = {
+export type RequestCall = {
   id: string;
   name: string;
   date: string;
   time: string;
   topic: string;
   phone: string;
+  note?: string;
   status: 'Active' | 'Inactive' | 'Pending';
   image?: string;
 };
 
-export default function CallRequestTable({ onView }: any) {
+export default function CallRequestTable({ onRowClick }: { onRowClick?: (row: RequestCall) => void }) {
   const { showToast } = useToastify();
   const [data, setData] = useState<RequestCall[]>([
     {
@@ -110,18 +111,10 @@ export default function CallRequestTable({ onView }: any) {
   const columns: Column<RequestCall>[] = [
     {
       key: 'name',
-      label: 'Mentors Name',
-      render: (row) => {
-        return (
-          <button
-            type="button"
-            onClick={onView}
-            className="flex cursor-pointer items-center gap-2 w-[100px] text-left font-medium text-sm text-[#101828] underline underline-offset-2 hover:text-green-600"
-          >
-            {row.name}
-          </button>
-        );
-      },
+      label: 'Mentor Name',
+      render: (row) => (
+        <span className="font-medium text-sm text-[#101828]">{row.name}</span>
+      ),
     },
     {
       key: 'date',
@@ -152,7 +145,7 @@ export default function CallRequestTable({ onView }: any) {
       render: (row) => {
         const isProcessing = processingId === row.id;
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Button
               disabled={isProcessing}
               className="bg-green-200 text-white px-8 py-2 rounded-xl"
@@ -241,7 +234,12 @@ export default function CallRequestTable({ onView }: any) {
         }}
         isLoading={processingId === declineId}
       />
-      <DataTable columns={columns} data={paginated} compact />
+      <DataTable
+        columns={columns}
+        data={paginated}
+        compact
+        onRowClick={onRowClick}
+      />
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

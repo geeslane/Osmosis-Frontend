@@ -1,10 +1,11 @@
 'use client';
-import { SearchIcon } from '@/assets/icons';
+import { DownloadIcon, SearchIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
 import { useEffect, useState } from 'react';
 import useToastify from '@/hooks/useToastify';
+import { downloadCallReport } from '@/utils/downloadCallReport';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
 import ActionModal from '@/components/ui/modal/ActionModal';
 
@@ -113,7 +114,7 @@ export default function PreviousCallTable({ onView }: any) {
           <button
             type="button"
             onClick={onView}
-            className="flex cursor-pointer items-center gap-2 w-[200px] text-left font-medium text-sm text-[#101828] underline underline-offset-2 hover:text-green-600"
+            className="flex cursor-pointer items-center gap-2 w-[200px] text-left font-medium text-sm text-[#101828] hover:text-green-600"
           >
             {row.name}
           </button>
@@ -190,20 +191,38 @@ export default function PreviousCallTable({ onView }: any) {
   return (
     <div className="space-y-3  border-[#DCFFAD] border-1 mt-10 pb-10">
       <div className="flex flex-col mx-6 my-[18px] md:flex-row md:items-center md:justify-between gap-2">
-        <div className="relative inline-flex items-center ">
+        <div className="relative inline-flex items-center">
           <h3 className="font-semibold text-2xl text-green-200">
             Call History
           </h3>
         </div>
-        <div className="relative flex items-center h-[44px] gap-3 w-[363px] bg-[#DCFFAD91] px-2 rounded-lg">
-          <SearchIcon className="text-gray-400" />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name"
-            className="w-full h-full text-sm bg-transparent focus:outline-none"
-          />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="relative flex items-center h-[44px] gap-3 w-[363px] bg-[#DCFFAD91] px-2 rounded-lg">
+            <SearchIcon className="text-gray-400" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name"
+              className="w-full h-full text-sm bg-transparent focus:outline-none"
+            />
+          </div>
+          <Button
+            variant="primary"
+            onClick={() => {
+              const reportData = filtered.map((r) => ({
+                'Mentor Name': r.name,
+                'Date & Time': r.time ? `${r.date}, ${r.time}` : r.date,
+                Topic: r.topic,
+                Status: r.status,
+              }));
+              downloadCallReport(reportData, 'call-history.csv');
+            }}
+            leftIcon={<DownloadIcon width="18" height="18" className="text-white" />}
+            className="shrink-0"
+          >
+            Print call history
+          </Button>
         </div>
       </div>
 
@@ -242,7 +261,12 @@ export default function PreviousCallTable({ onView }: any) {
         }}
         isLoading={processingId === declineId}
       />
-      <DataTable columns={columns} data={paginated} compact />
+      <DataTable
+        columns={columns}
+        data={paginated}
+        onRowClick={() => onView()}
+        compact
+      />
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

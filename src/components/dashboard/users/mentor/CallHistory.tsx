@@ -116,7 +116,7 @@ export default function CallHistoryTable({ mentorId, mentorName }: CallHistoryTa
             setSelectedCall(row);
             setViewCallDetails(true);
           }}
-          className="font-medium text-sm text-[#101828] underline underline-offset-2 hover:text-green-600 cursor-pointer text-left"
+          className="font-medium text-sm text-[#101828] hover:text-green-600 cursor-pointer text-left"
         >
           {row.menteeName}
         </button>

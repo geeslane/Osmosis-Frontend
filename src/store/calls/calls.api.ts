@@ -5,12 +5,15 @@ export interface CallRecord {
   id: string;
   mentorName: string;
   menteeName: string;
+  /** Mentee (teenager) user ID – used to fetch full mentee details when name is clicked */
+  menteeId?: string;
   date: string;
   time?: string;
   topic: string;
   callLength?: string;
   status: string;
   comment?: string;
+  menteeComment?: string;
   rating?: number;
 }
 

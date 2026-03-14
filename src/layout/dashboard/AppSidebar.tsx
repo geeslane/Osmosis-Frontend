@@ -53,7 +53,7 @@ const AppSidebar: React.FC = () => {
     {
       icon: CallIcon,
       name: 'Calls',
-      path: '/dashboard/calls/mentee',
+      path: '/dashboard/calls/mentor',
       roles: ['MENTOR'],
     },
     // {
@@ -91,7 +91,25 @@ const AppSidebar: React.FC = () => {
       icon: ModulesIcon,
       name: 'Modules',
       path: '/dashboard/modules',
-      roles: ['SUPERADMIN', 'ADMIN', 'MENTOR'],
+      roles: ['SUPERADMIN', 'ADMIN'],
+    },
+    {
+      icon: ModulesIcon,
+      name: 'Modules',
+      path: '/dashboard/modules/mentee',
+      roles: ['TEENAGER'],
+    },
+    {
+      icon: ModulesIcon,
+      name: 'Modules',
+      path: '/dashboard/modules/mentee',
+      roles: ['TEENAGER'],
+    },
+    {
+      icon: ModulesIcon,
+      name: 'Modules',
+      path: '/dashboard/modules/mentee',
+      roles: ['TEENAGER'],
     },
     {
       icon: LiveSessionIcon,

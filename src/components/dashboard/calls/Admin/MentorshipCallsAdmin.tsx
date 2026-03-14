@@ -7,38 +7,44 @@ import Button from '@/components/ui/button/Button';
 import { useEffect, useState } from 'react';
 import { useGetCallsQuery } from '@/store/calls/calls.api';
 import type { CallRecord } from '@/store/calls/calls.api';
+import { useGetTeenagerByIdQuery } from '@/store/users/users.api';
 import { downloadCallReport } from '@/utils/downloadCallReport';
 
-// Fallback data when backend is not ready
+// Fallback data when backend is not ready (menteeId used to fetch mentee details when name is clicked)
 const fallbackData: CallRecord[] = [
   {
     id: '1',
     mentorName: 'Alex Johnson',
     menteeName: 'Olivia Rhye',
+    menteeId: '1',
     date: '12 Dec, 2025',
     time: '10:00 AM',
     topic: 'Hope',
     callLength: '55m 34s',
     status: 'Completed',
     comment: 'Good',
+    menteeComment: 'Very helpful session.',
     rating: 4,
   },
   {
     id: '2',
     mentorName: 'Sarah Williams',
     menteeName: 'Phoenix Baker',
+    menteeId: '2',
     date: '12 Dec, 2025',
     time: '2:30 PM',
     topic: 'Joy in Chaos',
     callLength: '1h 23m',
     status: 'Rescheduled',
     comment: 'Rescheduled',
+    menteeComment: undefined,
     rating: 3,
   },
   {
     id: '3',
     mentorName: 'Alex Johnson',
     menteeName: 'Lana Steiner',
+    menteeId: '3',
     date: '11 Dec, 2025',
     time: '4:15 PM',
     topic: 'Shame',
@@ -51,6 +57,7 @@ const fallbackData: CallRecord[] = [
     id: '4',
     mentorName: 'Michael Brown',
     menteeName: 'Demi Wilkinson',
+    menteeId: '4',
     date: '10 Dec, 2025',
     time: '11:00 AM',
     topic: 'Overcoming Fear',
@@ -66,6 +73,7 @@ export default function MentorshipCallsAdmin() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCall, setSelectedCall] = useState<CallRecord | null>(null);
+  const [menteeModalId, setMenteeModalId] = useState<string | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -77,6 +85,12 @@ export default function MentorshipCallsAdmin() {
     limit: 10,
     search: debouncedSearch || undefined,
   });
+
+  const { data: menteeResponse, isLoading: menteeLoading } = useGetTeenagerByIdQuery(
+    menteeModalId ?? '',
+    { skip: !menteeModalId }
+  );
+  const menteeDetails = menteeResponse?.data?.data;
 
   const callData = data?.data ?? fallbackData;
   const pagination = data?.pagination;
@@ -121,7 +135,7 @@ export default function MentorshipCallsAdmin() {
       key: 'mentorName',
       label: 'Mentor',
       render: (row) => (
-        <span className="font-medium text-sm text-[#101828] underline underline-offset-2 decoration-green-300">
+        <span className="font-medium text-sm text-[#101828]">
           {row.mentorName}
         </span>
       ),
@@ -129,11 +143,20 @@ export default function MentorshipCallsAdmin() {
     {
       key: 'menteeName',
       label: 'Mentee',
-      render: (row) => (
-        <span className="font-medium text-sm text-[#101828] underline underline-offset-2 decoration-green-300">
-          {row.menteeName}
-        </span>
-      ),
+      render: (row) =>
+        row.menteeId ? (
+          <div onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setMenteeModalId(row.menteeId!)}
+              className="font-medium text-sm text-[#101828] hover:text-green-600 hover:underline text-left"
+            >
+              {row.menteeName}
+            </button>
+          </div>
+        ) : (
+          <span className="font-medium text-sm text-[#101828]">{row.menteeName}</span>
+        ),
     },
     {
       key: 'date',
@@ -170,17 +193,8 @@ export default function MentorshipCallsAdmin() {
       ),
     },
     {
-      key: 'comment',
-      label: 'Feedback',
-      render: (row) => (
-        <span className="text-sm font-medium text-gray-600 max-w-[120px] truncate block">
-          {row.comment ?? '—'}
-        </span>
-      ),
-    },
-    {
       key: 'rating',
-      label: 'Rating',
+      label: 'Mentee Rating',
       render: (row) => (
         <span className="text-sm font-medium text-gray-600">
           {row.rating != null ? `${row.rating}/5` : '—'}
@@ -335,8 +349,17 @@ export default function MentorshipCallsAdmin() {
               </div>
 
               <div>
+                <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">
+                  Mentee&apos;s feedback
+                </p>
+                <p className="text-sm font-medium text-[#101828]">
+                  {selectedCall.menteeComment ?? 'No feedback given'}
+                </p>
+              </div>
+
+              <div>
                 <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">
-                  Rating
+                  Mentee rating
                 </p>
                 <div className="flex gap-0.5 items-center">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -355,6 +378,103 @@ export default function MentorshipCallsAdmin() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mentee details modal – fetched by ID when mentee name is clicked */}
+      {menteeModalId && (
+        <div
+          onClick={() => setMenteeModalId(null)}
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/20 backdrop-blur-sm"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="mx-4 w-full max-w-lg rounded-xl border border-green-200/60 bg-white p-5 shadow-lg max-h-[90vh] overflow-y-auto"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-bold text-green-200">
+                Mentee details
+              </h3>
+              <button
+                type="button"
+                onClick={() => setMenteeModalId(null)}
+                className="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+
+            {menteeLoading ? (
+              <div className="flex items-center justify-center py-10">
+                <LoadingIcon
+                  height="32"
+                  width="32"
+                  className="animate-spin text-green-100"
+                />
+              </div>
+            ) : menteeDetails ? (
+              <div className="space-y-4">
+                <div>
+                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Name</p>
+                  <p className="text-sm font-semibold text-[#101828]">
+                    {menteeDetails.teenagerFullName ?? '—'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Email</p>
+                  <p className="text-sm text-[#101828]">{menteeDetails.teenagerEmail ?? '—'}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Phone</p>
+                  <p className="text-sm text-[#101828]">{menteeDetails.teenagerPhoneNumber ?? '—'}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Parent / guardian</p>
+                  <p className="text-sm text-[#101828]">{menteeDetails.parentFullName ?? '—'}</p>
+                  {menteeDetails.parentEmail && (
+                    <p className="text-xs text-gray-500 mt-0.5">{menteeDetails.parentEmail}</p>
+                  )}
+                  {menteeDetails.parentPhoneNumber && (
+                    <p className="text-xs text-gray-500">{menteeDetails.parentPhoneNumber}</p>
+                  )}
+                </div>
+                {menteeDetails.address && (
+                  <div>
+                    <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Address</p>
+                    <p className="text-sm text-[#101828]">{menteeDetails.address}</p>
+                  </div>
+                )}
+                {menteeDetails.class && (
+                  <div>
+                    <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Class</p>
+                    <p className="text-sm text-[#101828]">{menteeDetails.class}</p>
+                  </div>
+                )}
+                {menteeDetails.hobbies && (
+                  <div>
+                    <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Hobbies</p>
+                    <p className="text-sm text-[#101828]">{menteeDetails.hobbies}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Status</p>
+                  <span
+                    className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                      menteeDetails.status === 'ACTIVE'
+                        ? 'bg-green-50 text-green-600'
+                        : menteeDetails.status === 'INACTIVE'
+                          ? 'bg-red-50 text-red-600'
+                          : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    {menteeDetails.status ?? '—'}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 py-4">Could not load mentee details.</p>
+            )}
           </div>
         </div>
       )}
