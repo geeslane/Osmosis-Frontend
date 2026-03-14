@@ -1,5 +1,5 @@
 'use client';
-import { MoreIcon, SearchIcon } from '@/assets/icons';
+import { SearchIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
@@ -107,33 +107,24 @@ export default function UpcomingCallTable({ onView }: any) {
       label: 'Mentors Name',
       render: (row) => {
         return (
-          <div
+          <button
+            type="button"
             onClick={onView}
-            className="flex cursor-pointer items-center gap-2 w-[100px]"
+            className="flex cursor-pointer items-center gap-2 w-[100px] text-left font-medium text-sm text-[#101828] underline underline-offset-2 hover:text-green-600"
           >
-            <p className="font-medium text-sm text-[#667085]">{row.name}</p>
-          </div>
+            {row.name}
+          </button>
         );
       },
     },
     {
       key: 'date',
-      label: 'Date',
+      label: 'Date & Time',
       render: (row) => {
+        const dateTime = row.time ? `${row.date}, ${row.time}` : row.date;
         return (
-          <div className="flex items-center gap-2 w-[150px]">
-            <p className="font-medium text-sm text-[#667085]">{row.date}</p>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'time',
-      label: 'Time',
-      render: (row) => {
-        return (
-          <div className="flex items-center gap-2 w-[100px]">
-            <p className="font-medium text-sm text-[#667085]">{row.time}</p>
+          <div className="flex items-center gap-2 w-[200px]">
+            <p className="font-medium text-sm text-[#101828]">{dateTime}</p>
           </div>
         );
       },
@@ -144,7 +135,7 @@ export default function UpcomingCallTable({ onView }: any) {
       render: (row) => {
         return (
           <div className="flex items-center gap-2 w-[100px] ">
-            <p className="font-medium text-sm text-[#667085]">{row.topic}</p>
+            <p className="font-medium text-sm text-[#101828]">{row.topic}</p>
           </div>
         );
       },
@@ -158,22 +149,6 @@ export default function UpcomingCallTable({ onView }: any) {
             <Button className="bg-green-100 text-white px-8 py-2 rounded-xl">
               Join call
             </Button>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'actions',
-      label: 'Action',
-      render: () => {
-        return (
-          <div className="flex items-center">
-            <button
-              onClick={onView}
-              className="px-3 py-3 text-green-300  text-xs underline"
-            >
-              <MoreIcon />
-            </button>
           </div>
         );
       },
@@ -205,7 +180,7 @@ export default function UpcomingCallTable({ onView }: any) {
       <div className="flex flex-col mx-6 my-[18px] md:flex-row md:items-center md:justify-between gap-2">
         <div className="relative inline-flex items-center ">
           <h3 className="font-semibold text-2xl text-green-200">
-            Call History
+            Upcoming Calls
           </h3>
         </div>
         <div className="relative flex items-center h-[44px] gap-3 w-[363px] bg-[#DCFFAD91] px-2 rounded-lg">
@@ -229,7 +204,7 @@ export default function UpcomingCallTable({ onView }: any) {
         }}
         isLoading={processingId === declineId}
       />
-      <DataTable columns={columns} data={paginated} />
+      <DataTable columns={columns} data={paginated} compact />
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

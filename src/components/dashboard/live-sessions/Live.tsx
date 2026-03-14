@@ -95,7 +95,7 @@ export default function Live() {
           </div>
         </div>
       ) : (
-        <div className="rounded-xl border border-green-400 bg-white px-4 md:px-6 py-6 shadow-sm">
+        <div className="space-y-3 border-[#DCFFAD] border-1 mt-10 pb-10 bg-white px-4 md:px-6 py-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-green-200 text-2xl font-semibold">

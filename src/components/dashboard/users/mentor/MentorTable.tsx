@@ -3,7 +3,8 @@ import { FilterIcon, MoreIcon, SearchIcon } from '@/assets/icons';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { normalizeImageUrl } from '@/utils/helper';
 import { useUpdateMentorStatusMutation } from '@/store/users/users.api';
 import ActionModal from '@/components/ui/modal/ActionModal';
@@ -47,10 +48,18 @@ export default function MentorTable({
   onViewMentor,
 }: MentorTableProps) {
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
   const [pendingStatus, setPendingStatus] = useState<'Active' | 'Inactive'>('Active');
   const [openStatusModal, setOpenStatusModal] = useState(false);
   const { showToast } = useToastify();
+
+  useEffect(() => {
+    if (!openDropdownId) return;
+    const close = () => setOpenDropdownId(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [openDropdownId]);
 
   const [updateMentorStatus, { isLoading: isUpdating }] =
     useUpdateMentorStatusMutation();
@@ -174,59 +183,81 @@ export default function MentorTable({
       label: 'Action',
       render: (row) => (
         <div
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            const next = openDropdownId === row.id ? null : row.id;
+            setOpenDropdownId(next);
+            if (next) {
+              setDropdownRect((e.currentTarget as HTMLElement).getBoundingClientRect());
+            } else {
+              setDropdownRect(null);
+            }
+          }}
           className="flex relative items-center space-x-2"
         >
-          <div
-            onClick={() =>
-              setOpenDropdownId((prev) => (prev === row.id ? null : row.id))
-            }
-            className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer"
-          >
+          <div className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer">
             <MoreIcon />
           </div>
-
-          {openDropdownId === row.id && (
-            <div className="absolute top-8 right-0 z-50 flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg text-sm text-green-300 py-2 pointer-events-auto">
-              <button
-                type="button"
-                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                onClick={() => {
-                  onViewMentor(row);
-                  setOpenDropdownId(null);
-                }}
-              >
-                View
-              </button>
-              {row.status === 'Active' ? (
-                <button
-                  type="button"
-                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md text-[#B42318]"
-                  onClick={() => {
-                    openDeactivateModal(row);
-                    setOpenDropdownId(null);
-                  }}
-                >
-                  Deactivate
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                  onClick={() => {
-                    openActivateModal(row);
-                    setOpenDropdownId(null);
-                  }}
-                >
-                  Activate
-                </button>
-              )}
-            </div>
-          )}
         </div>
       ),
     },
   ];
+
+  const openRow = openDropdownId ? data.find((r) => r.id === openDropdownId) : null;
+  const dropdownMenu =
+    typeof document !== 'undefined' &&
+    openRow &&
+    dropdownRect
+      ? createPortal(
+          <div
+            className="fixed z-[9999] flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg border border-gray-100 text-sm text-green-300 py-2"
+            style={{
+              top: dropdownRect.bottom + 4,
+              left: Math.min(dropdownRect.right - 180, window.innerWidth - 196),
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
+              onClick={() => {
+                onViewMentor(openRow);
+                setOpenDropdownId(null);
+                setDropdownRect(null);
+              }}
+            >
+              View
+            </button>
+            {openRow.status === 'Active' ? (
+              <button
+                type="button"
+                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md text-[#B42318]"
+                onClick={() => {
+                  openDeactivateModal(openRow);
+                  setOpenDropdownId(null);
+                  setDropdownRect(null);
+                }}
+              >
+                Deactivate
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
+                onClick={() => {
+                  openActivateModal(openRow);
+                  setOpenDropdownId(null);
+                  setDropdownRect(null);
+                }}
+              >
+                Activate
+              </button>
+            )}
+          </div>,
+          document.body
+        )
+      : null;
+
   const modalDescription =
     pendingStatus === 'Active'
       ? 'Are you sure you want to Activate this user?'
@@ -234,6 +265,7 @@ export default function MentorTable({
 
   return (
     <div className="space-y-3 mt-2" onClick={() => setOpenDropdownId(null)}>
+      {dropdownMenu}
       <div className="flex flex-col mx-4 md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex items-center gap-2 w-full">
           <div className=" w-full flex flex-col md:flex-row gap-2 justify-between md:items-center ">

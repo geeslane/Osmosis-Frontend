@@ -1,10 +1,11 @@
 'use client';
-import { MoreIcon, SearchIcon } from '@/assets/icons';
+import { DownloadIcon, SearchIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
 import { useEffect, useState } from 'react';
 import useToastify from '@/hooks/useToastify';
+import { downloadCallReport } from '@/utils/downloadCallReport';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
 import ActionModal from '@/components/ui/modal/ActionModal';
 
@@ -12,6 +13,7 @@ type PreviousCall = {
   id: string;
   name: string;
   date: string;
+  time?: string;
   topic: string;
   phone: string;
   status: 'Active' | 'Inactive' | 'Pending';
@@ -25,6 +27,7 @@ export default function PreviousCallTable({ onView }: any) {
       id: '1',
       name: 'John Doe',
       date: '12 Dec., 2025',
+      time: '10:00 AM',
       topic: 'Hope',
       phone: '08012345678',
       status: 'Pending',
@@ -33,6 +36,7 @@ export default function PreviousCallTable({ onView }: any) {
       id: '2',
       name: 'Mary Johnson',
       date: '12 Dec., 2025',
+      time: '2:30 PM',
       topic: 'Hope',
       phone: '08087654321',
       status: 'Active',
@@ -41,6 +45,7 @@ export default function PreviousCallTable({ onView }: any) {
       id: '3',
       name: 'David Smith',
       date: '12 Dec., 2025',
+      time: '4:15 PM',
       topic: 'Hope',
       phone: '08123456789',
       status: 'Inactive',
@@ -49,6 +54,7 @@ export default function PreviousCallTable({ onView }: any) {
       id: '4',
       name: 'Sarah Wilson',
       date: '12 Dec., 2025',
+      time: '11:00 AM',
       topic: 'Hope',
       phone: '08099887766',
       status: 'Pending',
@@ -57,6 +63,7 @@ export default function PreviousCallTable({ onView }: any) {
       id: '5',
       name: 'Daniel Adams',
       date: '12 Dec., 2025',
+      time: '3:45 PM',
       topic: 'Hope',
       phone: '08111112222',
       status: 'Pending',
@@ -74,7 +81,7 @@ export default function PreviousCallTable({ onView }: any) {
   const [declineId, setDeclineId] = useState<string | null>(null);
 
   const handleUpdateStatus = async () => {
-    console.log('hellow world');
+    setOpenModal(false);
   };
 
   const handleDeclineConfirm = async (reason: string) => {
@@ -100,25 +107,27 @@ export default function PreviousCallTable({ onView }: any) {
   const columns: Column<PreviousCall>[] = [
     {
       key: 'name',
-      label: 'Mentor Name',
+      label: 'Mentee Name',
       render: (row) => {
         return (
-          <div
+          <button
+            type="button"
             onClick={onView}
-            className="flex cursor-pointer items-center gap-2 w-[200px]"
+            className="flex cursor-pointer items-center gap-2 w-[200px] text-left font-medium text-sm text-[#101828] underline underline-offset-2 hover:text-green-600"
           >
-            <p className="font-medium text-sm text-[#667085]">{row.name}</p>
-          </div>
+            {row.name}
+          </button>
         );
       },
     },
     {
       key: 'date',
-      label: 'Date',
+      label: 'Date & Time',
       render: (row) => {
+        const dateTime = row.time ? `${row.date}, ${row.time}` : row.date;
         return (
-          <div className="flex items-center gap-2 w-[200px]">
-            <p className="font-medium text-sm text-[#667085]">{row.date}</p>
+          <div className="w-[200px]">
+            <p className="font-medium text-sm text-[#101828]">{dateTime}</p>
           </div>
         );
       },
@@ -129,7 +138,7 @@ export default function PreviousCallTable({ onView }: any) {
       render: (row) => {
         return (
           <div className="flex items-center gap-2 w-[200px] ">
-            <p className="font-medium text-sm text-[#667085]">{row.topic}</p>
+            <p className="font-medium text-sm text-[#101828]">{row.topic}</p>
           </div>
         );
       },
@@ -146,24 +155,8 @@ export default function PreviousCallTable({ onView }: any) {
               disabled={isProcessing}
               className="bg-green-200 text-white px-8 py-2 rounded-xl"
             >
-              Give feedback
+              Give Feedback
             </Button>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'actions',
-      label: 'Action',
-      render: () => {
-        return (
-          <div className="flex items-center">
-            <button
-              onClick={onView}
-              className="px-3 py-3 text-green-300  text-xs underline"
-            >
-              <MoreIcon />
-            </button>
           </div>
         );
       },
@@ -177,6 +170,7 @@ export default function PreviousCallTable({ onView }: any) {
     return (
       row.name.toLowerCase().includes(q) ||
       row.date.toLowerCase().includes(q) ||
+      (row.time?.toLowerCase().includes(q) ?? false) ||
       row.topic.toLowerCase().includes(q) ||
       row.phone.toLowerCase().includes(q)
     );
@@ -191,29 +185,47 @@ export default function PreviousCallTable({ onView }: any) {
   const paginated = filtered.slice((page - 1) * perPage, page * perPage);
 
   return (
-    <div className="space-y-3  border-[#DCFFAD] border-1 mt-10 pb-10">
+    <div className="space-y-3 border-[#DCFFAD] border-1 mt-10 pb-10">
       <div className="flex flex-col mx-6 my-[18px] md:flex-row md:items-center md:justify-between gap-2">
-        <div className="relative inline-flex items-center ">
+        <div className="relative inline-flex items-center">
           <h3 className="font-semibold text-2xl text-green-200">
             Call History
           </h3>
         </div>
-        <div className="relative flex items-center h-[44px] gap-3 w-[363px] bg-[#DCFFAD91] px-2 rounded-lg">
-          <SearchIcon className="text-gray-400" />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name"
-            className="w-full h-full text-sm bg-transparent focus:outline-none"
-          />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex items-center h-[44px] gap-3 w-[363px] bg-[#DCFFAD91] px-2 rounded-lg">
+            <SearchIcon className="text-gray-400" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by mentee name"
+              className="w-full h-full text-sm bg-transparent focus:outline-none"
+            />
+          </div>
+          <Button
+              variant="primary"
+              onClick={() => {
+                const reportData = filtered.map((r) => ({
+                  'Mentee Name': r.name,
+                  'Date & Time': r.time ? `${r.date}, ${r.time}` : r.date,
+                  Topic: r.topic,
+                  Status: r.status,
+                }));
+                downloadCallReport(reportData, 'mentor-call-history.csv');
+              }}
+              leftIcon={<DownloadIcon width="18" height="18" className="text-white" />}
+              className="shrink-0"
+            >
+              Download Report
+            </Button>
+          </div>
         </div>
-      </div>
 
       <ActionModal
         isOpen={openModal}
         title="How was the call"
-        description="Give feedback about the mentee, what Osmosis team &  parents might need to be aware of about them."
+        description="Give Feedback about the mentee, what Osmosis team &  parents might need to be aware of about them."
         confirmText="Continue"
         color="text-green-200"
         //isLoading={isUpdating}
@@ -239,7 +251,7 @@ export default function PreviousCallTable({ onView }: any) {
         }}
         isLoading={processingId === declineId}
       />
-      <DataTable columns={columns} data={paginated} />
+      <DataTable columns={columns} data={paginated} compact />
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

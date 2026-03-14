@@ -16,7 +16,6 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useGetTeenagerByIdQuery } from '@/store/users/users.api';
-import ModulesTable from './ModulesTable';
 import CallHistoryTable from './CallHistory';
 import ProgressGauge from '@/components/ui/Progress/ProgressGauge';
 import { Info } from '@/components/common/Details/Info';
@@ -239,12 +238,27 @@ export default function Detail() {
             </div>
           </div>
 
-          {/* Modules */}
+          {/* Modules - separate flow */}
           <div className="rounded-lg border border-[#6CBB0180] p-5 md:p-6">
-            <h3 className="text-xl md:text-2xl text-green-300 font-semibold mb-4">
-              Modules
-            </h3>
-            <ModulesTable />
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h3 className="text-xl md:text-2xl text-green-300 font-semibold">
+                  Module Progress
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  View progress, deliverables, and assignment submissions.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(`/dashboard/users/mentee/${id}/modules`)
+                }
+                className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#DCFFAD91] hover:opacity-90 transition-opacity font-medium text-green-300 shrink-0"
+              >
+                View Modules
+              </button>
+            </div>
           </div>
         </div>
       )}
