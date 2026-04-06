@@ -15,7 +15,34 @@ import {
 import { useGetMentorsQuery } from '@/store/users/users.api';
 
 const DAYS_AHEAD = 10;
+/** First bookable calendar day = UTC today + 3 (matches GET /mentor/:id/available-slots). */
 const BOOKING_START_OFFSET_DAYS = 3;
+const SLOT_DURATION_MINUTES = 30;
+
+function getUtcTodayYmd(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function addUtcCalendarDays(ymd: string, days: number): string {
+  const [y, mo, d] = ymd.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + days);
+  return dt.toISOString().slice(0, 10);
+}
+
+function getEarliestBookingYmdUtc(): string {
+  return addUtcCalendarDays(getUtcTodayYmd(), BOOKING_START_OFFSET_DAYS);
+}
+
+function getUtcDateRangeFrom(startYmd: string, count: number): string[] {
+  const out: string[] = [];
+  let cur = startYmd;
+  for (let i = 0; i < count; i++) {
+    out.push(cur);
+    cur = addUtcCalendarDays(cur, 1);
+  }
+  return out;
+}
 
 type MentorItem = {
   id: string;
@@ -25,19 +52,6 @@ type MentorItem = {
   topics: string | string[];
   image?: string;
 };
-
-function getNextDays(count: number, startOffsetDays: number): string[] {
-  const result: string[] = [];
-  const start = new Date();
-  start.setDate(start.getDate() + startOffsetDays);
-  start.setHours(0, 0, 0, 0);
-  for (let i = 0; i < count; i++) {
-    const d = new Date(start);
-    d.setDate(d.getDate() + i);
-    result.push(d.toISOString().slice(0, 10));
-  }
-  return result;
-}
 
 function formatTime(s: string): string {
   const [h, m] = s.split(':').map(Number);
@@ -132,8 +146,8 @@ function SlotDayCell({
   date: string;
 }) {
   const { data } = useGetAvailableSlotsQuery(
-    { mentorId, date },
-    { skip: mentorId.startsWith('dummy-') }
+    { mentorId, date, duration: SLOT_DURATION_MINUTES },
+    { skip: !mentorId || !date }
   );
   const hasSlots = (data?.slots?.length ?? 0) > 0;
   const dayLabel = useMemo(() => {
@@ -153,7 +167,10 @@ function SlotDayCell({
 }
 
 function MentorAvailabilityStrip({ mentorId }: { mentorId: string }) {
-  const dates = useMemo(() => getNextDays(7, BOOKING_START_OFFSET_DAYS), []);
+  const dates = useMemo(
+    () => getUtcDateRangeFrom(getEarliestBookingYmdUtc(), 7),
+    []
+  );
   return (
     <div className="mt-3 pt-3 border-t border-gray-100">
       <p className="text-xs font-medium text-gray-500 mb-2">Availability (next 7 days)</p>
@@ -261,8 +278,8 @@ function DateSlotCell({
   onSelect: () => void;
 }) {
   const { data, isLoading } = useGetAvailableSlotsQuery(
-    { mentorId, date },
-    { skip: mentorId.startsWith('dummy-') }
+    { mentorId, date, duration: SLOT_DURATION_MINUTES },
+    { skip: !mentorId || !date }
   );
   const hasSlots = (data?.slots?.length ?? 0) > 0;
   if (isLoading || !hasSlots) return null;
@@ -291,7 +308,7 @@ function AvailableDatesOnly({
   onSelectDate: (date: string) => void;
 }) {
   const dates = useMemo(
-    () => getNextDays(DAYS_AHEAD, BOOKING_START_OFFSET_DAYS),
+    () => getUtcDateRangeFrom(getEarliestBookingYmdUtc(), DAYS_AHEAD),
     []
   );
   return (
@@ -355,7 +372,7 @@ export default function CreateSchedule() {
   const filteredMentors = useMemo(() => {
     const q = mentorSearch.trim().toLowerCase();
     if (!q) return apiMentors;
-    return apiMentors.filter((m) => {
+    return apiMentors.filter((m: MentorItem) => {
       const topicStr =
         typeof m.topics === 'string'
           ? m.topics
@@ -377,20 +394,25 @@ export default function CreateSchedule() {
   const [createCallRequest, { isLoading: isSubmitting }] =
     useCreateCallRequestMutation();
 
-  const { data: slotsData } = useGetAvailableSlotsQuery(
+  const {
+    data: slotsData,
+    isLoading: slotsLoading,
+    isError: slotsError,
+    error: slotsErrorDetail,
+  } = useGetAvailableSlotsQuery(
     {
       mentorId: selectedMentor?.id ?? '',
       date: selectedDate ?? '',
+      duration: SLOT_DURATION_MINUTES,
     },
     {
-      skip:
-        !selectedMentor ||
-        !selectedDate ||
-        step !== 3 ||
-        selectedMentor.id.startsWith('dummy-'),
+      skip: !selectedMentor || !selectedDate || step !== 3,
     }
   );
   const slots = slotsData?.slots ?? [];
+  const slotsErrorMessage =
+    (slotsErrorDetail as { data?: { message?: string } })?.data?.message ??
+    (slotsError ? 'Could not load time slots.' : null);
   const [selectedTime, setSelectedTime] = useState<string>('');
 
   const handleBack = () => {
@@ -462,7 +484,15 @@ export default function CreateSchedule() {
         <p className="text-gray-600 mt-1 text-sm md:text-base">
           {step === 1 && 'Choose a mentorship topic to view available mentors.'}
           {step === 2 && 'Mentors who offer this topic. Compare availability and pick one.'}
-          {step === 3 && selectedMentor && `Booking with ${selectedMentor.name}. Optional message below.`}
+          {step === 3 && selectedMentor && (
+            <>
+              Booking with {selectedMentor.name}. Earliest bookable day:{' '}
+              <span className="font-medium text-[#101828]">
+                {formatDate(getEarliestBookingYmdUtc())}
+              </span>{' '}
+              (UTC). Sessions use {SLOT_DURATION_MINUTES}-minute slots.
+            </>
+          )}
         </p>
       </div>
 
@@ -632,6 +662,10 @@ export default function CreateSchedule() {
         <div className="max-w-2xl w-full min-w-0">
           <div className="rounded-2xl border border-gray-200/80 bg-white shadow-sm overflow-hidden">
             <div className="p-4 sm:p-6 border-b border-gray-100">
+              <p className="mb-3 text-sm text-gray-600">
+                Dates shown start at the earliest bookable day (3 days from today). Pick a day with open
+                slots, then choose a start time.
+              </p>
               <AvailableDatesOnly
                 mentorId={selectedMentor.id}
                 selectedDate={selectedDate}
@@ -645,22 +679,38 @@ export default function CreateSchedule() {
             {selectedDate && (
               <div className="p-4 sm:p-6 border-b border-gray-100">
                 <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Time</p>
-                <div className="flex flex-wrap gap-2">
-                  {slots.map((slot) => (
-                    <button
-                      key={slot.start}
-                      type="button"
-                      onClick={() => setSelectedTime(slot.start)}
-                      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                        selectedTime === slot.start
-                          ? 'bg-green-200 text-white shadow-sm'
-                          : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
-                      }`}
-                    >
-                      {formatTime(slot.start)}
-                    </button>
-                  ))}
-                </div>
+                {slotsLoading && (
+                  <div className="flex items-center gap-3 py-4 text-sm text-gray-600">
+                    <LoadingIcon width="24" height="24" className="animate-spin text-green-200" />
+                    Loading available times…
+                  </div>
+                )}
+                {slotsError && !slotsLoading && (
+                  <p className="text-sm text-red-700">{slotsErrorMessage}</p>
+                )}
+                {!slotsLoading && !slotsError && slots.length === 0 && (
+                  <p className="text-sm text-gray-600">
+                    No slots on this date. Choose another day or try again later.
+                  </p>
+                )}
+                {!slotsLoading && !slotsError && slots.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {slots.map((slot) => (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setSelectedTime(slot)}
+                        className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                          selectedTime === slot
+                            ? 'bg-green-200 text-white shadow-sm'
+                            : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+                        }`}
+                      >
+                        {formatTime(slot)}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

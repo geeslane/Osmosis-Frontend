@@ -7,11 +7,15 @@ import Button from '@/components/ui/button/Button';
 import useToastify from '@/hooks/useToastify';
 import { RootState } from '@/store';
 import {
+  hasWeeklyScheduleBlocks,
   useGetMentorAvailabilityQuery,
   useSaveMentorAvailabilityMutation,
   useSyncGoogleCalendarMutation,
+  weeklyScheduleFromApi,
+  weeklyScheduleToApi,
+  type DaySchedule,
+  type TimeBlock,
 } from '@/store/schedule/schedule.api';
-import type { DaySchedule, TimeBlock } from '@/store/schedule/schedule.api';
 import {
   useGetMentorByIdQuery,
   useUpdateMentorProfileMutation,
@@ -95,12 +99,12 @@ export default function MentorAvailabilitySchedule() {
   useEffect(() => {
     if (availability) {
       setWeeklySchedule(
-        availability.weeklySchedule?.length
-          ? availability.weeklySchedule
+        hasWeeklyScheduleBlocks(availability.weeklySchedule)
+          ? weeklyScheduleFromApi(availability.weeklySchedule)
           : createEmptySchedule()
       );
       setMeetingLink(availability.meetingLink || '');
-      if (availability.weeklySchedule?.length) {
+      if (hasWeeklyScheduleBlocks(availability.weeklySchedule)) {
         setStep(availability.meetingLink ? 2 : 1);
       }
     }
@@ -175,9 +179,8 @@ export default function MentorAvailabilitySchedule() {
     }
     try {
       await saveAvailability({
-        weeklySchedule,
-        meetingLink: meetingLink || undefined,
-        googleCalendarSynced: availability?.googleCalendarSynced,
+        weeklySchedule: weeklyScheduleToApi(weeklySchedule),
+        meetingLink: meetingLink.trim() ? meetingLink.trim() : undefined,
       }).unwrap();
       showToast('Schedule saved successfully', 'success');
       setStep(2);
@@ -189,9 +192,8 @@ export default function MentorAvailabilitySchedule() {
   const handleSaveStep2 = async () => {
     try {
       await saveAvailability({
-        weeklySchedule,
-        meetingLink: meetingLink.trim() || undefined,
-        googleCalendarSynced: availability?.googleCalendarSynced,
+        weeklySchedule: weeklyScheduleToApi(weeklySchedule),
+        meetingLink: meetingLink.trim() ? meetingLink.trim() : undefined,
       }).unwrap();
       if (isMentor && mentorId && mentorshipTopics.length > 0) {
         await updateMentorProfile({
@@ -209,10 +211,15 @@ export default function MentorAvailabilitySchedule() {
   const handleSyncGoogle = async () => {
     try {
       const result = await syncGoogleCalendar().unwrap();
+      const msg =
+        result.message ||
+        (result.googleCalendarSynced
+          ? 'Calendar connected.'
+          : 'Sync completed.');
       if (result.success) {
-        showToast(result.message, 'success');
+        showToast(msg, 'success');
       } else {
-        showToast(result.message, 'info');
+        showToast(msg, 'info');
       }
     } catch (err: any) {
       showToast(err?.data?.message || 'Failed to sync calendar', 'error');
@@ -228,7 +235,8 @@ export default function MentorAvailabilitySchedule() {
   }
 
   // View mode: show configured schedule, allow Edit
-  const isConfigured = hasAnyBlocks && availability?.weeklySchedule?.length;
+  const isConfigured =
+    hasAnyBlocks && availability && hasWeeklyScheduleBlocks(availability.weeklySchedule);
   if (isConfigured && !isEditing && step === 2) {
     return (
       <div className="mt-10 max-w-2xl space-y-8">

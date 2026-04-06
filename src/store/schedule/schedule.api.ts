@@ -1,19 +1,40 @@
 import { axiosBaseQuery } from '@/lib/baseApi';
 import { createApi } from '@reduxjs/toolkit/query/react';
 
+/** API day keys (GET/PUT /mentor/availability). */
+export type WeekdayApiKey =
+  | 'SUNDAY'
+  | 'MONDAY'
+  | 'TUESDAY'
+  | 'WEDNESDAY'
+  | 'THURSDAY'
+  | 'FRIDAY'
+  | 'SATURDAY';
+
 export interface TimeBlock {
   start: string;
   end: string;
 }
 
+/** UI model: ordered Monday → Sunday (unchanged for existing screens). */
 export interface DaySchedule {
-  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+  day:
+    | 'monday'
+    | 'tuesday'
+    | 'wednesday'
+    | 'thursday'
+    | 'friday'
+    | 'saturday'
+    | 'sunday';
   blocks: TimeBlock[];
 }
 
+/** API shape: object keyed by weekday; may be {} if never saved. */
+export type WeeklyScheduleApi = Partial<Record<WeekdayApiKey, TimeBlock[]>>;
+
 export interface MentorAvailability {
-  weeklySchedule: DaySchedule[];
-  meetingLink?: string;
+  weeklySchedule: WeeklyScheduleApi;
+  meetingLink?: string | null;
   googleCalendarSynced?: boolean;
 }
 
@@ -23,22 +44,76 @@ interface MentorAvailabilityResponse {
   message?: string;
 }
 
-const STORAGE_KEY = 'mentor_availability';
+/** PUT /mentor/availability — only these fields (no googleCalendarSynced in body). */
+export type SaveMentorAvailabilityBody = {
+  weeklySchedule: WeeklyScheduleApi;
+  meetingLink?: string | null;
+};
 
-const getStoredAvailability = (): MentorAvailability | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
+const UI_DAY_TO_API: Record<DaySchedule['day'], WeekdayApiKey> = {
+  monday: 'MONDAY',
+  tuesday: 'TUESDAY',
+  wednesday: 'WEDNESDAY',
+  thursday: 'THURSDAY',
+  friday: 'FRIDAY',
+  saturday: 'SATURDAY',
+  sunday: 'SUNDAY',
+};
+
+const UI_DAY_ORDER: DaySchedule['day'][] = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+];
+
+/** Full weekly object for PUT (every day present; empty array = no blocks that day). */
+export function weeklyScheduleToApi(schedule: DaySchedule[]): WeeklyScheduleApi {
+  const out: WeeklyScheduleApi = {};
+  for (const d of schedule) {
+    out[UI_DAY_TO_API[d.day]] = d.blocks;
   }
-};
+  return out;
+}
 
-const setStoredAvailability = (data: MentorAvailability) => {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-};
+export function weeklyScheduleFromApi(
+  api: WeeklyScheduleApi | Record<string, TimeBlock[]> | undefined | null
+): DaySchedule[] {
+  const raw = api ?? {};
+  return UI_DAY_ORDER.map((day) => {
+    const key = UI_DAY_TO_API[day];
+    const blocks = raw[key];
+    return {
+      day,
+      blocks: Array.isArray(blocks) ? blocks : [],
+    };
+  });
+}
+
+export function hasWeeklyScheduleBlocks(
+  w: WeeklyScheduleApi | Record<string, TimeBlock[]> | undefined | null
+): boolean {
+  if (!w || typeof w !== 'object') return false;
+  return Object.values(w).some((blocks) => Array.isArray(blocks) && blocks.length > 0);
+}
+
+export interface AvailableSlotsResult {
+  slots: string[];
+  date?: string;
+  duration?: number;
+}
+
+function normalizeSlotList(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  if (raw.length === 0) return [];
+  if (typeof raw[0] === 'string') return raw as string[];
+  return (raw as { start?: string }[])
+    .map((s) => s?.start)
+    .filter((t): t is string => Boolean(t));
+}
 
 export const ScheduleApi = createApi({
   reducerPath: 'scheduleApi',
@@ -46,114 +121,82 @@ export const ScheduleApi = createApi({
   tagTypes: ['MentorAvailability', 'Calls'],
   endpoints: (builder) => ({
     getMentorAvailability: builder.query<MentorAvailability | null, void>({
-      queryFn: async (_arg, _queryApi, _extraOptions, fetchWithBQ) => {
-        const result = await fetchWithBQ({
-          url: '/mentor/availability',
-          method: 'GET',
-        });
-        if (!result.error) {
-          const response = result.data as MentorAvailabilityResponse | undefined;
-          if (response?.data) return { data: response.data };
-        }
-        const stored = getStoredAvailability();
-        return { data: stored };
-      },
+      query: () => ({
+        url: '/mentor/availability',
+        method: 'GET',
+      }),
+      transformResponse: (response: MentorAvailabilityResponse) =>
+        response?.data ?? null,
       providesTags: ['MentorAvailability'],
     }),
 
     saveMentorAvailability: builder.mutation<
       MentorAvailabilityResponse,
-      MentorAvailability
+      SaveMentorAvailabilityBody
     >({
-      queryFn: async (payload, _queryApi, _extraOptions, fetchWithBQ) => {
-        const result = await fetchWithBQ({
-          url: '/mentor/availability',
-          method: 'PUT',
-          data: payload,
-        });
-        const response = result.data as MentorAvailabilityResponse | undefined;
-        if (response?.success && response?.data) {
-          setStoredAvailability(response.data);
-          return { data: response };
-        }
-        setStoredAvailability(payload);
-        return {
-          data: {
-            success: true,
-            data: payload,
-            message: 'Availability saved successfully',
-          },
-        };
-      },
+      query: (body) => ({
+        url: '/mentor/availability',
+        method: 'PUT',
+        data: body,
+      }),
       invalidatesTags: ['MentorAvailability'],
     }),
 
     syncGoogleCalendar: builder.mutation<
-      { success: boolean; message: string },
+      { success: boolean; googleCalendarSynced?: boolean; message?: string },
       void
     >({
-      queryFn: async (_arg, _queryApi, _extraOptions, fetchWithBQ) => {
-        const result = await fetchWithBQ({
-          url: '/mentor/availability/google-calendar/sync',
-          method: 'POST',
-        });
-        if (!result.error && result.data) {
-          const res = result.data as { success?: boolean; message?: string };
-          if (res.success) return { data: { success: true, message: res.message || 'Synced successfully' } };
-        }
-        return {
-          data: {
-            success: false,
-            message:
-              'Google Calendar sync will be available once the backend is configured. Your schedule is saved and mentees will see your availability.',
-          },
-        };
-      },
+      query: () => ({
+        url: '/mentor/availability/google-calendar/sync',
+        method: 'POST',
+      }),
+      transformResponse: (response: {
+        success?: boolean;
+        data?: { googleCalendarSynced?: boolean; message?: string };
+      }) => ({
+        success: response?.success ?? true,
+        googleCalendarSynced: response?.data?.googleCalendarSynced,
+        message: response?.data?.message,
+      }),
       invalidatesTags: ['MentorAvailability'],
     }),
 
-    /** Mentee booking: get available slots for a mentor on a given date */
+    /** GET /mentor/:mentorId/available-slots — slots are HH:mm start times (30-min grid). */
     getAvailableSlots: builder.query<
-      { slots: { start: string; end: string }[] },
-      { mentorId: string; date: string }
+      AvailableSlotsResult,
+      { mentorId: string; date: string; duration?: number }
     >({
-      queryFn: async ({ mentorId, date }, _queryApi, _extraOptions, fetchWithBQ) => {
-        const result = await fetchWithBQ({
-          url: `/mentor/${mentorId}/available-slots`,
-          method: 'GET',
-          params: { date, duration: 30 },
-        });
-        if (!result.error && result.data) {
-          const data = result.data as { success?: boolean; data?: { slots?: { start: string; end: string }[] } };
-          const slots = data?.data?.slots ?? [];
-          return { data: { slots } };
-        }
-        return { data: { slots: [] } };
+      query: ({ mentorId, date, duration = 30 }) => ({
+        url: `/mentor/${mentorId}/available-slots`,
+        method: 'GET',
+        params: { date, duration },
+      }),
+      transformResponse: (response: {
+        success?: boolean;
+        data?: { slots?: unknown; date?: string; duration?: number };
+      }): AvailableSlotsResult => {
+        const slots = normalizeSlotList(response?.data?.slots);
+        return {
+          slots,
+          date: response?.data?.date,
+          duration: response?.data?.duration,
+        };
       },
     }),
 
-    /** Mentee booking: create call request with optional message */
     createCallRequest: builder.mutation<
       { success: boolean; message?: string; data?: unknown },
       { mentorId: string; date: string; time: string; message?: string }
     >({
-      queryFn: async (body, _queryApi, _extraOptions, fetchWithBQ) => {
-        const result = await fetchWithBQ({
-          url: '/call-requests',
-          method: 'POST',
-          data: body,
-        });
-        if (!result.error && result.data) {
-          const data = result.data as { success?: boolean; message?: string };
-          return { data: { success: data?.success ?? true, message: data?.message } };
-        }
-        return {
-          data: {
-            success: false,
-            message: (result.error as { data?: { message?: string } })?.data?.message ?? 'Failed to send request',
-          },
-        };
-      },
+      query: (body) => ({
+        url: '/call-requests',
+        method: 'POST',
+        data: body,
+      }),
+      transformResponse: (response: { success?: boolean; message?: string }) => ({
+        success: response?.success ?? true,
+        message: response?.message,
+      }),
       invalidatesTags: ['Calls'],
     }),
   }),
