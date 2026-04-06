@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { GoBackIcon, LinkedinIcon, LoadingIcon } from '@/assets/icons';
@@ -26,30 +26,6 @@ type MentorItem = {
   image?: string;
 };
 
-const DUMMY_MENTORS: MentorItem[] = [
-  {
-    id: 'dummy-1',
-    name: 'Sample Mentor One',
-    bio: 'Experienced mentor in career development and leadership. Passionate about helping mentees achieve their goals.',
-    linkedinUrl: 'https://linkedin.com/in/sample1',
-    topics: 'Career, Leadership',
-  },
-  {
-    id: 'dummy-2',
-    name: 'Sample Mentor Two',
-    bio: 'Tech industry veteran with focus on software engineering and product management. Available for technical guidance.',
-    linkedinUrl: 'https://linkedin.com/in/sample2',
-    topics: 'Technology, Product',
-  },
-  {
-    id: 'dummy-3',
-    name: 'Sample Mentor Three',
-    bio: 'Dedicated to youth mentorship and personal growth. Background in education and coaching.',
-    linkedinUrl: 'https://linkedin.com/in/sample3',
-    topics: 'Education, Coaching',
-  },
-];
-
 function getNextDays(count: number, startOffsetDays: number): string[] {
   const result: string[] = [];
   const start = new Date();
@@ -68,6 +44,59 @@ function formatTime(s: string): string {
   const period = h >= 12 ? 'PM' : 'AM';
   const hour = h % 12 || 12;
   return `${hour}:${String(m ?? 0).padStart(2, '0')} ${period}`;
+}
+
+function BookingStepper({ step }: { step: 1 | 2 | 3 }) {
+  const steps = [
+    { n: 1 as const, label: 'Topic' },
+    { n: 2 as const, label: 'Mentor' },
+    { n: 3 as const, label: 'Date & time' },
+  ];
+  return (
+    <nav aria-label="Booking steps" className="mb-6 sm:mb-8 max-w-xl mx-auto">
+      <ol className="flex w-full list-none items-center gap-0 p-0 m-0">
+        {steps.map((s, i) => {
+          const done = step > s.n;
+          const active = step === s.n;
+          return (
+            <li
+              key={s.n}
+              className={`flex min-w-0 items-center ${i < steps.length - 1 ? 'flex-1' : 'flex-none'}`}
+            >
+              <div className="flex flex-col items-center gap-1.5">
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                    active
+                      ? 'bg-green-200 text-white shadow-sm ring-2 ring-green-200/35 ring-offset-2'
+                      : done
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-400'
+                  }`}
+                >
+                  {done ? '✓' : s.n}
+                </span>
+                <span
+                  className={`max-w-[4.5rem] text-center text-[10px] font-medium leading-tight sm:max-w-none sm:text-xs ${
+                    active ? 'text-green-200' : done ? 'text-gray-700' : 'text-gray-400'
+                  }`}
+                >
+                  {s.label}
+                </span>
+              </div>
+              {i < steps.length - 1 && (
+                <div
+                  className={`mx-1.5 h-0.5 min-w-[1rem] flex-1 rounded-full sm:mx-3 ${
+                    step > s.n ? 'bg-green-200' : 'bg-gray-200'
+                  }`}
+                  aria-hidden
+                />
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
 }
 
 function mapMentorFromApi(apiMentor: {
@@ -143,7 +172,7 @@ function MentorCardView({
   onBook,
 }: {
   mentor: MentorItem;
-  onBook: (id: string) => void;
+  onBook: () => void;
 }) {
   const [bioExpanded, setBioExpanded] = useState(false);
   const topicsStr =
@@ -209,9 +238,9 @@ function MentorCardView({
           <Button
             type="button"
             className="mt-4 bg-green-200 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:opacity-95 w-full sm:w-auto"
-            onClick={() => onBook(mentor.id)}
+            onClick={onBook}
           >
-            Book a call
+            Choose this mentor
           </Button>
         </div>
       </div>
@@ -288,20 +317,32 @@ export default function CreateSchedule() {
   const [selectedMentor, setSelectedMentor] = useState<MentorItem | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [message, setMessage] = useState('');
+  const [mentorSearch, setMentorSearch] = useState('');
 
   const { data: topicsData, isLoading: topicsLoading } =
     useGetDropdownByTypeQuery({ type: 'mentorship-topics' });
   const topicOptions = topicsData?.data ?? [];
 
-  const { data: mentorsResponse, isLoading: mentorsLoading } =
-    useGetMentorsQuery(
-      {
-        topic: selectedTopic || undefined,
-        status: 'ACTIVE',
-        limit: 50,
-      },
-      { skip: step < 2 }
+  const selectedTopicLabel = useMemo(() => {
+    const o = topicOptions.find(
+      (opt: { value: string; label: string }) => opt.value === selectedTopic
     );
+    return o?.label ?? '';
+  }, [topicOptions, selectedTopic]);
+
+  const {
+    data: mentorsResponse,
+    isLoading: mentorsLoading,
+    isError: mentorsError,
+    refetch: refetchMentors,
+  } = useGetMentorsQuery(
+    {
+      topic: selectedTopic || undefined,
+      status: 'ACTIVE',
+      limit: 50,
+    },
+    { skip: step < 2 }
+  );
 
   const apiMentors = useMemo(
     () =>
@@ -310,8 +351,28 @@ export default function CreateSchedule() {
       ),
     [mentorsResponse]
   );
-  const displayMentors =
-    apiMentors.length > 0 ? apiMentors : (step === 2 ? DUMMY_MENTORS : []);
+
+  const filteredMentors = useMemo(() => {
+    const q = mentorSearch.trim().toLowerCase();
+    if (!q) return apiMentors;
+    return apiMentors.filter((m) => {
+      const topicStr =
+        typeof m.topics === 'string'
+          ? m.topics
+          : Array.isArray(m.topics)
+            ? m.topics.join(', ')
+            : '';
+      return (
+        m.name.toLowerCase().includes(q) ||
+        m.bio.toLowerCase().includes(q) ||
+        topicStr.toLowerCase().includes(q)
+      );
+    });
+  }, [apiMentors, mentorSearch]);
+
+  useEffect(() => {
+    if (step === 1) setMentorSearch('');
+  }, [step]);
 
   const [createCallRequest, { isLoading: isSubmitting }] =
     useCreateCallRequestMutation();
@@ -381,12 +442,6 @@ export default function CreateSchedule() {
     }
   };
 
-  const isDummyMentor = selectedMentor?.id.startsWith('dummy-');
-  const displaySlots =
-    selectedDate && isDummyMentor && slots.length === 0
-      ? ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'].map((start) => ({ start, end: start }))
-      : slots;
-
   return (
     <div className="mt-6 sm:mt-8 max-w-4xl mx-auto w-full min-w-0 px-4 sm:px-0">
       <div className="mb-6 sm:mb-8">
@@ -398,6 +453,7 @@ export default function CreateSchedule() {
           <GoBackIcon />
           <span className="text-sm">Back</span>
         </button>
+        <BookingStepper step={step} />
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#101828]">
           {step === 1 && 'Book a call with a mentor'}
           {step === 2 && 'Choose a mentor'}
@@ -454,21 +510,120 @@ export default function CreateSchedule() {
 
       {step === 2 && (
         <div className="space-y-6">
-          {mentorsLoading ? (
-            <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <LoadingIcon width="40" height="40" className="animate-spin text-green-200" />
-              <p className="text-sm text-gray-600">Loading mentors...</p>
+          <div className="rounded-2xl border border-green-200/60 bg-white shadow-sm overflow-hidden">
+            <div className="flex flex-col gap-4 border-b border-gray-100 bg-gradient-to-r from-green-50/80 to-white px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Mentorship topic
+                </p>
+                <p className="mt-1 truncate text-base font-semibold text-[#101828]">
+                  {selectedTopicLabel || selectedTopic || '—'}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setStep(1)}
+                className="shrink-0 rounded-xl px-5 py-2.5 text-sm font-medium"
+              >
+                Change topic
+              </Button>
             </div>
-          ) : (
-            <div className="grid gap-5 sm:grid-cols-2">
-              {displayMentors.map((mentor: MentorItem) => (
-                <MentorCardView
-                  key={mentor.id}
-                  mentor={mentor}
-                  onBook={() => handleBookMentor(mentor)}
+            {!mentorsLoading && !mentorsError && apiMentors.length > 0 && (
+              <div className="px-4 py-4 sm:px-6">
+                <label
+                  htmlFor="mentor-search"
+                  className="mb-2 block text-sm font-semibold text-[#344054]"
+                >
+                  Search mentors
+                </label>
+                <input
+                  id="mentor-search"
+                  type="search"
+                  value={mentorSearch}
+                  onChange={(e) => setMentorSearch(e.target.value)}
+                  placeholder="Search by name, bio, or keywords…"
+                  autoComplete="off"
+                  className="w-full rounded-xl border border-[#D0D5DD] bg-white px-4 py-3 text-sm text-[#101828] placeholder:text-gray-400 focus:border-green-200 focus:outline-none focus:ring-2 focus:ring-green-200/50"
                 />
-              ))}
+              </div>
+            )}
+          </div>
+
+          {mentorsLoading && (
+            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-gray-100 bg-white py-16 shadow-sm">
+              <LoadingIcon width="40" height="40" className="animate-spin text-green-200" />
+              <p className="text-sm text-gray-600">Loading mentors for your topic…</p>
             </div>
+          )}
+
+          {mentorsError && (
+            <div className="rounded-2xl border border-red-200 bg-red-50/90 px-6 py-10 text-center shadow-sm">
+              <p className="font-semibold text-red-900">We couldn&apos;t load mentors</p>
+              <p className="mt-2 text-sm text-red-800/90">
+                Check your connection and try again. If the problem continues, try again later.
+              </p>
+              <Button
+                type="button"
+                onClick={() => refetchMentors()}
+                className="mt-6 rounded-xl bg-green-200 px-6 py-2.5 text-sm font-medium text-white hover:opacity-95"
+              >
+                Try again
+              </Button>
+            </div>
+          )}
+
+          {!mentorsLoading && !mentorsError && apiMentors.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50/70 px-6 py-12 text-center">
+              <p className="text-base font-semibold text-[#101828]">No mentors for this topic yet</p>
+              <p className="mt-2 text-sm text-gray-600">
+                Try a different topic or check back soon as new mentors join.
+              </p>
+              <Button
+                type="button"
+                onClick={() => setStep(1)}
+                className="mt-6 rounded-xl bg-green-200 px-6 py-2.5 text-sm font-medium text-white hover:opacity-95"
+              >
+                Choose another topic
+              </Button>
+            </div>
+          )}
+
+          {!mentorsLoading &&
+            !mentorsError &&
+            apiMentors.length > 0 &&
+            filteredMentors.length === 0 && (
+              <div className="rounded-2xl border border-gray-200 bg-white px-6 py-10 text-center shadow-sm">
+                <p className="text-[#101828]">
+                  No mentors match &ldquo;{mentorSearch.trim()}&rdquo;
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setMentorSearch('')}
+                  className="mt-4 text-sm font-medium text-green-200 hover:text-green-300"
+                >
+                  Clear search
+                </button>
+              </div>
+            )}
+
+          {!mentorsLoading && !mentorsError && filteredMentors.length > 0 && (
+            <>
+              <p className="text-sm text-gray-600">
+                {filteredMentors.length === apiMentors.length
+                  ? `${filteredMentors.length} mentor${filteredMentors.length !== 1 ? 's' : ''} available`
+                  : `Showing ${filteredMentors.length} of ${apiMentors.length} mentors`}
+              </p>
+              <div className="grid gap-5 sm:grid-cols-2">
+                {filteredMentors.map((mentor: MentorItem) => (
+                  <MentorCardView
+                    key={mentor.id}
+                    mentor={mentor}
+                    onBook={() => handleBookMentor(mentor)}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}
@@ -491,7 +646,7 @@ export default function CreateSchedule() {
               <div className="p-4 sm:p-6 border-b border-gray-100">
                 <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Time</p>
                 <div className="flex flex-wrap gap-2">
-                  {displaySlots.map((slot) => (
+                  {slots.map((slot) => (
                     <button
                       key={slot.start}
                       type="button"

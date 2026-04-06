@@ -285,15 +285,27 @@ Mentors must **not** be able to activate/deactivate mentees; hide or forbid thos
 
 ---
 
+## 5.5 Program schedule (admin)
+
+Admins set **program start date**, **program end date**, and **number of modules**. The backend stores this; the frontend shows the program timeline on the teens dashboard and each module's period and "days to go".
+
+**Backend:** **GET /program/config** – returns `{ "data": { "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD", "numberOfModules": number } }`. If not set, return null. **PUT /program/config** – body `{ "startDate", "endDate", "numberOfModules" }`. Auth: ADMIN or SUPERADMIN. Validate startDate < endDate, numberOfModules >= 1.
+
+**Module start/end:** Program duration (days) = endDate − startDate. Days per module = duration / numberOfModules. Assign each module a **startDate** and **endDate**. **GET /module** and **GET /module/:id** must return **startDate** and **endDate** (YYYY-MM-DD) per module when program config exists. "Days to go" = frontend computes days from today until module endDate.
+
+**UI:** Admin has a **Program schedule** menu (own page). Form: start date, end date, number of modules. Show: "Program duration: X days. Each module period is Y days. Good to go?" Save. Teens dashboard shows program dates and "X days left". Each module shows start, end, and "X days to go".
+
+---
+
 ## 6. Teenager Module Progress & Module Detail
 
 ### 6.1 Modules list (admin)
 
-- **GET /module** – list of modules (page, limit, title). Used in admin Modules UI and when building the mentee’s module progress list.
+- **GET /module** – list of modules (page, limit, title). Each module must include startDate and endDate (YYYY-MM-DD) when program config is set (see 5.5). Used in admin Modules UI and when building the mentee’s module progress list.
 
 ### 6.2 Module detail (admin & mentee view)
 
-- **GET /module/:id** – single module with content: **notes**, **workbook** (e.g. file URL), **deliverables**, **additional resources**. Used on admin module edit and on **mentee module detail** page (teenager view: notes, workbook, deliverables, resources).
+- **GET /module/:id** – single module with content: **notes**, **workbook** (e.g. file URL), **deliverables**, **additional resources**, and when program config exists **startDate**, **endDate** (YYYY-MM-DD). Used on admin module edit and on **mentee module detail** page (teenager view: notes, workbook, deliverables, resources).
 
 ### 6.3 Teenager / mentee module progress
 
@@ -354,6 +366,44 @@ Route like: `/dashboard/modules/:id` for mentees (and `/dashboard/users/mentee/:
 
 ---
 
+## 8.4 In-app notifications (all roles)
+
+The frontend has a **notification bell** in the header and a **View all notifications** page. The backend must **store and deliver in-app notifications** so each user sees only their own. Recipients are typically **users with an email** (for both in-app and optional email/push). Below is the full matrix of **events** and **who receives** the notification.
+
+| Event | Recipient(s) | Notes |
+|-------|----------------|-------|
+| **Teen/mentee sign-up (pending request)** | ADMIN, SUPERADMIN | New teenager requested to join; admins approve/decline. |
+| **Mentor sign-up (pending request)** | ADMIN, SUPERADMIN | New mentor requested to join; admins approve/decline. |
+| **Live session created** | TEENAGER (all mentees), optionally MENTOR | Session is scheduled; mentees (and optionally mentors) get notified. |
+| **Live session reminder** | TEENAGER, MENTOR (who can view it) | Reminder shortly before session (e.g. 1 day or 1 hour before). |
+| **Live session cancelled** | TEENAGER, MENTOR (who were notified / invited) | Cancellation notice (frontend already says "Users have been notified by email"). |
+| **Call request (mentee booked a slot)** | MENTOR (the mentor who was requested) | Mentee submitted a call request; mentor sees it in Call requests. |
+| **Call accepted** | TEENAGER (the mentee who requested) | Mentor accepted the call; mentee gets notified. |
+| **Call declined** | TEENAGER (the mentee who requested) | Mentor declined; optional reason; mentee gets notified. |
+| **Call scheduled / confirmed** | TEENAGER, MENTOR | Both parties notified when a call is confirmed (e.g. date/time locked). |
+| **Reply to my comment (live session)** | TEENAGER (comment author) | Someone replied to the teen’s comment on a live session. |
+| **New comment on session I engaged with** | TEENAGER (who engaged) | New activity on a live session the teen has commented on. |
+| **User approved (mentee or mentor)** | That user (TEENAGER or MENTOR) | They are now active and can log in; notify them that their request was approved. |
+
+**Implementation notes:**
+
+- **Store** each notification with: `userId` (recipient), `title`, `description` (or `body`), **`read: boolean`** (default false for new notifications), `createdAt`, optional `type` or `link` (e.g. to pending requests, call detail, live session). Both frontend and backend must **handle read and unread** state.
+- **GET /me/notifications** (or **GET /notifications**) – auth required; return paginated list for the current user. Each item must include **`read: boolean`**. Response shape: `{ data: [{ id, title, description, read, createdAt, type?, link? }], pagination }`. Optional query params: `?read=true` or `?read=false` to filter by read/unread.
+- **PATCH /me/notifications/:id** – body `{ "read": true }` or `{ "read": false }` to mark one notification as read or unread. Response: updated notification or 200 OK.
+- **PATCH /me/notifications/:id/read** – alternative: mark one as read (no body or body `{}`). Backend sets `read: true`.
+- **PATCH /me/notifications/:id/unread** – mark one as unread (no body). Backend sets `read: false`. (If you prefer a single endpoint, use PATCH /me/notifications/:id with body `{ read: boolean }` for both.)
+- **PATCH /me/notifications/read-all** – optional; mark all notifications for the current user as read.
+- **Recipients:** Resolve recipient list by role and context (e.g. all admins for pending requests; specific mentor for call request; specific mentee for call accepted). Prefer users with an email for any email/push side channel.
+
+---
+
+## 8.5 User approval and inactive users
+
+- **When a user (teenager or mentor) is approved:** They become **active immediately**. No separate “activate” step; approval implies active and they can log in.
+- **If a user is inactive:** They **must not be able to log in**. The backend must reject login (e.g. 403 or 401 with a message like “Your account is inactive”) for users whose status is inactive. The frontend may show a message when the backend returns this.
+
+---
+
 ## 9. Flow summary
 
 1. **Availability:** Mentor logs in → GET /mentor/availability. Saves schedule via PUT /mentor/availability; sets meeting link and topics (PUT /mentor/:id/profile); optionally syncs calendar (POST .../google-calendar/sync). Mentee gets slots via GET /mentor/:mentorId/available-slots?date=...; booking creates calendar event if synced; cancel deletes it. **Central topics:** One list from GET /dropdowns?type=mentorship-topics — used for mentor signup, mentor availability topic selection, and mentee “Book a call” topic dropdown.
@@ -365,4 +415,6 @@ Route like: `/dashboard/modules/:id` for mentees (and `/dashboard/users/mentee/:
 7. **Modules:** GET /module, GET /module/:id for content; GET /teenager/:id/module-progress for teenager progress. For **mentees only**: module list shows a **checkbox** (no label) per module to mark as completed when done; module detail shows a one-line prompt after deliverable submission: “When you’re done with this module, mark it as completed to track your progress.” Provide PATCH /teenager/me/modules/:moduleId/complete, persist per mentee per module; return **markedCompleted** when serving module list to mentees so the checkbox state can be restored. Mentors cannot activate/deactivate mentees.
 8. **Live sessions:** Mentees can **only view** (list + detail); no add, edit, or cancel. Admins/mentors can add, edit, cancel, and manage notes. Session detail loading state uses a **spinner** and the copy **“Loading session details”** (no trailing dots). **Teenagers** must see **all** comments and replies and can add their own comments and replies; backend must not filter comments/replies for teenagers. Comments and replies must return **author name**, **datetime (createdAt)**, and **author picture (authorPictureUrl)**. Mentees should receive **notifications** (e.g. when someone replies to their comment or there is new activity on a session they’ve engaged with).
 
-Implement these endpoints so the frontend dashboard (Calls, Availability, Mentee view, Teenager module progress, Live sessions) works end-to-end without any hitch.
+9. **In-app notifications:** Backend stores notifications per user with **read/unread** state (`read: boolean`). Implement **GET /me/notifications** (paginated; each item includes `read`; optional `?read=true|false` filter), **PATCH /me/notifications/:id** with body `{ read: true | false }` (or separate **PATCH .../:id/read** and **PATCH .../:id/unread**), and optional **PATCH /me/notifications/read-all**. Send notifications for: ADMIN/SUPERADMIN (teen + mentor pending requests); MENTEE (call accepted/declined, call scheduled, live session created/reminder/cancelled, comment replies); MENTOR (call request, live session created/reminder/cancelled); approved user (approval confirmation). Recipients typically have emails. **Approval:** When a teen or mentor is approved, they are **active immediately**. **Inactive users** must **not** be able to log in; reject login with a clear message.
+
+Implement these endpoints so the frontend dashboard (Calls, Availability, Mentee view, Teenager module progress, Live sessions, Notifications) works end-to-end without any hitch.

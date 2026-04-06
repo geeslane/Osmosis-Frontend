@@ -105,6 +105,12 @@ const AppSidebar: React.FC = () => {
       path: '/dashboard/calls/admin',
       roles: ['SUPERADMIN', 'ADMIN'],
     },
+    {
+      icon: ScheduleIcon,
+      name: 'Program schedule',
+      path: '/dashboard/program-schedule',
+      roles: ['SUPERADMIN', 'ADMIN'],
+    },
   ];
 
   const filterNavItemsByRole = (items: NavItem[]): NavItem[] => {

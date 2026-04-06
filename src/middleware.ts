@@ -5,6 +5,7 @@ import { getSessionCookie } from '@/lib/session';
 const ROLE_ACCESS: Record<string, string[]> = {
   SUPERADMIN: [
     '/dashboard',
+    '/dashboard/notifications',
     '/dashboard/admin',
     '/dashboard/mentor',
     '/dashboard/mentee',
@@ -12,6 +13,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
     '/dashboard/account-settings',
     '/dashboard/user',
     '/dashboard/modules',
+    '/dashboard/program-schedule',
     '/dashboard/pending-requests',
     '/dashboard/live-sessions',
   ],
@@ -23,9 +25,11 @@ const ROLE_ACCESS: Record<string, string[]> = {
     '/dashboard/live-sessions',
     '/dashboard/account-settings',
     '/dashboard/modules',
+    '/dashboard/program-schedule',
   ],
   MENTOR: [
     '/dashboard',
+    '/dashboard/notifications',
     '/dashboard/mentee',
     '/dashboard/modules',
     '/dashboard/users/mentee',
@@ -36,6 +40,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
   ],
   TEENAGER: [
     '/dashboard',
+    '/dashboard/notifications',
     '/dashboard/book-a-call',
     '/dashboard/modules/mentee',
     '/dashboard/modules',

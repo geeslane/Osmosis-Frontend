@@ -8,6 +8,24 @@ import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 
+function daysToGo(endDateStr: string | undefined): number | null {
+  if (!endDateStr || endDateStr.length < 10) return null;
+  const end = new Date(endDateStr.slice(0, 10));
+  if (Number.isNaN(end.getTime())) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+  const diff = Math.ceil((end.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+  return diff < 0 ? 0 : diff;
+}
+
+function formatDate(s: string | undefined): string {
+  if (!s || s.length < 10) return '';
+  const d = new Date(s.slice(0, 10));
+  if (Number.isNaN(d.getTime())) return s;
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 export default function ModuleList({ modules }: { modules: Module[] }) {
   const router = useRouter();
   const { showToast } = useToastify();
@@ -97,6 +115,17 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
                     Module {module.moduleNumber}:
                     <span className="font-medium"> {module.title}</span>
                   </h2>
+                  {(module.startDate || module.endDate) && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {module.startDate && formatDate(module.startDate)}
+                      {module.startDate && module.endDate && ' – '}
+                      {module.endDate && formatDate(module.endDate)}
+                      {typeof module.endDate === 'string' && (() => {
+                        const d = daysToGo(module.endDate);
+                        return d !== null ? ` · ${d} day${d !== 1 ? 's' : ''} to go` : null;
+                      })()}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>

@@ -10,7 +10,7 @@ import {
   useGetMenteePreviousCallsQuery,
   useGetMenteeUpcomingCallsQuery,
 } from '@/store/calls/calls.api';
-import { useModulesQuery } from '@/store/dashboard/dashboard.api';
+import { useModulesQuery, useGetProgramConfigQuery } from '@/store/dashboard/dashboard.api';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { normalizeImageUrl } from '@/utils/helper';
@@ -87,6 +87,7 @@ export default function TeenagerDashboard() {
   const { data: upcomingData } = useGetMenteeUpcomingCallsQuery();
   const { data: previousData } = useGetMenteePreviousCallsQuery();
   const { data: modulesData } = useModulesQuery(undefined);
+  const { data: programConfig } = useGetProgramConfigQuery();
   const upcoming = upcomingData?.data ?? [];
   const previousRaw = previousData?.data ?? [];
   const previous = previousRaw.length > 0 ? previousRaw : [getDemoPreviousCall()];
@@ -97,6 +98,22 @@ export default function TeenagerDashboard() {
   const completedCount = modules.filter((m) => m.markedCompleted).length;
   const totalModules = modules.length;
   const progressPercent = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0;
+
+  const programStart = programConfig?.startDate;
+  const programEnd = programConfig?.endDate;
+  let programDaysLeft: number | null = null;
+  if (programEnd) {
+    const end = new Date(programEnd.slice(0, 10));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    const diff = Math.ceil((end.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+    programDaysLeft = diff < 0 ? 0 : diff;
+  }
+  const formatProgramDate = (s: string) => {
+    const d = new Date(s.slice(0, 10));
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  };
 
   return (
     <div className="space-y-6 sm:space-y-8 w-full min-w-0">
@@ -147,6 +164,20 @@ export default function TeenagerDashboard() {
           </div>
         </div>
       </section>
+
+      {/* Program dates (when admin has set program schedule) */}
+      {programStart && programEnd && (
+        <section className="rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+          <p className="text-sm font-medium text-gray-700">
+            Program: {formatProgramDate(programStart)} – {formatProgramDate(programEnd)}
+            {programDaysLeft !== null && (
+              <span className="text-green-600 font-semibold ml-2">
+                · {programDaysLeft} day{programDaysLeft !== 1 ? 's' : ''} left
+              </span>
+            )}
+          </p>
+        </section>
+      )}
 
       {/* Module progress – fancy & catchy */}
       <section>
