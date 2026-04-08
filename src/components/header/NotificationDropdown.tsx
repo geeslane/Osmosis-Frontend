@@ -1,23 +1,45 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Dropdown } from '../ui/dropdown/Dropdown';
 import { RefreshIcon, NotificationsIcon } from '../../assets/icons';
+import {
+  useGetNotificationsQuery,
+  useMarkNotificationReadMutation,
+} from '@/store/notifications/notifications.api';
+
+function formatTime(createdAt: string): string {
+  try {
+    const date = new Date(createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  } catch {
+    return createdAt;
+  }
+}
 
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifying, setNotifying] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
-  const [notifications] = useState<any[]>([]); // TODO: Integrate with notifications API when available
+  const { data } = useGetNotificationsQuery({ limit: 10 });
+  const [markRead] = useMarkNotificationReadMutation();
+  const notifications = data?.data ?? [];
+  const hasUnread = notifications.some((n) => !n.read);
 
   const filteredNotifications = notifications.filter((n) =>
     activeTab === 'all' ? true : activeTab === 'read' ? n.read : !n.read
   );
 
-  const handleClick = () => {
-    setIsOpen(!isOpen);
-    setNotifying(false);
-  };
+  const handleClick = () => setIsOpen(!isOpen);
 
   return (
     <div className="relative">
@@ -27,7 +49,7 @@ export default function NotificationDropdown() {
       >
         <span
           className={`absolute right-3 top-3 z-10 h-2 w-2 rounded-full bg-[linear-gradient(90deg,#3CF239_0%,#DDF239_100%)] ${
-            !notifying ? 'hidden' : 'flex'
+            !hasUnread ? 'hidden' : 'flex'
           }`}
         >
           <span className="absolute inline-flex w-full h-full gradient rounded-full opacity-75 animate-ping"></span>
@@ -72,30 +94,64 @@ export default function NotificationDropdown() {
               No notifications
             </li>
           ) : (
-            filteredNotifications.map((notification, index) => (
+            filteredNotifications.map((notification) => (
               <li
-                key={index}
+                key={notification.id}
                 className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
               >
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">
-                    {notification.title}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {notification.description}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">{notification.time}</p>
-                </div>
-                {!notification.read && (
-                  <span className="h-2 w-2 rounded-full bg-green-100 mt-1"></span>
+                {notification.link ? (
+                  <Link
+                    href={notification.link}
+                    className="flex flex-1 items-start gap-3 min-w-0"
+                    onClick={() => {
+                      setIsOpen(false);
+                      if (!notification.read) void markRead(notification.id);
+                    }}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900">
+                        {notification.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {notification.description}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {formatTime(notification.createdAt)}
+                      </p>
+                    </div>
+                    {!notification.read && (
+                      <span className="h-2 w-2 rounded-full bg-green-100 mt-1 flex-shrink-0" />
+                    )}
+                  </Link>
+                ) : (
+                  <>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900">
+                        {notification.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {notification.description}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {formatTime(notification.createdAt)}
+                      </p>
+                    </div>
+                    {!notification.read && (
+                      <span className="h-2 w-2 rounded-full bg-green-100 mt-1 flex-shrink-0" />
+                    )}
+                  </>
                 )}
               </li>
             ))
           )}
         </ul>
-        <button className="mt-4 w-full text-center text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg py-2 hover:bg-gray-100">
+        <Link
+          href="/dashboard/notifications"
+          onClick={() => setIsOpen(false)}
+          className="mt-4 w-full block text-center text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg py-2 hover:bg-gray-100"
+        >
           View All Notifications
-        </button>
+        </Link>
       </Dropdown>
     </div>
   );

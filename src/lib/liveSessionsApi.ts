@@ -84,7 +84,9 @@ export type ApiComment = {
 
 export type ApiCommentReply = {
   id: string;
+  authorId?: string;
   authorName: string;
+  authorPictureUrl?: string | null;
   text: string;
   createdAt: string;
   [key: string]: unknown;

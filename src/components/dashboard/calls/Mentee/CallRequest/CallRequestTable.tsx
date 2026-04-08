@@ -1,5 +1,5 @@
 'use client';
-import { MoreIcon, SearchIcon } from '@/assets/icons';
+import { SearchIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
@@ -8,18 +8,19 @@ import useToastify from '@/hooks/useToastify';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
 import ActionModal from '@/components/ui/modal/ActionModal';
 
-type RequestCall = {
+export type RequestCall = {
   id: string;
   name: string;
   date: string;
   time: string;
   topic: string;
   phone: string;
+  note?: string;
   status: 'Active' | 'Inactive' | 'Pending';
   image?: string;
 };
 
-export default function CallRequestTable({ onView }: any) {
+export default function CallRequestTable({ onRowClick }: { onRowClick?: (row: RequestCall) => void }) {
   const { showToast } = useToastify();
   const [data, setData] = useState<RequestCall[]>([
     {
@@ -110,36 +111,19 @@ export default function CallRequestTable({ onView }: any) {
   const columns: Column<RequestCall>[] = [
     {
       key: 'name',
-      label: 'Mentors Name',
-      render: (row) => {
-        return (
-          <div
-            onClick={onView}
-            className="flex cursor-pointer items-center gap-2 w-[100px]"
-          >
-            <p className="font-medium text-sm text-[#667085]">{row.name}</p>
-          </div>
-        );
-      },
+      label: 'Mentor Name',
+      render: (row) => (
+        <span className="font-medium text-sm text-[#101828]">{row.name}</span>
+      ),
     },
     {
       key: 'date',
-      label: 'Date',
+      label: 'Date & Time',
       render: (row) => {
+        const dateTime = row.time ? `${row.date}, ${row.time}` : row.date;
         return (
-          <div className="flex items-center gap-2 w-[150px]">
-            <p className="font-medium text-sm text-[#667085]">{row.date}</p>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'time',
-      label: 'Time',
-      render: (row) => {
-        return (
-          <div className="flex items-center gap-2 w-[100px]">
-            <p className="font-medium text-sm text-[#667085]">{row.time}</p>
+          <div className="flex items-center gap-2 w-[200px]">
+            <p className="font-medium text-sm text-[#101828]">{dateTime}</p>
           </div>
         );
       },
@@ -150,7 +134,7 @@ export default function CallRequestTable({ onView }: any) {
       render: (row) => {
         return (
           <div className="flex items-center gap-2 w-[100px] ">
-            <p className="font-medium text-sm text-[#667085]">{row.topic}</p>
+            <p className="font-medium text-sm text-[#101828]">{row.topic}</p>
           </div>
         );
       },
@@ -161,7 +145,7 @@ export default function CallRequestTable({ onView }: any) {
       render: (row) => {
         const isProcessing = processingId === row.id;
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Button
               disabled={isProcessing}
               className="bg-green-200 text-white px-8 py-2 rounded-xl"
@@ -175,22 +159,6 @@ export default function CallRequestTable({ onView }: any) {
             >
               Reject
             </Button>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'actions',
-      label: 'Action',
-      render: () => {
-        return (
-          <div className="flex items-center">
-            <button
-              onClick={onView}
-              className="px-3 py-3 text-green-300  text-xs underline"
-            >
-              <MoreIcon />
-            </button>
           </div>
         );
       },
@@ -266,7 +234,12 @@ export default function CallRequestTable({ onView }: any) {
         }}
         isLoading={processingId === declineId}
       />
-      <DataTable columns={columns} data={paginated} />
+      <DataTable
+        columns={columns}
+        data={paginated}
+        compact
+        onRowClick={onRowClick}
+      />
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

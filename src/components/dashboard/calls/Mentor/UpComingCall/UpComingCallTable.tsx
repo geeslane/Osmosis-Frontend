@@ -1,5 +1,5 @@
 'use client';
-import { MoreIcon, SearchIcon } from '@/assets/icons';
+import { SearchIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
@@ -7,18 +7,21 @@ import { useEffect, useState } from 'react';
 import useToastify from '@/hooks/useToastify';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
 
-type UpcomingCall = {
+export type UpcomingCall = {
   id: string;
   name: string;
   date: string;
   time: string;
   topic: string;
   phone: string;
+  notes?: string;
   status: 'Active' | 'Inactive' | 'Pending';
   image?: string;
+  /** Meeting/call URL – Join call opens this in a new tab */
+  callUrl?: string;
 };
 
-export default function UpcomingCallTable({ onView }: any) {
+export default function UpcomingCallTable({ onView, onRowClick }: { onView?: () => void; onRowClick?: (row: UpcomingCall) => void }) {
   const { showToast } = useToastify();
   const [data, setData] = useState<UpcomingCall[]>([
     {
@@ -28,6 +31,7 @@ export default function UpcomingCallTable({ onView }: any) {
       time: '10am',
       topic: 'Hope',
       phone: '08012345678',
+      notes: 'Wants to focus on study habits and time management.',
       status: 'Pending',
     },
     {
@@ -35,9 +39,9 @@ export default function UpcomingCallTable({ onView }: any) {
       name: 'Mary Johnson',
       date: '12 Dec., 2025',
       time: '10am',
-
       topic: 'Hope',
       phone: '08087654321',
+      notes: 'Interested in career guidance and goal-setting.',
       status: 'Active',
     },
     {
@@ -46,8 +50,8 @@ export default function UpcomingCallTable({ onView }: any) {
       date: '12 Dec., 2025',
       topic: 'Hope',
       time: '10am',
-
       phone: '08123456789',
+      notes: '',
       status: 'Inactive',
     },
     {
@@ -56,8 +60,8 @@ export default function UpcomingCallTable({ onView }: any) {
       date: '12 Dec., 2025',
       topic: 'Hope',
       time: '10am',
-
       phone: '08099887766',
+      notes: 'Follow-up on previous session about confidence.',
       status: 'Pending',
     },
     {
@@ -66,8 +70,8 @@ export default function UpcomingCallTable({ onView }: any) {
       date: '12 Dec., 2025',
       topic: 'Hope',
       time: '10am',
-
       phone: '08111112222',
+      notes: 'First call – introduction and expectations.',
       status: 'Pending',
     },
   ]);
@@ -104,36 +108,19 @@ export default function UpcomingCallTable({ onView }: any) {
   const columns: Column<UpcomingCall>[] = [
     {
       key: 'name',
-      label: 'Mentors Name',
-      render: (row) => {
-        return (
-          <div
-            onClick={onView}
-            className="flex cursor-pointer items-center gap-2 w-[100px]"
-          >
-            <p className="font-medium text-sm text-[#667085]">{row.name}</p>
-          </div>
-        );
-      },
+      label: 'Mentee Name',
+      render: (row) => (
+        <span className="font-medium text-sm text-[#101828]">{row.name}</span>
+      ),
     },
     {
       key: 'date',
-      label: 'Date',
+      label: 'Date & Time',
       render: (row) => {
+        const dateTime = row.time ? `${row.date}, ${row.time}` : row.date;
         return (
-          <div className="flex items-center gap-2 w-[150px]">
-            <p className="font-medium text-sm text-[#667085]">{row.date}</p>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'time',
-      label: 'Time',
-      render: (row) => {
-        return (
-          <div className="flex items-center gap-2 w-[100px]">
-            <p className="font-medium text-sm text-[#667085]">{row.time}</p>
+          <div className="flex items-center gap-2 w-[200px]">
+            <p className="font-medium text-sm text-[#101828]">{dateTime}</p>
           </div>
         );
       },
@@ -141,42 +128,38 @@ export default function UpcomingCallTable({ onView }: any) {
     {
       key: 'topic',
       label: 'Topic',
-      render: (row) => {
-        return (
-          <div className="flex items-center gap-2 w-[100px] ">
-            <p className="font-medium text-sm text-[#667085]">{row.topic}</p>
-          </div>
-        );
-      },
+      render: (row) => (
+        <p className="font-medium text-sm text-[#101828]">{row.topic}</p>
+      ),
+    },
+    {
+      key: 'notes',
+      label: 'Notes',
+      render: (row) => (
+        <span
+          className="text-sm text-[#101828] line-clamp-2 max-w-[200px] block cursor-default"
+          title={row.notes || undefined}
+        >
+          {row.notes || '—'}
+        </span>
+      ),
     },
     {
       key: 'status',
       label: '',
-      render: () => {
-        return (
-          <div className="flex items-center gap-2">
-            <Button className="bg-green-100 text-white px-8 py-2 rounded-xl">
-              Join call
-            </Button>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'actions',
-      label: 'Action',
-      render: () => {
-        return (
-          <div className="flex items-center">
-            <button
-              onClick={onView}
-              className="px-3 py-3 text-green-300  text-xs underline"
-            >
-              <MoreIcon />
-            </button>
-          </div>
-        );
-      },
+      render: (row) => (
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          <Button
+            className="bg-green-100 text-white px-8 py-2 rounded-xl"
+            onClick={() => {
+              const url = row.callUrl;
+              if (url) window.open(url, '_blank', 'noopener,noreferrer');
+            }}
+          >
+            Join call
+          </Button>
+        </div>
+      ),
     },
   ];
 
@@ -188,7 +171,8 @@ export default function UpcomingCallTable({ onView }: any) {
       row.name.toLowerCase().includes(q) ||
       row.date.toLowerCase().includes(q) ||
       row.topic.toLowerCase().includes(q) ||
-      row.phone.toLowerCase().includes(q)
+      row.phone.toLowerCase().includes(q) ||
+      (row.notes ?? '').toLowerCase().includes(q)
     );
   });
 
@@ -205,7 +189,7 @@ export default function UpcomingCallTable({ onView }: any) {
       <div className="flex flex-col mx-6 my-[18px] md:flex-row md:items-center md:justify-between gap-2">
         <div className="relative inline-flex items-center ">
           <h3 className="font-semibold text-2xl text-green-200">
-            Call History
+            Upcoming Calls
           </h3>
         </div>
         <div className="relative flex items-center h-[44px] gap-3 w-[363px] bg-[#DCFFAD91] px-2 rounded-lg">
@@ -229,7 +213,12 @@ export default function UpcomingCallTable({ onView }: any) {
         }}
         isLoading={processingId === declineId}
       />
-      <DataTable columns={columns} data={paginated} />
+      <DataTable
+        columns={columns}
+        data={paginated}
+        compact
+        onRowClick={onRowClick}
+      />
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

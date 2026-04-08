@@ -24,6 +24,8 @@ type LiveTableProps = {
   onCancelSuccess: () => void;
   dateSort: DateSortDirection | null;
   onDateSortChange: (direction: DateSortDirection) => void;
+  /** When false (e.g. mentees), only View is shown; no Cancel */
+  canManage?: boolean;
 };
 
 export default function LiveTable({
@@ -34,6 +36,7 @@ export default function LiveTable({
   onCancelSuccess,
   dateSort,
   onDateSortChange,
+  canManage = true,
 }: LiveTableProps) {
   const router = useRouter();
   const { showToast } = useToastify();
@@ -165,20 +168,22 @@ export default function LiveTable({
             </span>
             <span className="leading-none">View</span>
           </Button>
-          <Button
-            type="button"
-            disabled={!canCancel(row)}
-            className="h-8 bg-red-100 text-white font-medium text-xs px-3 flex items-center gap-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-200"
-            onClick={() => {
-              if (canCancel(row)) {
-                setSessionToCancel(row);
-                setCancellationReason('');
-              }
-            }}
-          >
-            <CancelIcon />
-            Cancel
-          </Button>
+          {canManage && (
+            <Button
+              type="button"
+              disabled={!canCancel(row)}
+              className="h-8 bg-red-100 text-white font-medium text-xs px-3 flex items-center gap-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-200"
+              onClick={() => {
+                if (canCancel(row)) {
+                  setSessionToCancel(row);
+                  setCancellationReason('');
+                }
+              }}
+            >
+              <CancelIcon />
+              Cancel
+            </Button>
+          )}
         </div>
       ),
     },

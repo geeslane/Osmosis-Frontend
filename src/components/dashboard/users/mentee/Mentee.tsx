@@ -4,6 +4,8 @@ import { GoBackIcon, LoadingIcon } from '@/assets/icons';
 import Empty from '@/components/ui/NotFound/Empty';
 import React from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import MenteeTable from './MenteeTable';
 import { useGetTeenagersQuery } from '@/store/users/users.api';
 import { useUserList } from '@/hooks/useUserList';
@@ -40,7 +42,9 @@ function mapMenteeFromApi(apiMentee: any): Mentee {
 export default function Mentee() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const user = useSelector((state: RootState) => state.profile.user);
   const view = searchParams.get('viewmentee') || 'listmentee';
+  const canManageStatus = user?.role !== 'MENTOR';
 
   const userList = useUserList({ defaultLimit: 10 });
   const { queryParams, search, statusFilter } = userList;
@@ -126,6 +130,7 @@ export default function Mentee() {
               onSearchChange={userList.setSearch}
               statusFilter={userList.statusFilter}
               onStatusFilterChange={userList.setStatusFilter}
+              canManageStatus={canManageStatus}
             />
           )}
         </div>

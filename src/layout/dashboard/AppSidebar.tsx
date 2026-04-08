@@ -8,11 +8,13 @@ import { RootState } from '@/store';
 import Image from 'next/image';
 
 import {
+  CallIcon,
   DashboardIcon,
   LiveSessionIcon,
   LogoutIcon,
   ModulesIcon,
   PendingRequestIcon,
+  ScheduleIcon,
   UserManagementIcon,
   UserSettingsIcon,
 } from '@/assets/icons';
@@ -42,36 +44,31 @@ const AppSidebar: React.FC = () => {
       path: '/dashboard',
       roles: ['SUPERADMIN', 'MENTOR', 'TEENAGER', 'ADMIN'],
     },
-    // {
-    //   icon: DashboardIcon,
-    //   name: 'Mentee',
-    //   path: '/dashboard/mentee',
-    //   roles: ['MENTOR'],
-    // },
-    // {
-    //   icon: CallIcon,
-    //   name: 'Calls',
-    //   path: '/dashboard/calls/mentee',
-    //   roles: ['MENTOR'],
-    // },
-    // {
-    //   icon: CallIcon,
-    //   name: 'Mentorship Calls',
-    //   path: '/dashboard/calls/mentor',
-    //   roles: ['TEENAGER'],
-    // },
-    // {
-    //   icon: ScheduleIcon,
-    //   name: 'Availability Schedule',
-    //   path: '/dashboard/availabilty-schedule/mentor',
-    //   roles: ['MENTOR'],
-    // },
-    // {
-    //   icon: ScheduleIcon,
-    //   name: 'Availability Schedule',
-    //   path: '/dashboard/availabilty-schedule/mentee',
-    //   roles: ['TEENAGER'],
-    // },
+    {
+      icon: UserManagementIcon,
+      name: 'Mentees',
+      path: '/dashboard/mentee',
+      roles: ['MENTOR'],
+    },
+    {
+      icon: CallIcon,
+      name: 'Calls',
+      path: '/dashboard/calls/mentor',
+      roles: ['MENTOR'],
+    },
+    {
+      icon: ScheduleIcon,
+      name: 'Availability Schedule',
+      path: '/dashboard/availabilty-schedule/mentor',
+      roles: ['MENTOR'],
+    },
+    {
+      icon: CallIcon,
+      name: 'My calls',
+      path: '/dashboard/calls/mentee',
+      roles: ['TEENAGER'],
+    },
+
     {
       icon: PendingRequestIcon,
       name: 'Pending Requests',
@@ -88,7 +85,7 @@ const AppSidebar: React.FC = () => {
       icon: ModulesIcon,
       name: 'Modules',
       path: '/dashboard/modules',
-      roles: ['SUPERADMIN', 'ADMIN', 'MENTOR'],
+      roles: ['SUPERADMIN', 'ADMIN'],
     },
     {
       icon: ModulesIcon,
@@ -101,6 +98,18 @@ const AppSidebar: React.FC = () => {
       name: 'Live Sessions',
       path: '/dashboard/live-sessions',
       roles: ['SUPERADMIN', 'MENTOR', 'TEENAGER', 'ADMIN'],
+    },
+    {
+      icon: CallIcon,
+      name: 'Mentorship Calls',
+      path: '/dashboard/calls/admin',
+      roles: ['SUPERADMIN', 'ADMIN'],
+    },
+    {
+      icon: ScheduleIcon,
+      name: 'Program schedule',
+      path: '/dashboard/program-schedule',
+      roles: ['SUPERADMIN', 'ADMIN'],
     },
   ];
 
@@ -132,15 +141,13 @@ const AppSidebar: React.FC = () => {
           <li key={item.name}>
             <Link
               href={item.path}
-              className={`group flex montserrat font-medium text-green-200 items-center gap-3 px-4 py-2 text-sm transition-colors ${
-                active ? 'rounded-lg bg-green-100 text-white' : ''
-              }`}
+              className={`group flex montserrat font-medium text-green-200 items-center gap-3 px-4 py-2 text-sm transition-colors ${active ? 'rounded-lg bg-green-100 text-white' : ''
+                }`}
             >
               {Icon && (
                 <Icon
-                  className={`transition-colors ${
-                    active ? 'text-white' : 'text-green-100 '
-                  }`}
+                  className={`transition-colors ${active ? 'text-white' : 'text-green-100 '
+                    }`}
                   active={active}
                 />
               )}
@@ -162,19 +169,17 @@ const AppSidebar: React.FC = () => {
     <aside
       className={`fixed max-w-[1600px] bg-white font-montserrat mx-auto mt-16 flex flex-col lg:mt-0 top-0 left-0 text-gray-900 md:h-screen transition-all duration-300 ease-in-out z-50 
       ${isExpanded || isMobileOpen ? 'w-[290px] z-999' : 'w-[90px]'}
-      ${
-        isMobileOpen
+      ${isMobileOpen
           ? 'translate-x-0 bg-white h-full pb-10'
           : '-translate-x-full'
-      } lg:translate-x-0`}
+        } lg:translate-x-0`}
     >
       <div className="flex flex-col pb-4 justify-between h-full">
         {/* Top Section */}
         <div>
           <div
-            className={`pt-[32.7px] pb-5 flex px-5 ${
-              !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
-            }`}
+            className={`pt-[32.7px] pb-5 flex px-5 ${!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
+              }`}
           >
             <Link href="/">
               {isExpanded || isMobileOpen ? (

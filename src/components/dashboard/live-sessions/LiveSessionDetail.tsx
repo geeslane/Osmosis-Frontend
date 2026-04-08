@@ -6,6 +6,7 @@ import {
   FileIcon,
   LinkedinIcon,
   LiveIcon,
+  LoadingIcon,
   UserAddIcon,
 } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
@@ -20,6 +21,8 @@ import {
 import { liveSessionsApi, type ApiComment } from '@/lib/liveSessionsApi';
 import useToastify from '@/hooks/useToastify';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import Image from 'next/image';
 import AddLive from './AddLive';
 import { ChevronDownIcon } from 'lucide-react';
@@ -81,6 +84,8 @@ const STATUS_STYLES = {
 
 export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
   const { showToast } = useToastify();
+  const user = useSelector((state: RootState) => state.profile.user);
+  const isMentee = user?.role === 'TEENAGER';
   const [session, setSession] = useState<LiveSessionRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -90,11 +95,14 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
     recordingUrl: '',
   });
   const [comments, setComments] = useState<ApiComment[]>([]);
-  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(true);
   const [commentsPage, setCommentsPage] = useState(1);
   const [commentsTotalPages, setCommentsTotalPages] = useState(1);
   const [newCommentText, setNewCommentText] = useState('');
   const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [replyingToId, setReplyingToId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [replySubmitting, setReplySubmitting] = useState(false);
   const [notesSaving, setNotesSaving] = useState(false);
 
   const fetchSession = useCallback(async () => {
@@ -132,8 +140,9 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-green-200/60 bg-white px-6 py-8 text-center text-gray-500">
-        Loading session...
+      <div className="rounded-xl border border-green-200/60 bg-white px-6 py-12 flex flex-col items-center justify-center gap-4 text-gray-600">
+        <LoadingIcon width="40" height="40" className="animate-spin text-green-200" />
+        <p className="text-sm font-medium">Loading session details</p>
       </div>
     );
   }
@@ -200,7 +209,8 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
     : isPast
       ? 'completed'
       : session.status;
-  const canEdit = !isCancelled && !isPast;
+  const canEdit = !isMentee && !isCancelled && !isPast;
+  const canEditNotes = !isMentee && !isCancelled && (isPast || session.status === 'completed');
   const showNotesSection =
     !isCancelled && (isPast || session.status === 'completed');
   const hasNotesOrRecording = !!(
@@ -402,16 +412,18 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
                 <h4 className="text-xs font-bold uppercase tracking-wider text-sky-700">
                   Session notes & recording
                 </h4>
-                <Button
-                  type="button"
-                  variant="primary"
-                  className="font-semibold text-xs md:text-sm px-4 py-2"
-                  onClick={openNotesModal}
-                >
-                  {hasNotesOrRecording
-                    ? 'Edit notes & recording'
-                    : 'Add notes & recording'}
-                </Button>
+                {canEditNotes && (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    className="font-semibold text-xs md:text-sm px-4 py-2"
+                    onClick={openNotesModal}
+                  >
+                    {hasNotesOrRecording
+                      ? 'Edit notes & recording'
+                      : 'Add notes & recording'}
+                  </Button>
+                )}
               </div>
               <div className="px-4 md:px-8 py-5 space-y-4">
                 {session.recordingUrl ? (
@@ -472,22 +484,23 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
             className={`overflow-hidden transition-all duration-300 ${commentsOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}
           >
             <div className="rounded-xl border border-green-200/70 bg-white shadow-sm px-4 py-5 md:px-6 md:py-6">
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div>
+                  <h4 className="text-base font-semibold text-[#282F2E]">
+                    Comments
+                  </h4>
+                  <p className="text-xs text-green-300 mt-0.5">
+                    What people are saying about this session
+                  </p>
+                </div>
+                {comments.length > 0 && (
+                  <span className="inline-flex items-center rounded-full bg-[#DCFFAD] text-green-200 text-xs font-semibold px-2.5 py-1 whitespace-nowrap leading-none h-6 min-w-[2.5rem] justify-center">
+                    {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
+                  </span>
+                )}
+              </div>
               {comments.length > 0 ? (
-                <>
-                  <div className="flex items-center justify-between gap-2 mb-4">
-                    <div>
-                      <h4 className="text-base font-semibold text-[#282F2E]">
-                        Teenagers&apos; comments
-                      </h4>
-                      <p className="text-xs text-green-300 mt-0.5">
-                        What teenagers are saying about this session
-                      </p>
-                    </div>
-                    <span className="inline-flex items-center rounded-full bg-[#DCFFAD] text-green-200 text-xs font-semibold px-2.5 py-1 whitespace-nowrap leading-none h-6 min-w-[2.5rem] justify-center">
-                      {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
-                    </span>
-                  </div>
-                  <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
                     {comments.map((comment) => (
                       <div
                         key={comment.id}
@@ -522,30 +535,110 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
                               {comment.text}
                             </p>
                             {comment.replies && comment.replies.length > 0 && (
-                              <div className="mt-3 pl-2 border-l-2 border-green-200 space-y-2">
+                              <div className="mt-3 pl-2 border-l-2 border-green-200 space-y-3">
                                 {comment.replies.map((reply) => (
-                                  <div key={reply.id} className="text-sm">
-                                    <p className="font-medium text-[#282F2E]">
-                                      {reply.authorName}
-                                    </p>
-                                    <p className="text-gray-600 break-words">
-                                      {reply.text}
-                                    </p>
-                                    <span className="text-[10px] text-gray-400">
-                                      {formatCommentTime(reply.createdAt)}
-                                    </span>
+                                  <div key={reply.id} className="flex items-start gap-2">
+                                    {reply.authorPictureUrl ? (
+                                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-green-200">
+                                        <Image
+                                          src={normalizeImageUrl(reply.authorPictureUrl)}
+                                          alt={reply.authorName}
+                                          width={32}
+                                          height={32}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-xs font-semibold text-green-200 flex-shrink-0">
+                                        {reply.authorName?.charAt(0)?.toUpperCase() ?? '?'}
+                                      </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <p className="text-sm font-semibold text-[#282F2E]">
+                                          {reply.authorName}
+                                        </p>
+                                        <span className="text-[11px] text-gray-500">
+                                          {formatCommentTime(reply.createdAt)}
+                                        </span>
+                                      </div>
+                                      <p className="text-sm text-gray-600 break-words mt-0.5">
+                                        {reply.text}
+                                      </p>
+                                    </div>
                                   </div>
                                 ))}
                               </div>
                             )}
+                            <div className="mt-2">
+                              {replyingToId === comment.id ? (
+                                <div className="flex flex-col gap-2">
+                                  <textarea
+                                    value={replyText}
+                                    onChange={(e) => setReplyText(e.target.value)}
+                                    placeholder="Write a reply..."
+                                    rows={2}
+                                    className="w-full text-sm border border-green-200 rounded-lg px-3 py-2 focus:outline-none focus:border-green-300 resize-none"
+                                  />
+                                  <div className="flex gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="primary"
+                                      className="text-xs"
+                                      disabled={replySubmitting || replyText.trim().length < 2}
+                                      onClick={async () => {
+                                        const text = replyText.trim();
+                                        if (text.length < 2) return;
+                                        setReplySubmitting(true);
+                                        try {
+                                          await liveSessionsApi.addReply(id, comment.id, { text });
+                                          setReplyText('');
+                                          setReplyingToId(null);
+                                          showToast('Reply added.', 'success');
+                                          fetchComments();
+                                        } catch (err: unknown) {
+                                          const msg = err && typeof err === 'object' && 'response' in err && (err as { response?: { data?: { message?: string } } }).response?.data?.message;
+                                          showToast(typeof msg === 'string' ? msg : 'Failed to add reply', 'error');
+                                        } finally {
+                                          setReplySubmitting(false);
+                                        }
+                                      }}
+                                    >
+                                      {replySubmitting ? 'Sending...' : 'Post reply'}
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="secondary"
+                                      className="text-xs"
+                                      onClick={() => { setReplyingToId(null); setReplyText(''); }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => setReplyingToId(comment.id)}
+                                  className="text-xs font-medium text-green-200 hover:text-green-300"
+                                >
+                                  Reply
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
                     ))}
-                  </div>
-                  <form
-                    className="mt-4 pt-4 border-t border-green-100"
-                    onSubmit={async (e) => {
+                </div>
+              ) : (
+                <div className="text-center text-gray-400 py-6">
+                  <p className="text-sm">No comments for this session yet. Add the first one below.</p>
+                </div>
+              )}
+              <form
+                className="mt-4 pt-4 border-t border-green-100"
+                onSubmit={async (e) => {
                       e.preventDefault();
                       const text = newCommentText.trim();
                       if (text.length < 2) {
@@ -615,12 +708,6 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
                       </Button>
                     </div>
                   )}
-                </>
-              ) : (
-                <div className="text-center text-gray-400 py-8">
-                  <p className="text-sm">No comments for this session yet.</p>
-                </div>
-              )}
             </div>
           </div>
         </div>

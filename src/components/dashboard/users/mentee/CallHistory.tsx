@@ -1,6 +1,6 @@
 'use client';
 
-import { MoreIcon, SearchIcon, StarIcon } from '@/assets/icons';
+import { SearchIcon, StarIcon } from '@/assets/icons';
 import { Column, DataTable } from '@/components/ui/table';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { useEffect, useState } from 'react';
@@ -11,6 +11,7 @@ type CallHistoryRow = {
   id: string;
   menteeName: string;
   date: string;
+  time?: string;
   topic: string;
   callLength: string;
   comment: string;
@@ -22,6 +23,7 @@ const callHistoryData: CallHistoryRow[] = [
     id: '1',
     menteeName: 'Olivia Rhye',
     date: '12 Dec, 2025',
+    time: '10:00 AM',
     topic: 'Hope',
     callLength: '55mins 34s',
     comment: 'Good',
@@ -31,6 +33,7 @@ const callHistoryData: CallHistoryRow[] = [
     id: '2',
     menteeName: 'Phoenix Baker',
     date: '12 Dec, 2025',
+    time: '2:30 PM',
     topic: 'Joy in Chaos',
     callLength: '1hr 23mins 5s',
     comment: 'Rescheduled',
@@ -40,6 +43,7 @@ const callHistoryData: CallHistoryRow[] = [
     id: '3',
     menteeName: 'Lana Steiner',
     date: '12 Dec, 2025',
+    time: '4:15 PM',
     topic: 'Shame',
     callLength: '1hr 23mins 5s',
     comment: 'Completed',
@@ -49,6 +53,7 @@ const callHistoryData: CallHistoryRow[] = [
     id: '4',
     menteeName: 'Demi Wilkinson',
     date: '12 Dec, 2025',
+    time: '11:00 AM',
     topic: 'Overcoming fear',
     callLength: '1hr 23mins 5s',
     comment: 'Good',
@@ -59,7 +64,6 @@ const callHistoryData: CallHistoryRow[] = [
 export default function CallHistoryTable() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [openId, setOpenId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [viewCallDetails, setViewCallDetails] = useState(false);
   const [selectedCall, setSelectedCall] = useState<CallHistoryRow | null>(null);
@@ -80,39 +84,41 @@ export default function CallHistoryTable() {
       key: 'menteeName',
       label: 'Mentor Name',
       render: (row) => (
-        <span className="font-medium text-sm text-[#667085]">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedCall(row);
+            setViewCallDetails(true);
+          }}
+          className="font-medium text-sm text-[#101828] hover:text-green-600 cursor-pointer text-left"
+        >
           {row.menteeName}
-        </span>
+        </button>
       ),
     },
     {
       key: 'date',
-      label: 'Date',
-      render: (row) => (
-        <span className="text-sm font-medium text-[#667085]">{row.date}</span>
-      ),
+      label: 'Date & Time',
+      render: (row) => {
+        const dateTime = row.time ? `${row.date}, ${row.time}` : row.date;
+        return (
+          <span className="text-sm font-medium text-[#101828]">{dateTime}</span>
+        );
+      },
     },
     {
       key: 'topic',
       label: 'Topic',
       render: (row) => (
-        <span className=" font-medium text-sm text-[#667085]">{row.topic}</span>
-      ),
-    },
-    {
-      key: 'callLength',
-      label: 'Call Length',
-      render: (row) => (
-        <span className="text-sm font-medium text-[#667085]">
-          {row.callLength}
-        </span>
+        <span className=" font-medium text-sm text-[#101828]">{row.topic}</span>
       ),
     },
     {
       key: 'comment',
       label: 'Comment',
       render: (row) => (
-        <span className="text-sm font-medium text-[#667085]">
+        <span className="text-sm font-medium text-[#101828]">
           {row.comment}
         </span>
       ),
@@ -125,50 +131,6 @@ export default function CallHistoryTable() {
           {Array.from({ length: 5 }).map((_, i) => (
             <StarIcon key={i} fill={i < row.rating ? '#F59E0B' : '#E5E7EB'} />
           ))}
-        </div>
-      ),
-    },
-    {
-      key: 'actions',
-      label: 'Action',
-      render: (row) => (
-        <div className="relative flex items-center space-x-2">
-          <div
-            onClick={() =>
-              setOpenId((prev) => (prev === row.id ? null : row.id))
-            }
-            className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer"
-          >
-            <MoreIcon />
-          </div>
-
-          {openId === row.id && (
-            <div className="absolute top-8 right-0 z-50 flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg text-sm text-green-300 py-2">
-              <button
-                type="button"
-                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                onClick={() => {
-                  // show details for this row
-                  setSelectedCall(row);
-                  setViewCallDetails(true);
-                  setOpenId(null);
-                }}
-              >
-                View
-              </button>
-
-              <button
-                type="button"
-                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                onClick={() => {
-                  setOpen(true);
-                  setOpenId(null);
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          )}
         </div>
       ),
     },
@@ -230,7 +192,7 @@ export default function CallHistoryTable() {
             title="Delete Call History"
             description="Deleting this Call History will permanently Delete."
           />
-          <DataTable columns={columns} data={paginated} />
+          <DataTable columns={columns} data={paginated} compact />
 
           <Pagination
             page={page}

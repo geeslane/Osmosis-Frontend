@@ -5,6 +5,7 @@ type CallHistoryRow = {
   id: string;
   menteeName: string;
   date: string;
+  time?: string;
   topic: string;
   callLength: string;
   comment: string;
@@ -20,74 +21,91 @@ export default function CallDetail({
 }) {
   if (!call) {
     return (
-      <div className="">
+      <div className="max-w-[520px]">
         <div className="flex items-center justify-between">
-          <h3 className="text-green-200 text-2xl font-bold">Call Details</h3>
+          <h3 className="text-green-200 text-lg font-bold">Call Details</h3>
           <button
             onClick={onBack}
-            className="text-sm text-green-300 px-3 py-2 bg-[#DCFFAD91] rounded-md"
+            className="text-xs text-green-300 px-2.5 py-1.5 bg-[#DCFFAD91] rounded-md hover:bg-[#DCFFAD]/60"
           >
-            Back{' '}
+            Back
           </button>
         </div>
-        <p className="text-sm text-[#667085] mt-4">No call selected.</p>
+        <p className="text-xs text-gray-500 mt-3">No call selected.</p>
       </div>
     );
   }
 
+  const dateTime = call.time ? `${call.date}, ${call.time}` : call.date;
+
   return (
-    <div className=" max-w-[650px] w-full">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-green-200 text-3xl font-bold">Call Detail</h3>
+    <div className="max-w-[520px] w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-xs text-green-300 px-2.5 py-1.5 bg-[#DCFFAD91] rounded-md hover:bg-[#DCFFAD]/60"
+          >
+            Back
+          </button>
+          <h3 className="text-green-200 text-lg font-bold">Call Details</h3>
+        </div>
         <button
-          className=" text-green-200 flex items-center  font-medium px-8 py-4 gap-2 bg-[#DCFFAD91] rounded-md"
+          type="button"
+          className="flex items-center text-sm font-medium px-4 py-2 gap-1.5 bg-green-50 text-green-200 rounded-lg hover:bg-green-100/80 transition-colors"
         >
           <Printer />
-          Print Call History{' '}
+          Print
         </button>
       </div>
-      <div className="space-y-4 mt-4 py-8 rounded-md border-2 px-[64px]  border-[#6CBB0180] ">
-        <div className="flex flex-col gap-20">
-          <div className="flex gap-2 flex-col">
+      <div className="rounded-xl border border-green-200/60 bg-white p-4 sm:p-5 shadow-sm space-y-4">
+        <div className="flex gap-2 items-center">
+          <div className="shrink-0 scale-[0.8] origin-left">
             <UserAddIcon />
-            <p className="text-green-300 text-sm font-medium">Mentees Name</p>
-            <p className="text-green-200 font-medium ">{call.menteeName}</p>
           </div>
-
-          <div className="flex gap-12">
-            <div className="flex flex-col gap-4">
-              <p className="text-green-300 text-sm font-medium">Date</p>
-              <p className="text-green-200 font-medium">{call.date}</p>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <p className="text-green-300 text-sm font-medium">Topic</p>
-              <p className="text-green-200 font-medium">{call.topic}</p>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <p className="text-green-300 text-sm font-medium">Call Length</p>
-              <p className="text-green-200 font-medium">{call.callLength}</p>
-            </div>
+          <div>
+            <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">
+              Mentee Name
+            </p>
+            <p className="text-sm font-semibold text-[#101828]">{call.menteeName}</p>
           </div>
+        </div>
 
-          <div className="md:col-span-2 space-y-4">
-            <p className="text-green-300 text-sm font-medium">Comment</p>
-            <p className="text-green-200 font-medium">{call.comment}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">
+              Date & Time
+            </p>
+            <p className="text-sm font-medium text-[#101828]">{dateTime}</p>
           </div>
+          <div>
+            <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">
+              Topic
+            </p>
+            <p className="text-sm font-medium text-[#101828]">{call.topic}</p>
+          </div>
+        </div>
 
-          <div className="flex gap-4 items-center">
-            <p className="text-green-300 text-sm font-medium">Rating</p>
-            <div className="flex items-center gap-2 mt-1">
-              <div className="flex gap-1">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <StarIcon
-                    key={i}
-                    fill={i < call.rating ? '#F59E0B' : '#E5E7EB'}
-                  />
-                ))}
-              </div>
-            </div>
+        <div>
+          <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider mb-0.5">
+            Comment
+          </p>
+          <p className="text-sm font-medium text-[#101828]">{call.comment}</p>
+        </div>
+
+        <div className="flex gap-3 items-center">
+          <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">
+            Rating
+          </p>
+          <div className="flex gap-0.5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <StarIcon
+                key={i}
+                fill={i < call.rating ? '#F59E0B' : '#E5E7EB'}
+              />
+            ))}
+            <span className="ml-1.5 text-xs text-gray-500">{call.rating}/5</span>
           </div>
         </div>
       </div>

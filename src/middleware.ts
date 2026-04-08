@@ -5,41 +5,48 @@ import { getSessionCookie } from '@/lib/session';
 const ROLE_ACCESS: Record<string, string[]> = {
   SUPERADMIN: [
     '/dashboard',
+    '/dashboard/notifications',
     '/dashboard/admin',
     '/dashboard/mentor',
     '/dashboard/mentee',
+    '/dashboard/calls/admin',
     '/dashboard/account-settings',
     '/dashboard/user',
     '/dashboard/modules',
+    '/dashboard/program-schedule',
     '/dashboard/pending-requests',
     '/dashboard/live-sessions',
-    '/dashboard/account-settings',
   ],
   ADMIN: [
     '/dashboard',
     '/dashboard/users',
-    '/dashboard/pending-requests',
+    '/dashboard/calls/admin',
     '/dashboard/pending-requests',
     '/dashboard/live-sessions',
     '/dashboard/account-settings',
     '/dashboard/modules',
+    '/dashboard/program-schedule',
   ],
   MENTOR: [
     '/dashboard',
+    '/dashboard/notifications',
     '/dashboard/mentee',
     '/dashboard/modules',
     '/dashboard/users/mentee',
-    '/dashboard/calls/mentee',
+    '/dashboard/calls/mentor',
     '/dashboard/availabilty-schedule',
     '/dashboard/live-sessions',
     '/dashboard/account-settings',
+    '/mentor',
   ],
   TEENAGER: [
     '/dashboard',
-    '/dashboard/availabilty-schedule/mentee',
+    '/dashboard/notifications',
+    '/dashboard/book-a-call',
     '/dashboard/modules/mentee',
     '/dashboard/modules',
-    '/dashboard/calls/mentor',
+    '/dashboard/calls/mentee',
+    '/dashboard/live-sessions',
     '/dashboard/account-settings',
   ],
 };
@@ -62,8 +69,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(redirectPath, request.url));
   }
 
-  /* ---------------- Protect Dashboard ---------------- */
-  if (!token && pathname.startsWith('/dashboard')) {
+  /* ---------------- Protect Dashboard & mentor OAuth return paths ---------------- */
+  if (!token && (pathname.startsWith('/dashboard') || pathname.startsWith('/mentor'))) {
     const url = request.nextUrl.clone();
     url.pathname = '/signin';
     url.searchParams.set('redirect', pathname);
@@ -94,5 +101,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/signin', '/signup'],
+  matcher: ['/dashboard/:path*', '/mentor/:path*', '/signin', '/signup'],
 };

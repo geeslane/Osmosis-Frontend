@@ -8,10 +8,16 @@ export type GetModulesParams = {
   title?: string;
 };
 
+export type ProgramConfig = {
+  startDate: string;
+  endDate: string;
+  numberOfModules: number;
+};
+
 export const DashboardApi = createApi({
   reducerPath: 'dashboardApi',
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['Modules', 'AllCourses'],
+  tagTypes: ['Modules', 'AllCourses', 'ProgramConfig'],
   endpoints: (builder) => ({
     modules: builder.query<ModulesResponse, GetModulesParams | void>({
       query: (params) => ({
@@ -53,6 +59,52 @@ export const DashboardApi = createApi({
       invalidatesTags: ['Modules'],
     }),
 
+    /** Mentor dashboard: rating (average) and total calls. Backend: GET /mentor/me/stats or derive from calls. */
+    getMentorDashboardStats: builder.query<
+      { averageRating?: number; totalCalls?: number },
+      void
+    >({
+      queryFn: async (_arg, _queryApi, _extraOptions, fetchWithBQ) => {
+        const result = await fetchWithBQ({
+          url: '/mentor/me/stats',
+          method: 'GET',
+        });
+        if (!result.error && result.data) {
+          const d = result.data as { data?: { averageRating?: number; totalCalls?: number } };
+          return {
+            data: {
+              averageRating: d?.data?.averageRating ?? 0,
+              totalCalls: d?.data?.totalCalls ?? 0,
+            },
+          };
+        }
+        return { data: { averageRating: 0, totalCalls: 0 } };
+      },
+    }),
+
+    /** Program schedule: start/end dates and number of modules (admin). */
+    getProgramConfig: builder.query<ProgramConfig | null, void>({
+      queryFn: async (_arg, _queryApi, _extraOptions, fetchWithBQ) => {
+        const result = await fetchWithBQ({ url: '/program/config', method: 'GET' });
+        if (result.error && (result.error as { status?: number }).status === 404) {
+          return { data: null };
+        }
+        if (result.error) return { error: result.error };
+        const d = result.data as { data?: ProgramConfig };
+        return { data: d?.data ?? null };
+      },
+      providesTags: ['ProgramConfig'],
+    }),
+
+    updateProgramConfig: builder.mutation<ProgramConfig, ProgramConfig>({
+      query: (body) => ({
+        url: '/program/config',
+        method: 'PUT',
+        data: body,
+      }),
+      invalidatesTags: ['ProgramConfig', 'Modules'],
+    }),
+
     /** Upload file to Cloudinary. Returns URL for use in editor (e.g. images). */
     uploadFile: builder.mutation<
       { message: string; url: string; publicId: string },
@@ -75,4 +127,7 @@ export const {
   useGetModuleByIdQuery,
   useDeleteModuleMutation,
   useUploadFileMutation,
+  useGetMentorDashboardStatsQuery,
+  useGetProgramConfigQuery,
+  useUpdateProgramConfigMutation,
 } = DashboardApi;
