@@ -7,16 +7,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import MenteeTable from './MenteeTable';
-import {
-  useGetMentorMenteesQuery,
-  useGetTeenagersQuery,
-} from '@/store/users/users.api';
-import {
-  useGetMentorPreviousCallsQuery,
-  useGetMentorUpcomingCallsQuery,
-} from '@/store/calls/calls.api';
+import { useGetTeenagersQuery } from '@/store/users/users.api';
 import { useUserList } from '@/hooks/useUserList';
-import { buildMentorMenteesFromCalls } from '@/utils/mentorMenteesFromCalls';
 
 type Mentee = {
   id: string;
@@ -56,86 +48,21 @@ export default function Mentee() {
   const isMentor = user?.role === 'MENTOR';
 
   const userList = useUserList({ defaultLimit: 10 });
-  const { queryParams, search, statusFilter, page, limit } = userList;
+  const { queryParams, search, statusFilter } = userList;
 
-  const { data: adminMenteesRes, isLoading: loadingAdminTeenagers } =
-    useGetTeenagersQuery(queryParams, { skip: isMentor });
+  const { data: menteesRes, isLoading: loadingMentees } =
+    useGetTeenagersQuery(queryParams);
 
-  const {
-    data: mentorMenteesRes,
-    isLoading: loadingMentorMenteesApi,
-    isError: mentorMenteesApiError,
-  } = useGetMentorMenteesQuery(queryParams, { skip: !isMentor });
-
-  const mentorApiHasList =
-    !loadingMentorMenteesApi &&
-    !mentorMenteesApiError &&
-    (mentorMenteesRes?.data?.length ?? 0) > 0;
-
-  const skipCallsForMentor = !isMentor || mentorApiHasList;
-
-  const { data: mentorUpcoming, isLoading: loadingMentorUpcoming } =
-    useGetMentorUpcomingCallsQuery(undefined, { skip: skipCallsForMentor });
-  const { data: mentorPrevious, isLoading: loadingMentorPrevious } =
-    useGetMentorPreviousCallsQuery(undefined, { skip: skipCallsForMentor });
-
-  const { menteeData, total, totalPages, isLoadingMentees } = useMemo(() => {
-    if (!isMentor) {
-      const list = adminMenteesRes?.data?.map(mapMenteeFromApi) || [];
+  const { menteeData, total, totalPages, isLoadingMentees: loadingList } =
+    useMemo(() => {
+      const list = menteesRes?.data?.map(mapMenteeFromApi) || [];
       return {
         menteeData: list,
-        total: adminMenteesRes?.pagination?.total ?? 0,
-        totalPages: adminMenteesRes?.pagination?.totalPages ?? 1,
-        isLoadingMentees: loadingAdminTeenagers,
+        total: menteesRes?.pagination?.total ?? 0,
+        totalPages: menteesRes?.pagination?.totalPages ?? 1,
+        isLoadingMentees: loadingMentees,
       };
-    }
-
-    if (mentorApiHasList && mentorMenteesRes?.data) {
-      const list = mentorMenteesRes.data.map(mapMenteeFromApi);
-      return {
-        menteeData: list,
-        total: mentorMenteesRes.pagination?.total ?? list.length,
-        totalPages: mentorMenteesRes.pagination?.totalPages ?? 1,
-        isLoadingMentees: loadingMentorMenteesApi,
-      };
-    }
-
-    const full = buildMentorMenteesFromCalls(
-      mentorUpcoming?.data ?? [],
-      mentorPrevious?.data ?? []
-    );
-    const q = search.trim().toLowerCase();
-    const filtered = full.filter((m) => {
-      if (statusFilter !== 'All' && m.status !== statusFilter) return false;
-      if (q.length === 0) return true;
-      return m.name.toLowerCase().includes(q);
-    });
-    const n = filtered.length;
-    const pages = Math.max(1, Math.ceil(n / limit));
-    const start = (page - 1) * limit;
-    return {
-      menteeData: filtered.slice(start, start + limit),
-      total: n,
-      totalPages: pages,
-      isLoadingMentees:
-        loadingMentorMenteesApi || loadingMentorUpcoming || loadingMentorPrevious,
-    };
-  }, [
-    isMentor,
-    adminMenteesRes,
-    loadingAdminTeenagers,
-    mentorApiHasList,
-    mentorMenteesRes,
-    loadingMentorMenteesApi,
-    mentorUpcoming?.data,
-    mentorPrevious?.data,
-    search,
-    statusFilter,
-    page,
-    limit,
-    loadingMentorUpcoming,
-    loadingMentorPrevious,
-  ]);
+    }, [menteesRes, loadingMentees]);
 
   const setParam = (newView: string, id?: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -147,7 +74,7 @@ export default function Mentee() {
 
   const handleBack = () => setParam('listmentee');
 
-  if (isLoadingMentees && view === 'listmentee') {
+  if (loadingList && view === 'listmentee') {
     return (
       <div className="flex justify-center items-center py-20">
         <LoadingIcon
@@ -190,7 +117,7 @@ export default function Mentee() {
             </div>
           </div>
 
-          {!isLoadingMentees &&
+          {!loadingList &&
           total === 0 &&
           search.trim() === '' &&
           statusFilter === 'All' ? (
