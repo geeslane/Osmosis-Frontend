@@ -85,6 +85,62 @@ export const CallsApi = createApi({
       },
       providesTags: ['Calls'],
     }),
+
+    /** Mentor: upcoming calls */
+    getMentorUpcomingCalls: builder.query<GetCallsResponse, void>({
+      queryFn: async (_arg, _queryApi, _extraOptions, fetchWithBQ) => {
+        const result = await fetchWithBQ({
+          url: '/mentor/me/calls/upcoming',
+          method: 'GET',
+        });
+        if (!result.error && result.data) {
+          const res = result.data as GetCallsResponse | undefined;
+          return { data: res ?? { data: [] } };
+        }
+        return { data: { data: [] } };
+      },
+      providesTags: ['Calls'],
+    }),
+
+    /** Mentor: previous calls */
+    getMentorPreviousCalls: builder.query<GetCallsResponse, void>({
+      queryFn: async (_arg, _queryApi, _extraOptions, fetchWithBQ) => {
+        const result = await fetchWithBQ({
+          url: '/mentor/me/calls/previous',
+          method: 'GET',
+          params: { limit: 50 },
+        });
+        if (!result.error && result.data) {
+          const res = result.data as GetCallsResponse | undefined;
+          return { data: res ?? { data: [] } };
+        }
+        return { data: { data: [] } };
+      },
+      providesTags: ['Calls'],
+    }),
+
+    /** Cancel upcoming call (mentor) */
+    cancelMentorCall: builder.mutation<{ success?: boolean; message?: string }, { callId: string }>(
+      {
+        query: ({ callId }) => ({
+          url: `/mentor/me/calls/${callId}/cancel`,
+          method: 'PATCH',
+        }),
+        invalidatesTags: ['Calls'],
+      }
+    ),
+
+    /** Cancel upcoming call (teenager) */
+    cancelTeenagerCall: builder.mutation<
+      { success?: boolean; message?: string },
+      { callId: string }
+    >({
+      query: ({ callId }) => ({
+        url: `/teenager/me/calls/${callId}/cancel`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Calls'],
+    }),
   }),
 });
 
@@ -92,4 +148,8 @@ export const {
   useGetCallsQuery,
   useGetMenteeUpcomingCallsQuery,
   useGetMenteePreviousCallsQuery,
+  useGetMentorUpcomingCallsQuery,
+  useGetMentorPreviousCallsQuery,
+  useCancelMentorCallMutation,
+  useCancelTeenagerCallMutation,
 } = CallsApi;

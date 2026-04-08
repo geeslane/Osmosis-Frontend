@@ -9,6 +9,7 @@ import { RootState } from '@/store';
 import {
   hasWeeklyScheduleBlocks,
   useGetMentorAvailabilityQuery,
+  useLazyGetGoogleCalendarAuthUrlQuery,
   useSaveMentorAvailabilityMutation,
   useSyncGoogleCalendarMutation,
   weeklyScheduleFromApi,
@@ -74,8 +75,14 @@ export default function MentorAvailabilitySchedule() {
   const { data: availability, isLoading } = useGetMentorAvailabilityQuery();
   const [saveAvailability, { isLoading: isSaving }] =
     useSaveMentorAvailabilityMutation();
+  const [fetchGoogleCalendarAuthUrl, { isFetching: isAuthUrlLoading }] =
+    useLazyGetGoogleCalendarAuthUrlQuery();
   const [syncGoogleCalendar, { isLoading: isSyncing }] =
     useSyncGoogleCalendarMutation();
+
+  const isGoogleCalendarConnected =
+    Boolean(availability?.googleCalendarConnected) ||
+    Boolean(availability?.googleCalendarSynced);
 
   const { data: mentorData } = useGetMentorByIdQuery(mentorId, {
     skip: !isMentor || !mentorId,
@@ -95,6 +102,8 @@ export default function MentorAvailabilitySchedule() {
   const [meetingLink, setMeetingLink] = useState('');
   const [mentorshipTopics, setMentorshipTopics] = useState<string[]>([]);
   const [topicToAdd, setTopicToAdd] = useState('');
+  /** Summary view only after step 2 was saved (or server already has link/sync). */
+  const [hasFinishedStep2, setHasFinishedStep2] = useState(false);
 
   useEffect(() => {
     if (availability) {
@@ -104,8 +113,16 @@ export default function MentorAvailabilitySchedule() {
           : createEmptySchedule()
       );
       setMeetingLink(availability.meetingLink || '');
+      if (
+        availability.meetingLink?.trim() ||
+        availability.googleCalendarSynced ||
+        availability.googleCalendarConnected
+      ) {
+        setHasFinishedStep2(true);
+      }
+
       if (hasWeeklyScheduleBlocks(availability.weeklySchedule)) {
-        setStep(availability.meetingLink ? 2 : 1);
+        setStep(2);
       }
     }
   }, [availability]);
@@ -202,19 +219,36 @@ export default function MentorAvailabilitySchedule() {
         }).unwrap();
       }
       showToast('Schedule saved successfully', 'success');
+      setHasFinishedStep2(true);
       setIsEditing(false);
     } catch (err: any) {
       showToast(err?.data?.message || 'Failed to save schedule', 'error');
     }
   };
 
-  const handleSyncGoogle = async () => {
+  const handleConnectGoogleCalendar = async () => {
+    try {
+      const { url } = await fetchGoogleCalendarAuthUrl().unwrap();
+      if (url) {
+        window.location.href = url;
+        return;
+      }
+      showToast('Could not start Google Calendar connection.', 'error');
+    } catch (err: any) {
+      showToast(
+        err?.data?.message || 'Failed to get Google Calendar link.',
+        'error'
+      );
+    }
+  };
+
+  const handleRefreshGoogleCalendar = async () => {
     try {
       const result = await syncGoogleCalendar().unwrap();
       const msg =
         result.message ||
         (result.googleCalendarSynced
-          ? 'Calendar connected.'
+          ? 'Calendar sync updated.'
           : 'Sync completed.');
       if (result.success) {
         showToast(msg, 'success');
@@ -234,10 +268,10 @@ export default function MentorAvailabilitySchedule() {
     );
   }
 
-  // View mode: show configured schedule, allow Edit
+  // View mode: show configured schedule, allow Edit (only after step 2 completed)
   const isConfigured =
     hasAnyBlocks && availability && hasWeeklyScheduleBlocks(availability.weeklySchedule);
-  if (isConfigured && !isEditing && step === 2) {
+  if (isConfigured && !isEditing && step === 2 && hasFinishedStep2) {
     return (
       <div className="mt-10 max-w-2xl space-y-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -313,10 +347,15 @@ export default function MentorAvailabilitySchedule() {
           </div>
         )}
 
-        {availability?.googleCalendarSynced && (
+        {(availability?.googleCalendarConnected ||
+          availability?.googleCalendarSynced) && (
           <div className="flex items-center gap-2 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-200">
             <CalendarIcon />
-            <span>Google Calendar is synced. Your meetings will appear as unavailable to mentees.</span>
+            <span>
+              {availability?.googleCalendarSynced
+                ? 'Google Calendar is connected and synced. Busy times are excluded from booking slots.'
+                : 'Google Calendar is connected. Busy times will be excluded from booking slots after sync.'}
+            </span>
           </div>
         )}
       </div>
@@ -504,21 +543,36 @@ export default function MentorAvailabilitySchedule() {
               />
             </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <Button
-                variant="secondary"
-                onClick={handleSyncGoogle}
-                isLoading={isSyncing}
-                leftIcon={<GoogleIcon />}
-                className="flex items-center gap-2"
-              >
-                Sync with Google Calendar
-              </Button>
-              {availability?.googleCalendarSynced && (
-                <span className="flex items-center gap-2 text-sm text-green-200">
-                  <CalendarIcon />
-                  Synced
-                </span>
+            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+              {!isGoogleCalendarConnected ? (
+                <Button
+                  variant="secondary"
+                  onClick={handleConnectGoogleCalendar}
+                  isLoading={isAuthUrlLoading}
+                  leftIcon={<GoogleIcon />}
+                  className="flex items-center gap-2"
+                >
+                  Connect Google Calendar
+                </Button>
+              ) : (
+                <>
+                  <span className="flex items-center gap-2 text-sm font-medium text-green-200">
+                    <CalendarIcon />
+                    Google Calendar connected
+                  </span>
+                  <Button
+                    variant="secondary"
+                    onClick={handleRefreshGoogleCalendar}
+                    isLoading={isSyncing}
+                    leftIcon={<GoogleIcon />}
+                    className="flex items-center gap-2"
+                  >
+                    Refresh sync
+                  </Button>
+                  {availability?.googleCalendarSynced && (
+                    <span className="text-sm text-gray-500">Last sync OK</span>
+                  )}
+                </>
               )}
             </div>
 

@@ -35,6 +35,9 @@ export type WeeklyScheduleApi = Partial<Record<WeekdayApiKey, TimeBlock[]>>;
 export interface MentorAvailability {
   weeklySchedule: WeeklyScheduleApi;
   meetingLink?: string | null;
+  /** User completed Google OAuth; tokens stored server-side. */
+  googleCalendarConnected?: boolean;
+  /** Last sync succeeded (optional; may mirror backend). */
   googleCalendarSynced?: boolean;
 }
 
@@ -142,6 +145,20 @@ export const ScheduleApi = createApi({
       invalidatesTags: ['MentorAvailability'],
     }),
 
+    /** GET with mentor JWT → OAuth URL; redirect user to connect Google Calendar. */
+    getGoogleCalendarAuthUrl: builder.query<{ url: string }, void>({
+      query: () => ({
+        url: '/mentor/availability/google-calendar/auth-url',
+        method: 'GET',
+      }),
+      transformResponse: (response: {
+        success?: boolean;
+        data?: { url?: string };
+      }): { url: string } => ({
+        url: response?.data?.url ?? '',
+      }),
+    }),
+
     syncGoogleCalendar: builder.mutation<
       { success: boolean; googleCalendarSynced?: boolean; message?: string },
       void
@@ -205,6 +222,7 @@ export const ScheduleApi = createApi({
 export const {
   useGetMentorAvailabilityQuery,
   useSaveMentorAvailabilityMutation,
+  useLazyGetGoogleCalendarAuthUrlQuery,
   useSyncGoogleCalendarMutation,
   useGetAvailableSlotsQuery,
   useCreateCallRequestMutation,

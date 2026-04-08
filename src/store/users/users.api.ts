@@ -83,7 +83,7 @@ export const UsersApi = createApi({
         method: 'GET',
         params,
       }),
-      providesTags: ['Admin'],
+      providesTags: [{ type: 'Admin', id: 'LIST' }],
     }),
     createAdmin: builder.mutation<AdminResponse, FormData>({
       query: (formData) => {
@@ -93,14 +93,14 @@ export const UsersApi = createApi({
           data: formData,
         };
       },
-      invalidatesTags: ['Admin'],
+      invalidatesTags: [{ type: 'Admin', id: 'LIST' }],
     }),
     getAdminById: builder.query<AdminResponse, string>({
       query: (id) => ({
         url: `/admin/${id}`,
         method: 'GET',
       }),
-      providesTags: ['Admin'],
+      providesTags: (result, error, id) => [{ type: 'Admin', id }],
     }),
     getMentors: builder.query<AdminResponse, GetUserListParams>({
       query: (params) => ({
@@ -197,7 +197,10 @@ export const UsersApi = createApi({
         method: 'PATCH',
         data: body,
       }),
-      invalidatesTags: ['Admin'],
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Admin', id },
+        { type: 'Admin', id: 'LIST' },
+      ],
     }),
 
     updateAdminProfile: builder.mutation<
@@ -218,7 +221,10 @@ export const UsersApi = createApi({
           data: formData,
         };
       },
-      invalidatesTags: (result, error, { id }) => [{ type: 'Admin', id }],
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Admin', id },
+        { type: 'Admin', id: 'LIST' },
+      ],
     }),
 
     // Mentor endpoints

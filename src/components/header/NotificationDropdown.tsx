@@ -4,7 +4,10 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Dropdown } from '../ui/dropdown/Dropdown';
 import { RefreshIcon, NotificationsIcon } from '../../assets/icons';
-import { useGetNotificationsQuery } from '@/store/notifications/notifications.api';
+import {
+  useGetNotificationsQuery,
+  useMarkNotificationReadMutation,
+} from '@/store/notifications/notifications.api';
 
 function formatTime(createdAt: string): string {
   try {
@@ -28,6 +31,7 @@ export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const { data } = useGetNotificationsQuery({ limit: 10 });
+  const [markRead] = useMarkNotificationReadMutation();
   const notifications = data?.data ?? [];
   const hasUnread = notifications.some((n) => !n.read);
 
@@ -95,19 +99,47 @@ export default function NotificationDropdown() {
                 key={notification.id}
                 className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
               >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900">
-                    {notification.title}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {notification.description}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {formatTime(notification.createdAt)}
-                  </p>
-                </div>
-                {!notification.read && (
-                  <span className="h-2 w-2 rounded-full bg-green-100 mt-1 flex-shrink-0" />
+                {notification.link ? (
+                  <Link
+                    href={notification.link}
+                    className="flex flex-1 items-start gap-3 min-w-0"
+                    onClick={() => {
+                      setIsOpen(false);
+                      if (!notification.read) void markRead(notification.id);
+                    }}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900">
+                        {notification.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {notification.description}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {formatTime(notification.createdAt)}
+                      </p>
+                    </div>
+                    {!notification.read && (
+                      <span className="h-2 w-2 rounded-full bg-green-100 mt-1 flex-shrink-0" />
+                    )}
+                  </Link>
+                ) : (
+                  <>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900">
+                        {notification.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {notification.description}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {formatTime(notification.createdAt)}
+                      </p>
+                    </div>
+                    {!notification.read && (
+                      <span className="h-2 w-2 rounded-full bg-green-100 mt-1 flex-shrink-0" />
+                    )}
+                  </>
                 )}
               </li>
             ))

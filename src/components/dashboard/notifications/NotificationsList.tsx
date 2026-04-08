@@ -36,6 +36,14 @@ export default function NotificationsList() {
   const [markUnread] = useMarkNotificationUnreadMutation();
   const [markAllRead] = useMarkAllNotificationsReadMutation();
 
+  const handleMarkRead = (id: string) => {
+    void markRead(id);
+  };
+
+  const handleMarkUnread = (id: string) => {
+    void markUnread(id);
+  };
+
   const notifications = data?.data ?? [];
   const unreadCount = notifications.filter((n) => !n.read).length;
   const filtered =
@@ -90,6 +98,7 @@ export default function NotificationsList() {
                 key={notification.id}
                 notification={notification}
                 onMarkRead={handleMarkRead}
+                onMarkUnread={handleMarkUnread}
               />
             ))
           )}

@@ -52,7 +52,9 @@ export default function MentorDashboard() {
       {/* Reminders */}
       <section>
         <h2 className="text-lg font-semibold text-[#101828] mb-4 flex items-center gap-2">
-          <NotificationIcon width={20} height={20} className="text-green-200" />
+          <span className="text-green-200">
+            <NotificationIcon width={20} height={20} />
+          </span>
           Reminders & notifications
         </h2>
         <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">

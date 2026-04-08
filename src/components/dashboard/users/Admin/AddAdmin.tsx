@@ -17,6 +17,23 @@ interface AddAdminFormInputs {
   phoneNumber?: string | null;
   address?: string | null;
 }
+
+function getInviteAdminErrorMessage(error: unknown): string {
+  if (error && typeof error === 'object') {
+    const e = error as {
+      data?: { message?: string } | string;
+      message?: string;
+    };
+    if (typeof e.data === 'string' && e.data.trim()) return e.data;
+    if (e.data && typeof e.data === 'object' && 'message' in e.data) {
+      const m = (e.data as { message?: unknown }).message;
+      if (typeof m === 'string' && m.trim()) return m;
+    }
+    if (typeof e.message === 'string' && e.message.trim()) return e.message;
+  }
+  return 'Failed to invite admin';
+}
+
 export default function AddAdmin() {
   const { showToast } = useToastify();
   const router = useRouter();
@@ -61,9 +78,8 @@ export default function AddAdmin() {
       reset();
       setFile(null);
       router.replace('/dashboard/users?role=admins&viewadmin=listadmin');
-    } catch (error: any) {
-      const message =
-        error?.data?.message || error?.error || 'Failed to invite admin';
+    } catch (error: unknown) {
+      const message = getInviteAdminErrorMessage(error);
       showToast(message, 'error');
     }
   };

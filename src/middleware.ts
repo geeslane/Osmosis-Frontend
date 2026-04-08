@@ -37,6 +37,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
     '/dashboard/availabilty-schedule',
     '/dashboard/live-sessions',
     '/dashboard/account-settings',
+    '/mentor',
   ],
   TEENAGER: [
     '/dashboard',
@@ -68,8 +69,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(redirectPath, request.url));
   }
 
-  /* ---------------- Protect Dashboard ---------------- */
-  if (!token && pathname.startsWith('/dashboard')) {
+  /* ---------------- Protect Dashboard & mentor OAuth return paths ---------------- */
+  if (!token && (pathname.startsWith('/dashboard') || pathname.startsWith('/mentor'))) {
     const url = request.nextUrl.clone();
     url.pathname = '/signin';
     url.searchParams.set('redirect', pathname);
@@ -100,5 +101,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/signin', '/signup'],
+  matcher: ['/dashboard/:path*', '/mentor/:path*', '/signin', '/signup'],
 };
