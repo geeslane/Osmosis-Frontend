@@ -156,6 +156,15 @@ export const UsersApi = createApi({
       }),
       providesTags: ['Teenager'],
     }),
+    /** Mentor: teenagers they work with (not the admin GET /teenager list). */
+    getMentorMentees: builder.query<AdminResponse, GetUserListParams>({
+      query: (params) => ({
+        url: '/mentor/me/mentees',
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['Teenager'],
+    }),
     getTeenagerById: builder.query<AdminResponse, string>({
       query: (id) => ({
         url: `/teenager/${id}`,
@@ -320,6 +329,7 @@ export const {
   useGetTeenagerRequestsQuery,
   useUpdateTeenagerRequestStatusMutation,
   useGetTeenagersQuery,
+  useGetMentorMenteesQuery,
   useUpdateTeenagerStatusMutation,
   useGetTeenagerByIdQuery,
   useCreateContactMutation,

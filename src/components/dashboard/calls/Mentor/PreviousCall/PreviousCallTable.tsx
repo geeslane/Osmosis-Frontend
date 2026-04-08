@@ -108,14 +108,15 @@ export default function PreviousCallTable({ onView }: { onView?: () => void }) {
       label: '',
       render: (row) => {
         const isProcessing = isSubmitting && selectedRow?.id === row.id;
+        const hasFeedback = !!(row.mentorNotes != null && String(row.mentorNotes).trim() !== '');
         return (
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Button
               onClick={(e) => openFeedbackModal(row, e)}
-              disabled={isProcessing}
+              disabled={isProcessing || hasFeedback}
               className="bg-green-200 text-white px-8 py-2 rounded-xl"
             >
-              Add feedback
+              {hasFeedback ? 'Feedback saved' : 'Add feedback'}
             </Button>
           </div>
         );

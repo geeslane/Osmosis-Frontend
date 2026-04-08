@@ -7,6 +7,8 @@ import { Column, DataTable } from '@/components/ui/table';
 import { useEffect, useMemo, useState } from 'react';
 import useToastify from '@/hooks/useToastify';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
+import Image from 'next/image';
+import { normalizeImageUrl } from '@/utils/helper';
 import {
   useAcceptCallRequestMutation,
   useMentorCallRequestsQuery,
@@ -43,6 +45,8 @@ export default function MentorCallRequestTable() {
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [viewingNote, setViewingNote] = useState<{ name: string; note: string } | null>(null);
   const [detailRequest, setDetailRequest] = useState<CallRequestRow | null>(null);
+  /** Mentor-safe teenager view (opened from call request detail). */
+  const [teenagerDetail, setTeenagerDetail] = useState<CallRequestRow | null>(null);
 
   const handleAccept = async (id: string) => {
     setProcessingId(id);
@@ -81,16 +85,42 @@ export default function MentorCallRequestTable() {
   const columns: Column<CallRequestRow>[] = [
     {
       key: 'name',
-      label: 'Name',
+      label: 'Teenager',
       render: (row) => (
-        <span className="font-medium text-sm text-[#101828]">{row.name}</span>
+        <div className="flex items-center gap-2">
+          {row.pictureUrl ? (
+            <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full ring-1 ring-gray-200">
+              <Image
+                src={normalizeImageUrl(row.pictureUrl)}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="32px"
+              />
+            </span>
+          ) : (
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-800">
+              {row.name.charAt(0).toUpperCase()}
+            </span>
+          )}
+          <span className="font-medium text-sm text-[#101828]">{row.name}</span>
+        </div>
       ),
     },
     {
-      key: 'email',
-      label: 'Email',
+      key: 'requestedAtLabel',
+      label: 'Requested',
       render: (row) => (
-        <span className="text-sm text-[#101828]">{row.email}</span>
+        <span className="text-sm text-[#101828] whitespace-nowrap">{row.requestedAtLabel}</span>
+      ),
+    },
+    {
+      key: 'topicDisplay',
+      label: 'Topic',
+      render: (row) => (
+        <span className="text-sm text-[#101828] max-w-[180px] truncate" title={row.topicDisplay}>
+          {row.topicDisplay}
+        </span>
       ),
     },
     {
@@ -100,7 +130,7 @@ export default function MentorCallRequestTable() {
         const note = row.note ?? '';
         const isLong = note.length > 80;
         return (
-          <div className="max-w-[240px]">
+          <div className="max-w-[240px]" onClick={(e) => e.stopPropagation()}>
             <span
               className="text-sm text-gray-600 line-clamp-2 block cursor-default"
               title={note || undefined}
@@ -110,7 +140,8 @@ export default function MentorCallRequestTable() {
             {note && isLong && (
               <button
                 type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setViewingNote({ name: row.name, note });
                   setNoteModalOpen(true);
                 }}
@@ -168,7 +199,8 @@ export default function MentorCallRequestTable() {
     if (!q) return true;
     return (
       row.name.toLowerCase().includes(q) ||
-      row.email.toLowerCase().includes(q) ||
+      row.topicDisplay.toLowerCase().includes(q) ||
+      row.requestedAtLabel.toLowerCase().includes(q) ||
       (row.note ?? '').toLowerCase().includes(q)
     );
   });
@@ -195,7 +227,7 @@ export default function MentorCallRequestTable() {
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name or email"
+            placeholder="Search by name, topic, or note"
             className="w-full h-full text-sm bg-transparent focus:outline-none"
           />
         </div>
@@ -280,15 +312,21 @@ export default function MentorCallRequestTable() {
             </div>
             <div className="space-y-4">
               <div>
-                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">Name</p>
+                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">Teenager</p>
                 <p className="text-sm font-medium text-[#101828]">{detailRequest.name}</p>
               </div>
               <div>
-                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">Email</p>
-                <p className="text-sm text-[#101828]">{detailRequest.email}</p>
+                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">
+                  Requested time
+                </p>
+                <p className="text-sm text-[#101828]">{detailRequest.requestedAtLabel}</p>
               </div>
               <div>
-                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">Note</p>
+                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">Topic</p>
+                <p className="text-sm text-[#101828]">{detailRequest.topicDisplay}</p>
+              </div>
+              <div>
+                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">Message</p>
                 <p className="text-sm text-[#101828] whitespace-pre-wrap">
                   {detailRequest.note || '—'}
                 </p>
@@ -307,6 +345,15 @@ export default function MentorCallRequestTable() {
                   {detailRequest.status}
                 </span>
               </div>
+              <p>
+                <button
+                  type="button"
+                  className="text-sm font-medium text-green-600 hover:text-green-700 underline underline-offset-2"
+                  onClick={() => setTeenagerDetail(detailRequest)}
+                >
+                  View teenager details
+                </button>
+              </p>
               {detailRequest.status === 'Pending' && (
                 <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
                   <Button
@@ -331,6 +378,70 @@ export default function MentorCallRequestTable() {
                   </Button>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {teenagerDetail && (
+        <div
+          className="fixed inset-0 z-[101] flex items-center justify-center bg-black/20 backdrop-blur-sm"
+          onClick={() => setTeenagerDetail(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="mx-4 w-full max-w-md rounded-xl border border-green-200/60 bg-white p-5 shadow-lg"
+          >
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <h3 className="text-lg font-bold text-green-200">Teenager</h3>
+              <button
+                type="button"
+                onClick={() => setTeenagerDetail(null)}
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+              >
+                Close
+              </button>
+            </div>
+            <div className="flex flex-col items-center text-center sm:flex-row sm:items-start sm:text-left gap-4">
+              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full ring-2 ring-green-100 bg-green-50">
+                {teenagerDetail.pictureUrl ? (
+                  <Image
+                    src={normalizeImageUrl(teenagerDetail.pictureUrl)}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-2xl font-bold text-green-800">
+                    {teenagerDetail.name.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div className="min-w-0 flex-1 space-y-1">
+                <p className="text-base font-semibold text-[#101828]">{teenagerDetail.name}</p>
+                <p className="text-xs text-gray-500">
+                  Basic info from this request only — no address or contact details.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 space-y-4 border-t border-gray-100 pt-4">
+              <div>
+                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">
+                  Requested time
+                </p>
+                <p className="text-sm text-[#101828]">{teenagerDetail.requestedAtLabel}</p>
+              </div>
+              <div>
+                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">Topic</p>
+                <p className="text-sm text-[#101828]">{teenagerDetail.topicDisplay}</p>
+              </div>
+              <div>
+                <p className="text-[11px] text-[#667085] font-medium uppercase tracking-wider">Message</p>
+                <p className="text-sm text-[#101828] whitespace-pre-wrap">
+                  {teenagerDetail.note || '—'}
+                </p>
+              </div>
             </div>
           </div>
         </div>

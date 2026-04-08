@@ -61,8 +61,9 @@ export default function Detail() {
   const [viewCallHistory, setViewCallHistory] = useState(false);
   const [imageError, setImageError] = useState(false);
   const user = useSelector((state: RootState) => state.profile.user);
+  const isMentor = user?.role === 'MENTOR';
   const mentee: TeenagerDTO | undefined = data?.data?.data;
-  const backPath = user?.role === 'MENTOR' ? MENTOR_MENTEES_PATH : MENTEES_LIST_PATH;
+  const backPath = isMentor ? MENTOR_MENTEES_PATH : MENTEES_LIST_PATH;
 
   if (isLoading) {
     return (
@@ -179,12 +180,14 @@ export default function Detail() {
                     label="Phone Number"
                     value={mentee.teenagerPhoneNumber}
                   />
-                  <Info
-                    icon={<LocationIcon color="#6CBB01" />}
-                    label="Address"
-                    value={mentee.address}
-                    wrapValue
-                  />
+                  {!isMentor && (
+                    <Info
+                      icon={<LocationIcon color="#6CBB01" />}
+                      label="Address"
+                      value={mentee.address}
+                      wrapValue
+                    />
+                  )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <Info

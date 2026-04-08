@@ -14,49 +14,11 @@ import { useModulesQuery, useGetProgramConfigQuery } from '@/store/dashboard/das
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { normalizeImageUrl } from '@/utils/helper';
+import { shouldShowTeenagerFeedbackReminder } from '@/utils/dashboardCallReminders';
 import ReminderCard from './ReminderCard';
 import Link from 'next/link';
 import Image from 'next/image';
 import React from 'react';
-
-/** True if date string (YYYY-MM-DD or parseable) falls within the last 7 days (inclusive). */
-function isWithinLast7Days(dateStr: string): boolean {
-  if (!dateStr) return false;
-  let date: Date;
-  const trimmed = String(dateStr).trim();
-  if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) {
-    date = new Date(trimmed.slice(0, 10));
-  } else {
-    date = new Date(trimmed);
-  }
-  if (Number.isNaN(date.getTime())) return false;
-  const now = new Date();
-  const sevenDaysAgo = new Date(now);
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  sevenDaysAgo.setHours(0, 0, 0, 0);
-  date.setHours(0, 0, 0, 0);
-  return date >= sevenDaysAgo && date <= now;
-}
-
-/** True if the call has mentee feedback (rating or comment) already. */
-function hasMenteeFeedback(call: { rating?: number | null; menteeComment?: string | null }): boolean {
-  const hasRating = call.rating != null && call.rating !== undefined;
-  const hasComment = !!(
-    call.menteeComment != null &&
-    String(call.menteeComment).trim() !== ''
-  );
-  return hasRating || hasComment;
-}
-
-/** Calls that are within the last 7 days and do not yet have mentee feedback. */
-function getCallsNeedingFeedback(
-  previousCalls: { date: string; mentorName?: string; id?: string; rating?: number | null; menteeComment?: string | null }[]
-): { date: string; mentorName?: string; id?: string }[] {
-  if (!previousCalls?.length) return [];
-  return previousCalls.filter(
-    (c) => isWithinLast7Days(c.date) && !hasMenteeFeedback(c)
-  );
-}
 
 export default function TeenagerDashboard() {
   const user = useSelector((state: RootState) => state.profile.user);
@@ -70,8 +32,7 @@ export default function TeenagerDashboard() {
   const upcoming = upcomingData?.data ?? [];
   const previousRaw = previousData?.data ?? [];
   const previous = previousRaw;
-  const callsNeedingFeedback = getCallsNeedingFeedback(previous);
-  const showFeedbackReminder = callsNeedingFeedback.length > 0;
+  const showFeedbackReminder = shouldShowTeenagerFeedbackReminder(previous);
   const modulesRaw = modulesData?.data?.data ?? [];
   const modules = modulesRaw;
   const completedCount = modules.filter((m) => m.markedCompleted).length;

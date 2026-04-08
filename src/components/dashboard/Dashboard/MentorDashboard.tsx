@@ -6,9 +6,11 @@ import {
   NotificationIcon,
   Star,
 } from '@/assets/icons';
+import { useGetMentorPreviousCallsQuery } from '@/store/calls/calls.api';
 import { useGetMentorDashboardStatsQuery } from '@/store/dashboard/dashboard.api';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import { shouldShowMentorFeedbackReminder } from '@/utils/dashboardCallReminders';
 import WelcomeSection from './WelcomeSection';
 import StatCard from './StatCard';
 import ReminderCard from './ReminderCard';
@@ -22,8 +24,14 @@ export default function MentorDashboard() {
   const { data: stats } = useGetMentorDashboardStatsQuery(undefined, {
     skip: user?.role !== 'MENTOR',
   });
+  const { data: previousCallsData } = useGetMentorPreviousCallsQuery(undefined, {
+    skip: user?.role !== 'MENTOR',
+  });
   const rating = stats?.averageRating ?? 0;
   const totalCalls = stats?.totalCalls ?? 0;
+  const showFeedbackReminder = shouldShowMentorFeedbackReminder(
+    previousCallsData?.data ?? []
+  );
 
   return (
     <div className="space-y-6 sm:space-y-8 w-full min-w-0">
@@ -58,14 +66,16 @@ export default function MentorDashboard() {
           Reminders & notifications
         </h2>
         <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-          <ReminderCard
-            variant="highlight"
-            title="Add feedback for your last meeting"
-            description="Share how the session went and what the team or parents should know. Your notes help us support the teen better."
-            href="/dashboard/calls/mentor?role=previous"
-            linkLabel="Add feedback"
-            icon={<Star />}
-          />
+          {showFeedbackReminder && (
+            <ReminderCard
+              variant="highlight"
+              title="Add feedback for your last meeting"
+              description="Share how the session went and what the team or parents should know. Your notes help us support the teen better."
+              href="/dashboard/calls/mentor?role=previous"
+              linkLabel="Add feedback"
+              icon={<Star />}
+            />
+          )}
           <ReminderCard
             title="Upcoming calls"
             description="View and manage your scheduled calls. Join on time and add notes after each session."

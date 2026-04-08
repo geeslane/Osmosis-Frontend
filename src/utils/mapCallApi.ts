@@ -112,7 +112,12 @@ export function rawToCallRecord(raw: unknown): CallRecord {
     r.mentorName ?? mentor?.fullName ?? mentor?.full_name ?? mentor?.name
   );
   const menteeName = str(
-    r.menteeName ?? r.teenagerName ?? teen?.fullName ?? teen?.full_name ?? teen?.name
+    r.menteeName ??
+      r.teenagerName ??
+      teen?.teenagerFullName ??
+      teen?.fullName ??
+      teen?.full_name ??
+      teen?.name
   );
 
   let date = str(r.date, '');
@@ -177,29 +182,115 @@ export function normalizeCallsListPayload(payload: unknown): CallRecord[] {
 /** Mentor inbox: pending call requests from mentees */
 export type MentorCallRequestRow = {
   id: string;
+  /** Teenager user id — for navigation or future profile use */
+  teenagerId: string;
   name: string;
-  email: string;
+  pictureUrl?: string;
   note?: string;
+  /** Human-readable requested slot, e.g. "Apr 13, 2026 · 9:30 AM" */
+  requestedAtLabel: string;
+  /** Topic from API (label preferred over raw value) */
+  topicDisplay: string;
   status: 'Pending' | 'Accepted' | 'Rejected';
 };
 
+function formatRequestDateLabel(isoOrYmd: string): string {
+  const s = String(isoOrYmd).trim();
+  if (!s) return '—';
+  const d = /^\d{4}-\d{2}-\d{2}$/.test(s)
+    ? new Date(`${s}T12:00:00`)
+    : new Date(s);
+  if (Number.isNaN(d.getTime())) return s;
+  return d.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function formatRequestTimeLabel(hhmm: string): string {
+  const s = String(hhmm).trim();
+  if (!s) return '';
+  const m = /^(\d{1,2}):(\d{2})/.exec(s);
+  if (!m) return s;
+  const h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  if (Number.isNaN(h) || Number.isNaN(min)) return s;
+  const d = new Date();
+  d.setHours(h, min, 0, 0);
+  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+function buildRequestedAtLabel(
+  requestedDate: unknown,
+  requestedTime: unknown,
+  fallbackCreatedAt?: unknown
+): string {
+  const dateStr = requestedDate != null ? String(requestedDate) : '';
+  const timeStr = requestedTime != null ? String(requestedTime) : '';
+  if (dateStr || timeStr) {
+    const dl = dateStr ? formatRequestDateLabel(dateStr) : '—';
+    const tl = timeStr ? formatRequestTimeLabel(timeStr) : '';
+    return tl && dl !== '—' ? `${dl} · ${tl}` : tl || dl;
+  }
+  if (typeof fallbackCreatedAt === 'string') {
+    const d = new Date(fallbackCreatedAt);
+    if (!Number.isNaN(d.getTime())) {
+      return `${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} · ${d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`;
+    }
+  }
+  return '—';
+}
+
 export function rawToMentorCallRequestRow(raw: unknown): MentorCallRequestRow {
   const r = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
-  const mentee = (r.mentee ?? r.teenager) as Record<string, unknown> | undefined;
+  const teen = (r.mentee ?? r.teenager) as Record<string, unknown> | undefined;
   const st = String(r.status ?? 'PENDING').toUpperCase();
   let status: MentorCallRequestRow['status'] = 'Pending';
   if (st.includes('ACCEPT') || st.includes('APPROV')) status = 'Accepted';
   else if (st.includes('REJECT') || st.includes('DECLIN')) status = 'Rejected';
+
+  const name = String(
+    teen?.teenagerFullName ??
+      teen?.fullName ??
+      teen?.full_name ??
+      r.menteeName ??
+      r.teenagerName ??
+      r.name ??
+      '—'
+  );
+  const teenagerId = String(teen?.id ?? r.teenagerId ?? '');
+  const pictureUrl =
+    typeof teen?.pictureUrl === 'string'
+      ? teen.pictureUrl
+      : typeof teen?.avatar === 'string'
+        ? teen.avatar
+        : undefined;
+
+  const topicLabel = r.topicLabel != null ? String(r.topicLabel) : '';
+  const topicValue = r.topicValue != null ? String(r.topicValue) : '';
+  const topicDisplay =
+    topicLabel.trim() || topicValue.trim()
+      ? topicLabel.trim() || topicValue.trim()
+      : '—';
+
   return {
     id: String(r.id ?? r._id ?? ''),
-    name: String(mentee?.fullName ?? mentee?.full_name ?? r.menteeName ?? r.name ?? '—'),
-    email: String(mentee?.email ?? r.email ?? '—'),
+    teenagerId,
+    name,
+    pictureUrl,
     note:
       r.message != null
         ? String(r.message)
         : r.note != null
           ? String(r.note)
           : undefined,
+    requestedAtLabel: buildRequestedAtLabel(
+      r.requestedDate,
+      r.requestedTime,
+      r.createdAt
+    ),
+    topicDisplay,
     status,
   };
 }

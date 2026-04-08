@@ -35,6 +35,8 @@ type MenteeTableProps = {
   onStatusFilterChange: (value: StatusFilter) => void;
   /** When false, hides Activate/Deactivate (e.g. for mentors who cannot manage mentee status) */
   canManageStatus?: boolean;
+  /** When true, hides the Address column (e.g. mentors) */
+  hideAddress?: boolean;
 };
 
 export default function MenteeTable({
@@ -48,6 +50,7 @@ export default function MenteeTable({
   statusFilter,
   onStatusFilterChange,
   canManageStatus = true,
+  hideAddress = false,
 }: MenteeTableProps) {
   const router = useRouter();
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
@@ -102,7 +105,7 @@ export default function MenteeTable({
     Pending: 'bg-[#F2F4F7] text-[#282F2E]',
   };
 
-  const columns: Column<Mentee>[] = [
+  const allColumns: Column<Mentee>[] = [
     {
       key: 'id',
       label: 'S/N',
@@ -206,6 +209,10 @@ export default function MenteeTable({
       ),
     },
   ];
+
+  const columns: Column<Mentee>[] = hideAddress
+    ? allColumns.filter((c) => c.key !== 'address')
+    : allColumns;
 
   const openRow = openDropdownId ? data.find((r) => r.id === openDropdownId) : null;
   const dropdownMenu =
