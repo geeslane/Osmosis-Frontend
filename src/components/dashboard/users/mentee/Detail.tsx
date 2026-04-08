@@ -13,9 +13,10 @@ import {
   UserIcon,
 } from '@/assets/icons';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useGetTeenagerByIdQuery } from '@/store/users/users.api';
+import { useGetTeenagerModulesProgressQuery } from '@/store/dashboard/dashboard.api';
 import CallHistoryTable from './CallHistory';
 import ProgressGauge from '@/components/ui/Progress/ProgressGauge';
 import { Info } from '@/components/common/Details/Info';
@@ -58,12 +59,22 @@ export default function Detail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { data, isLoading } = useGetTeenagerByIdQuery(id);
+  const { data: progressRows = [] } = useGetTeenagerModulesProgressQuery(
+    typeof id === 'string' ? id : '',
+    { skip: !id || typeof id !== 'string' }
+  );
   const [viewCallHistory, setViewCallHistory] = useState(false);
   const [imageError, setImageError] = useState(false);
   const user = useSelector((state: RootState) => state.profile.user);
   const isMentor = user?.role === 'MENTOR';
   const mentee: TeenagerDTO | undefined = data?.data;
   const backPath = isMentor ? MENTOR_MENTEES_PATH : MENTEES_LIST_PATH;
+
+  const moduleProgressPercent = useMemo(() => {
+    if (!progressRows.length) return 0;
+    const sum = progressRows.reduce((acc, r) => acc + (r.progress ?? 0), 0);
+    return Math.round(sum / progressRows.length);
+  }, [progressRows]);
 
   if (isLoading) {
     return (
@@ -238,7 +249,7 @@ export default function Detail() {
             {/* Progress: right-aligned card with gauge + module progress inside */}
             <div className="shrink-0 flex justify-center lg:justify-end">
               <div className="w-full max-w-[280px] rounded-xl border border-[#6CBB0180] bg-[#F7FDF2] p-6 flex flex-col items-center gap-5 shadow-sm">
-                <ProgressGauge percentage={25} />
+                <ProgressGauge percentage={moduleProgressPercent} />
                 <div className="w-full text-center space-y-3">
                   <h3 className="text-lg font-semibold text-green-300">
                     Module Progress

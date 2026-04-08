@@ -11,9 +11,15 @@ import {
 import Tabs from '@/components/ui/Tabs';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import PageTitle from '@/components/PageTitle';
-import { useGetModuleByIdQuery } from '@/store/dashboard/dashboard.api';
+import {
+  useGetModuleByIdQuery,
+  useGetTeenagerModulesProgressQuery,
+} from '@/store/dashboard/dashboard.api';
 import type { Module } from '@/components/types';
+import { progressByModuleId } from '@/utils/teenagerModuleProgress';
 import Note from '@/components/dashboard/modules/ModuleDetails/Note';
 import Workbook from '@/components/dashboard/modules/ModuleDetails/Workbook';
 import AdditionalResourcesView from '@/components/dashboard/modules/ModuleDetails/AdditionalResources';
@@ -32,6 +38,17 @@ export default function MenteeModuleDetail() {
   const { data, isLoading } = useGetModuleByIdQuery(moduleId, {
     skip: !moduleId,
   });
+  const { data: progressRows = [] } = useGetTeenagerModulesProgressQuery(
+    menteeId,
+    { skip: !menteeId }
+  );
+  const user = useSelector((state: RootState) => state.profile.user);
+  const isTeenViewer = user?.role === 'TEENAGER';
+  const progressMap = progressByModuleId(progressRows);
+  const submissionForModule = moduleId
+    ? progressMap.get(moduleId)?.submissionAnswer ?? null
+    : null;
+
   const moduleData = data?.data?.data;
   const currentTab = searchParams.get('content') || 'Note';
 
@@ -98,6 +115,8 @@ export default function MenteeModuleDetail() {
               module={moduleData}
               menteeId={menteeId}
               moduleId={moduleId}
+              deliverableReadOnly={!isTeenViewer}
+              deliverableInitialSubmission={submissionForModule}
             />
           </Animated>
         </div>
@@ -110,10 +129,14 @@ function MenteeModuleContent({
   module,
   menteeId,
   moduleId,
+  deliverableReadOnly,
+  deliverableInitialSubmission,
 }: {
   module: Module | undefined;
   menteeId: string;
   moduleId: string;
+  deliverableReadOnly: boolean;
+  deliverableInitialSubmission: string | null | undefined;
 }) {
   const searchParams = useSearchParams();
   const content = searchParams.get('content') || 'Note';
@@ -139,6 +162,8 @@ function MenteeModuleContent({
             deliverables={module?.deliverables}
             menteeId={menteeId}
             moduleId={moduleId}
+            readOnly={deliverableReadOnly}
+            initialSubmission={deliverableInitialSubmission}
           />
         </div>
       );

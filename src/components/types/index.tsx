@@ -15,6 +15,17 @@ export interface Module {
   /** When program config is set: module period end (YYYY-MM-DD). */
   endDate?: string;
 }
+
+/** Per-module progress for a teenager (GET /teenager/:id/modules/progress or similar). */
+export interface TeenagerModuleProgressItem {
+  moduleId: string;
+  /** 0–100 */
+  progress: number;
+  completed?: boolean;
+  deliverableSubmitted?: boolean;
+  submissionAnswer?: string | null;
+}
+
 export interface AnimatedProps {
   activeKey: string;
   children: React.ReactNode;

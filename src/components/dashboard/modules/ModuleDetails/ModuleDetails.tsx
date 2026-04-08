@@ -11,11 +11,14 @@ import {
 } from '@/assets/icons';
 import Tabs from '@/components/ui/Tabs';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ModuleContent from './ModuleContent';
 import Link from 'next/link';
 import PageTitle from '@/components/PageTitle';
-import { useGetModuleByIdQuery } from '@/store/dashboard/dashboard.api';
+import {
+  useGetModuleByIdQuery,
+  useMarkTeenagerModuleCompleteMutation,
+} from '@/store/dashboard/dashboard.api';
 import Button from '@/components/ui/button/Button';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -32,6 +35,8 @@ export default function ModuleDetails() {
   const [markedCompleted, setMarkedCompleted] = useState(false);
   const id = typeof params.id === 'string' ? params.id : (params.id?.[0] ?? '');
   const { data, isLoading } = useGetModuleByIdQuery(id, { skip: !id });
+  const [markComplete, { isLoading: completing }] =
+    useMarkTeenagerModuleCompleteMutation();
   const backPath =
     user?.role === 'TEENAGER'
       ? '/dashboard/modules/mentee'
@@ -40,10 +45,19 @@ export default function ModuleDetails() {
   const currentTab = searchParams.get('content') || 'Note';
   const isMentee = user?.role === 'TEENAGER';
 
-  const handleMarkCompleted = () => {
-    // TODO: API call (e.g. PATCH /teenager/me/modules/:moduleId/complete)
-    setMarkedCompleted(true);
-    showToast('Module marked as completed', 'success');
+  useEffect(() => {
+    if (moduleData?.markedCompleted) setMarkedCompleted(true);
+  }, [moduleData?.markedCompleted]);
+
+  const handleMarkCompleted = async () => {
+    if (!id) return;
+    try {
+      await markComplete(id).unwrap();
+      setMarkedCompleted(true);
+      showToast('Module marked as completed', 'success');
+    } catch {
+      showToast('Could not mark this module complete. Please try again.', 'error');
+    }
   };
 
   if (isLoading) {
@@ -80,10 +94,11 @@ export default function ModuleDetails() {
               </span>
             ) : (
               <Button
-                onClick={handleMarkCompleted}
+                onClick={() => void handleMarkCompleted()}
+                disabled={completing}
                 className="bg-green-200 text-white px-4 py-2 rounded-xl text-sm font-medium"
               >
-                Mark as completed
+                {completing ? 'Saving…' : 'Mark as completed'}
               </Button>
             )}
           </div>

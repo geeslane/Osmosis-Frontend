@@ -1,6 +1,14 @@
-import { GetModuleByIdResponse, ModulesResponse } from '@/components/types';
+import {
+  GetModuleByIdResponse,
+  ModulesResponse,
+  type TeenagerModuleProgressItem,
+} from '@/components/types';
 import { axiosBaseQuery } from '@/lib/baseApi';
 import { createApi } from '@reduxjs/toolkit/query/react';
+import {
+  unwrapProgressList,
+  unwrapDeliverableAnswer,
+} from '@/utils/teenagerModuleProgress';
 
 export type GetModulesParams = {
   page?: number;
@@ -32,6 +40,8 @@ export const DashboardApi = createApi({
     'CallRequests',
     'Notifications',
     'Availability',
+    /** Per-teenager module progress (admin/mentor view + cache bust on submit/complete). */
+    'TeenagerModuleProgress',
   ],
   endpoints: (builder) => ({
     modules: builder.query<ModulesResponse, GetModulesParams | void>({
@@ -64,6 +74,70 @@ export const DashboardApi = createApi({
         method: 'GET',
       }),
       providesTags: ['Modules'],
+    }),
+
+    /**
+     * Module progress for a specific teenager (admin / mentor viewing mentee).
+     * Backend: GET /teenager/:teenagerId/modules/progress
+     * Returns 404 if not implemented — UI falls back to empty progress.
+     */
+    getTeenagerModulesProgress: builder.query<TeenagerModuleProgressItem[], string>({
+      async queryFn(teenagerId, _api, _extraOptions, fetchWithBQ) {
+        const res = await fetchWithBQ({
+          url: `/teenager/${teenagerId}/modules/progress`,
+          method: 'GET',
+        });
+        if (res.error) {
+          const st = (res.error as { status?: number }).status;
+          if (st === 404 || st === 501) return { data: [] };
+          return { error: res.error };
+        }
+        return { data: unwrapProgressList(res.data) };
+      },
+      providesTags: (result, err, teenagerId) => [
+        { type: 'TeenagerModuleProgress', id: teenagerId },
+      ],
+    }),
+
+    /** Logged-in teenager: existing deliverable text for a module. GET /teenager/me/modules/:moduleId/deliverable */
+    getTeenagerMeModuleDeliverable: builder.query<string | undefined, string>({
+      async queryFn(moduleId, _api, _extraOptions, fetchWithBQ) {
+        const res = await fetchWithBQ({
+          url: `/teenager/me/modules/${moduleId}/deliverable`,
+          method: 'GET',
+        });
+        if (res.error) {
+          const st = (res.error as { status?: number }).status;
+          if (st === 404 || st === 501) return { data: undefined };
+          return { error: res.error };
+        }
+        return { data: unwrapDeliverableAnswer(res.data) };
+      },
+      providesTags: (result, err, moduleId) => [
+        { type: 'TeenagerModuleProgress', id: `me-${moduleId}` },
+      ],
+    }),
+
+    /** Teenager submits deliverable answers. POST /teenager/me/modules/:moduleId/deliverable */
+    submitTeenagerModuleDeliverable: builder.mutation<
+      unknown,
+      { moduleId: string; answer: string }
+    >({
+      query: ({ moduleId, answer }) => ({
+        url: `/teenager/me/modules/${moduleId}/deliverable`,
+        method: 'POST',
+        data: { answer },
+      }),
+      invalidatesTags: ['Modules', 'TeenagerModuleProgress'],
+    }),
+
+    /** Teenager marks module complete. PATCH /teenager/me/modules/:moduleId/complete */
+    markTeenagerModuleComplete: builder.mutation<unknown, string>({
+      query: (moduleId) => ({
+        url: `/teenager/me/modules/${moduleId}/complete`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Modules', 'TeenagerModuleProgress'],
     }),
 
     deleteModule: builder.mutation<void, string>({
@@ -354,6 +428,10 @@ export const {
   useCreateModuleMutation,
   useUpdateModuleMutation,
   useGetModuleByIdQuery,
+  useGetTeenagerModulesProgressQuery,
+  useGetTeenagerMeModuleDeliverableQuery,
+  useSubmitTeenagerModuleDeliverableMutation,
+  useMarkTeenagerModuleCompleteMutation,
   useDeleteModuleMutation,
   useUploadFileMutation,
   useGetMentorDashboardStatsQuery,

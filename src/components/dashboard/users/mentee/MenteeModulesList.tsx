@@ -3,9 +3,13 @@
 import { GoBackIcon, LoadingIcon } from '@/assets/icons';
 import { useParams, useRouter } from 'next/navigation';
 import { useGetTeenagerByIdQuery } from '@/store/users/users.api';
-import { useModulesQuery } from '@/store/dashboard/dashboard.api';
+import {
+  useGetTeenagerModulesProgressQuery,
+  useModulesQuery,
+} from '@/store/dashboard/dashboard.api';
 import type { Module } from '@/components/types';
 import ProgressGauge from '@/components/ui/Progress/ProgressGauge';
+import { progressByModuleId } from '@/utils/teenagerModuleProgress';
 
 const MENTEE_DETAIL_PATH = (id: string) =>
   `/dashboard/users/mentee/${id}`;
@@ -17,16 +21,27 @@ export default function MenteeModulesList() {
     useGetTeenagerByIdQuery(id as string);
   const { data: modulesData, isLoading: isLoadingModules } =
     useModulesQuery(undefined);
+  const { data: progressRows = [], isLoading: loadingProgress } =
+    useGetTeenagerModulesProgressQuery(id as string, { skip: !id });
 
   const mentee = menteeData?.data;
   const modules: Module[] = modulesData?.data?.data ?? [];
+  const progressMap = progressByModuleId(progressRows);
 
-  // Placeholder: compute progress per module (backend would provide this)
-  const moduleProgress = modules.map((m) => ({
-    ...m,
-    progress: 50,
-    deliverableStatus: 'Incomplete' as 'Complete' | 'Incomplete',
-  }));
+  const moduleProgress = modules.map((m) => {
+    const p = progressMap.get(m.id);
+    const progress =
+      typeof p?.progress === 'number' ? Math.min(100, Math.max(0, p.progress)) : 0;
+    const completed = Boolean(p?.completed);
+    const deliverableSubmitted = Boolean(p?.deliverableSubmitted);
+    const deliverableStatus: 'Complete' | 'Incomplete' =
+      completed || deliverableSubmitted ? 'Complete' : 'Incomplete';
+    return {
+      ...m,
+      progress,
+      deliverableStatus,
+    };
+  });
 
   const overallProgress =
     moduleProgress.length > 0
@@ -36,7 +51,7 @@ export default function MenteeModulesList() {
         )
       : 0;
 
-  if (isLoadingMentee || isLoadingModules) {
+  if (isLoadingMentee || isLoadingModules || loadingProgress) {
     return (
       <div className="flex justify-center items-center py-20">
         <LoadingIcon
