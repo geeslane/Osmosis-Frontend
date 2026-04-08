@@ -211,7 +211,7 @@ export default function TeenagerDashboard() {
         <h2 className="text-lg font-bold text-[#101828] mb-4">Quick links</h2>
         <div className="flex flex-wrap gap-2 sm:gap-3">
           <Link
-            href="/dashboard/calls/mentee"
+            href="/dashboard/calls/mentee?role=upcoming"
             className="rounded-xl sm:rounded-2xl border-2 border-gray-200 bg-white px-4 py-2.5 sm:px-5 sm:py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-green-50 hover:border-green-200/60 transition-all touch-manipulation"
           >
             My calls

@@ -87,10 +87,14 @@ export function pickCallsArray(payload: unknown): unknown[] {
   if (payload && typeof payload === 'object') {
     const p = payload as Record<string, unknown>;
     if (Array.isArray(p.data)) return p.data;
+    if (Array.isArray(p.calls)) return p.calls;
+    if (Array.isArray(p.items)) return p.items;
     const inner = p.data;
     if (inner && typeof inner === 'object') {
       const d = inner as Record<string, unknown>;
       if (Array.isArray(d.data)) return d.data;
+      if (Array.isArray(d.calls)) return d.calls;
+      if (Array.isArray(d.items)) return d.items;
     }
   }
   return [];
@@ -102,9 +106,47 @@ function str(v: unknown, fallback = '—'): string {
   return s || fallback;
 }
 
+function firstNonEmptyString(...values: unknown[]): string | undefined {
+  for (const v of values) {
+    if (typeof v === 'string') {
+      const t = v.trim();
+      if (t.length > 0) return t;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Join URL for a call row — same field name as mentor availability (`GET /mentor/availability` → `meetingLink`).
+ * Backend should echo `meetingLink` on the call and/or on nested `mentor`.
+ */
+function pickMeetingUrl(
+  r: Record<string, unknown>,
+  mentor: Record<string, unknown> | undefined
+): string | undefined {
+  const availability =
+    r.availability && typeof r.availability === 'object'
+      ? (r.availability as Record<string, unknown>)
+      : undefined;
+
+  return firstNonEmptyString(
+    r.meetingLink,
+    mentor?.meetingLink,
+    availability?.meetingLink,
+    r.meetingUrl,
+    r.callUrl,
+    r.joinUrl
+  );
+}
+
 /** Map one API call object to CallRecord (flexible field names). */
 export function rawToCallRecord(raw: unknown): CallRecord {
-  const r = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+  let node: unknown = raw;
+  if (node && typeof node === 'object') {
+    const o = node as Record<string, unknown>;
+    if (o.call && typeof o.call === 'object') node = o.call;
+  }
+  const r = node && typeof node === 'object' ? (node as Record<string, unknown>) : {};
   const mentor = r.mentor as Record<string, unknown> | undefined;
   const teen = (r.teenager ?? r.mentee) as Record<string, unknown> | undefined;
 
@@ -140,14 +182,7 @@ export function rawToCallRecord(raw: unknown): CallRecord {
   }
   if (!date) date = '—';
 
-  const meeting =
-    r.meetingUrl ??
-    r.meetingLink ??
-    r.callUrl ??
-    r.joinUrl ??
-    r.url ??
-    r.hangoutLink;
-  const meetingUrl = typeof meeting === 'string' && meeting.length > 0 ? meeting : undefined;
+  const meetingUrl = pickMeetingUrl(r, mentor);
 
   return {
     id: str(r.id ?? r._id ?? r.callId, ''),

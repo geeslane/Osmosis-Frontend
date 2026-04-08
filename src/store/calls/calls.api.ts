@@ -16,7 +16,7 @@ export interface CallRecord {
   comment?: string;
   menteeComment?: string;
   rating?: number;
-  /** Join URL when backend provides it */
+  /** Join URL — same field as mentor availability: prefer API `meetingLink` on call or `mentor.meetingLink` */
   meetingUrl?: string;
 }
 

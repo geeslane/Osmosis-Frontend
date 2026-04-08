@@ -35,7 +35,8 @@ const AppSidebar: React.FC = () => {
   const pathname = usePathname();
   const { handleLogout, isLoggingOut } = useLogoutHandler();
   const user = useSelector((state: RootState) => state.profile.user);
-  const isActive = (path: string) => pathname === path;
+  /** Match pathname to link path (ignore `?role=` etc. so My calls stays active on all tabs). */
+  const isActive = (path: string) => pathname === path.split(/[?#]/)[0];
 
   const navItems: NavItem[] = [
     {
@@ -53,7 +54,7 @@ const AppSidebar: React.FC = () => {
     {
       icon: CallIcon,
       name: 'Calls',
-      path: '/dashboard/calls/mentor',
+      path: '/dashboard/calls/mentor?role=upcoming',
       roles: ['MENTOR'],
     },
     {
@@ -71,7 +72,7 @@ const AppSidebar: React.FC = () => {
     {
       icon: CallIcon,
       name: 'My calls',
-      path: '/dashboard/calls/mentee',
+      path: '/dashboard/calls/mentee?role=upcoming',
       roles: ['TEENAGER'],
     },
     {

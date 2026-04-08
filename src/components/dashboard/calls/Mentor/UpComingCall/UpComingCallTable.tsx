@@ -4,6 +4,7 @@ import Button from '@/components/ui/button/Button';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
 import { useGetMentorUpcomingCallsQuery } from '@/store/calls/calls.api';
+import { useGetMentorAvailabilityQuery } from '@/store/schedule/schedule.api';
 import { callRecordToUpcomingRow, type UpcomingCall } from '@/utils/mapCallApi';
 import { useEffect, useMemo, useState } from 'react';
 import useToastify from '@/hooks/useToastify';
@@ -17,11 +18,18 @@ export default function UpcomingCallTable({
 }) {
   const { showToast } = useToastify();
   const { data, isLoading, isError } = useGetMentorUpcomingCallsQuery();
+  const { data: availability } = useGetMentorAvailabilityQuery();
+  /** Same `meetingLink` as Availability schedule when the call payload omits it */
+  const scheduleMeetingLink = availability?.meetingLink?.trim() ?? '';
 
-  const rows = useMemo(
-    () => (data?.data ?? []).map((c) => callRecordToUpcomingRow(c, 'mentor')),
-    [data?.data]
-  );
+  const rows = useMemo(() => {
+    const base = (data?.data ?? []).map((c) => callRecordToUpcomingRow(c, 'mentor'));
+    if (!scheduleMeetingLink) return base;
+    return base.map((row) => ({
+      ...row,
+      callUrl: row.callUrl?.trim() || scheduleMeetingLink,
+    }));
+  }, [data?.data, scheduleMeetingLink]);
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');

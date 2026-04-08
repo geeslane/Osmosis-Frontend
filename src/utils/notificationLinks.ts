@@ -39,10 +39,10 @@ export function resolveNotificationHref(
   const isAdmin = role === 'SUPERADMIN' || role === 'ADMIN';
 
   if (/(call request|call-request|upcoming call|mentorship call|session with)/.test(text)) {
-    if (isTeen) return '/dashboard/calls/mentee';
-    if (isMentor) return '/dashboard/calls/mentor';
+    if (isTeen) return '/dashboard/calls/mentee?role=upcoming';
+    if (isMentor) return '/dashboard/calls/mentor?role=upcoming';
     if (isAdmin) return '/dashboard/calls/admin';
-    return '/dashboard/calls/mentee';
+    return '/dashboard/calls/mentee?role=upcoming';
   }
   if (/(module|workbook|assignment|deliverable)/.test(text)) {
     return isTeen ? '/dashboard/modules/mentee' : '/dashboard/modules';

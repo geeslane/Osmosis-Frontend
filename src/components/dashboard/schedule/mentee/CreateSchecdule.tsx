@@ -375,7 +375,7 @@ export default function CreateSchedule() {
 
   const handleBack = () => {
     if (step === 1) {
-      router.push('/dashboard/calls/mentee');
+      router.push('/dashboard/calls/mentee?role=upcoming');
       return;
     }
     if (step === 2) setStep(1);
