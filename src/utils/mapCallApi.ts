@@ -12,6 +12,8 @@ export type UpcomingCall = {
   status: 'Active' | 'Inactive' | 'Pending';
   image?: string;
   callUrl?: string;
+  /** Mentor id — mentees use this to load `meetingLink` when not on the call */
+  mentorId?: string;
 };
 
 function mapApiStatusToUpcoming(status: string): UpcomingCall['status'] {
@@ -36,6 +38,7 @@ export function callRecordToUpcomingRow(
     notes: c.comment ?? c.menteeComment ?? undefined,
     status: mapApiStatusToUpcoming(c.status),
     callUrl: c.meetingUrl,
+    mentorId: c.mentorId,
   };
 }
 
@@ -118,7 +121,7 @@ function firstNonEmptyString(...values: unknown[]): string | undefined {
 
 /**
  * Join URL for a call row — same field name as mentor availability (`GET /mentor/availability` → `meetingLink`).
- * Backend should echo `meetingLink` on the call and/or on nested `mentor`.
+ * Prefer nested `mentor.meetingLink` when present (call list/detail responses).
  */
 function pickMeetingUrl(
   r: Record<string, unknown>,
@@ -130,8 +133,8 @@ function pickMeetingUrl(
       : undefined;
 
   return firstNonEmptyString(
-    r.meetingLink,
     mentor?.meetingLink,
+    r.meetingLink,
     availability?.meetingLink,
     r.meetingUrl,
     r.callUrl,
@@ -184,6 +187,12 @@ export function rawToCallRecord(raw: unknown): CallRecord {
 
   const meetingUrl = pickMeetingUrl(r, mentor);
 
+  const mentorIdRaw = r.mentorId ?? mentor?.id ?? r.mentor_id;
+  const mentorId =
+    mentorIdRaw != null && String(mentorIdRaw).trim() !== ''
+      ? String(mentorIdRaw).trim()
+      : undefined;
+
   return {
     id: str(r.id ?? r._id ?? r.callId, ''),
     mentorName,
@@ -193,6 +202,7 @@ export function rawToCallRecord(raw: unknown): CallRecord {
       : teen?.id
         ? str(teen.id)
         : undefined,
+    mentorId,
     date,
     time: time && time !== '—' ? time : undefined,
     topic: str(r.topic ?? r.sessionTopic ?? r.subject),

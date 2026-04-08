@@ -148,6 +148,11 @@ export const UsersApi = createApi({
       }),
       providesTags: ['Teenager'],
     }),
+    /**
+     * Paginated mentee (teenager) list for admins.
+     * UI: Dashboard → Users → Mentees tab (`/dashboard/users?role=mentee`) via `Mentee.tsx` + `useGetTeenagersQuery`.
+     * Not used for mentors (they use `getMentorMentees` or calls-derived list).
+     */
     getTeenagers: builder.query<AdminResponse, GetUserListParams>({
       query: (params) => ({
         url: '/teenager',
@@ -325,6 +330,7 @@ export const {
   useGetMentorsQuery,
   useUpdateMentorStatusMutation,
   useGetMentorByIdQuery,
+  useLazyGetMentorByIdQuery,
   useUpdateMentorProfileMutation,
   useGetTeenagerRequestsQuery,
   useUpdateTeenagerRequestStatusMutation,

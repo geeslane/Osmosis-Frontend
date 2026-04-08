@@ -3,6 +3,7 @@ import { GoBackIcon, UserAddIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import React from 'react';
 import type { UpcomingCall } from './UpComingCallTable';
+import useToastify from '@/hooks/useToastify';
 
 type ViewUpcomingCallProps = {
   call: UpcomingCall;
@@ -10,7 +11,17 @@ type ViewUpcomingCallProps = {
 };
 
 export default function ViewUpcomingCall({ call, onBack }: ViewUpcomingCallProps) {
+  const { showToast } = useToastify();
   const dateTime = call.time ? `${call.date}, ${call.time}` : call.date;
+
+  const handleJoin = () => {
+    const url = call.callUrl?.trim();
+    if (!url) {
+      showToast('Meeting link is not available yet.', 'error');
+      return;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <div className="mt-10 space-y-6 max-w-[520px]">
@@ -36,9 +47,7 @@ export default function ViewUpcomingCall({ call, onBack }: ViewUpcomingCallProps
           </div>
           <Button
             className="bg-green-100 text-white px-6 py-2 rounded-xl shrink-0"
-            onClick={() => {
-              if (call.callUrl) window.open(call.callUrl, '_blank', 'noopener,noreferrer');
-            }}
+            onClick={handleJoin}
           >
             Join call
           </Button>

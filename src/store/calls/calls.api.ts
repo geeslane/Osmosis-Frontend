@@ -8,6 +8,8 @@ export interface CallRecord {
   menteeName: string;
   /** Mentee (teenager) user ID – used to fetch full mentee details when name is clicked */
   menteeId?: string;
+  /** Mentor user ID – used by mentees to load `meetingLink` when not on the call row */
+  mentorId?: string;
   date: string;
   time?: string;
   topic: string;
