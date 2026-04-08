@@ -18,7 +18,7 @@ export default function MenteeModulesList() {
   const { data: modulesData, isLoading: isLoadingModules } =
     useModulesQuery(undefined);
 
-  const mentee = menteeData?.data?.data;
+  const mentee = menteeData?.data;
   const modules: Module[] = modulesData?.data?.data ?? [];
 
   // Placeholder: compute progress per module (backend would provide this)

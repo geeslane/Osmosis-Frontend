@@ -32,7 +32,7 @@ export default function MentorshipCallsAdmin() {
     menteeModalId ?? '',
     { skip: !menteeModalId }
   );
-  const menteeDetails = menteeResponse?.data?.data;
+  const menteeDetails = menteeResponse?.data;
 
   const callData = data?.data ?? [];
   const pagination = data?.pagination;

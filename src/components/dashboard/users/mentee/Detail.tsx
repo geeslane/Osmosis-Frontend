@@ -62,7 +62,7 @@ export default function Detail() {
   const [imageError, setImageError] = useState(false);
   const user = useSelector((state: RootState) => state.profile.user);
   const isMentor = user?.role === 'MENTOR';
-  const mentee: TeenagerDTO | undefined = data?.data?.data;
+  const mentee: TeenagerDTO | undefined = data?.data;
   const backPath = isMentor ? MENTOR_MENTEES_PATH : MENTEES_LIST_PATH;
 
   if (isLoading) {
