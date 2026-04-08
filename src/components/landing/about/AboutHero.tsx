@@ -19,9 +19,9 @@ export default function AboutHero() {
     return () => clearInterval(interval);
   }, []);
   return (
-    <div className="flex h-full flex-col overflow-x-hidden">
+    <div className="flex h-full flex-col overflow-hidden">
       <div className="relative flex font-montserrat montserrat items-center pt-[80px] pb-[40px] md:pt-[120px] md:pb-[60px] justify-between">
-      <Image
+        <Image
           src={'/image/Oval.png'}
           alt="Oval"
           width={250}
@@ -33,7 +33,7 @@ export default function AboutHero() {
             About Osmosis
           </h3>
           <p className="text-green-200 montserrat px-4  text-center  md:text-xl">
-             Osmosis is the launching pad for teenagers to absorb the clarity,
+            Osmosis is the launching pad for teenagers to absorb the clarity,
             confidence, and self-leadership skills to thrive in a complex world.
           </p>
         </div>

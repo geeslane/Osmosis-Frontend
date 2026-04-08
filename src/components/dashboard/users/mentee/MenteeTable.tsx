@@ -3,7 +3,8 @@ import { FilterIcon, MoreIcon, SearchIcon } from '@/assets/icons';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { normalizeImageUrl } from '@/utils/helper';
 import ActionModal from '@/components/ui/modal/ActionModal';
 import { useUpdateTeenagerStatusMutation } from '@/store/users/users.api';
@@ -32,6 +33,8 @@ type MenteeTableProps = {
   onSearchChange: (value: string) => void;
   statusFilter: StatusFilter;
   onStatusFilterChange: (value: StatusFilter) => void;
+  /** When false, hides Activate/Deactivate (e.g. for mentors who cannot manage mentee status) */
+  canManageStatus?: boolean;
 };
 
 export default function MenteeTable({
@@ -44,10 +47,19 @@ export default function MenteeTable({
   onSearchChange,
   statusFilter,
   onStatusFilterChange,
+  canManageStatus = true,
 }: MenteeTableProps) {
   const router = useRouter();
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
   const [selectedMentee, setSelectedMentee] = useState<Mentee | null>(null);
+
+  useEffect(() => {
+    if (!openDropdownId) return;
+    const close = () => setOpenDropdownId(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [openDropdownId]);
   const [updateTeenager, { isLoading: isUpdating }] =
     useUpdateTeenagerStatusMutation();
   const [openStatusModal, setOpenStatusModal] = useState(false);
@@ -175,37 +187,60 @@ export default function MenteeTable({
       label: 'Action',
       render: (row) => (
         <div
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            const next = openDropdownId === row.id ? null : row.id;
+            setOpenDropdownId(next);
+            if (next) {
+              setDropdownRect((e.currentTarget as HTMLElement).getBoundingClientRect());
+            } else {
+              setDropdownRect(null);
+            }
+          }}
           className="relative flex items-center space-x-2"
         >
-          <div
-            onClick={() =>
-              setOpenDropdownId((prev) => (prev === row.id ? null : row.id))
-            }
-            className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer"
-          >
+          <div className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer">
             <MoreIcon />
           </div>
+        </div>
+      ),
+    },
+  ];
 
-          {openDropdownId === row.id && (
-            <div className="absolute top-8 right-0 z-50 flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg text-sm text-green-300 py-2 pointer-events-auto">
-              <button
-                type="button"
-                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                onClick={() => {
-                  router.push(`/dashboard/users/mentee/${row.id}?role=mentee`);
-                  setOpenDropdownId(null);
-                }}
-              >
-                View
-              </button>
-              {row.status === 'Active' ? (
+  const openRow = openDropdownId ? data.find((r) => r.id === openDropdownId) : null;
+  const dropdownMenu =
+    typeof document !== 'undefined' &&
+    openRow &&
+    dropdownRect
+      ? createPortal(
+          <div
+            className="fixed z-[9999] flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg border border-gray-100 text-sm text-green-300 py-2"
+            style={{
+              top: dropdownRect.bottom + 4,
+              left: Math.min(dropdownRect.right - 180, window.innerWidth - 196),
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
+              onClick={() => {
+                router.push(`/dashboard/users/mentee/${openRow.id}?role=mentee`);
+                setOpenDropdownId(null);
+                setDropdownRect(null);
+              }}
+            >
+              View
+            </button>
+            {canManageStatus &&
+              (openRow.status === 'Active' ? (
                 <button
                   type="button"
                   className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md text-[#B42318]"
                   onClick={() => {
-                    openDeactivateModal(row);
+                    openDeactivateModal(openRow);
                     setOpenDropdownId(null);
+                    setDropdownRect(null);
                   }}
                 >
                   Deactivate
@@ -215,19 +250,18 @@ export default function MenteeTable({
                   type="button"
                   className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
                   onClick={() => {
-                    openActivateModal(row);
+                    openActivateModal(openRow);
                     setOpenDropdownId(null);
+                    setDropdownRect(null);
                   }}
                 >
                   Activate
                 </button>
-              )}
-            </div>
-          )}
-        </div>
-      ),
-    },
-  ];
+              ))}
+          </div>,
+          document.body
+        )
+      : null;
   const modalDescription =
     pendingStatus === 'Active'
       ? 'Are you sure you want to Activate this user?'
@@ -285,6 +319,7 @@ export default function MenteeTable({
         onCancel={() => setOpenStatusModal(false)}
         onConfirm={handleUpdateStatus}
       />
+      {dropdownMenu}
       {data.length === 0 ? (
         <NoResult
           title="Data not found"

@@ -9,15 +9,46 @@ import {
 } from '@/assets/icons';
 import { DetailRow } from '@/components/common/Details/DetailRow';
 import PageTitle from '@/components/PageTitle';
+import type { AdminResponse } from '@/components/types';
 import { useGetAdminByIdQuery } from '@/store/users/users.api';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 
+type AdminRecord = {
+  fullName: string;
+  email?: string;
+  phoneNumber?: string;
+  address?: string;
+  pictureUrl?: string;
+  role?: string;
+};
+
+function normalizeAdminFromResponse(
+  res: AdminResponse | undefined
+): AdminRecord | null {
+  const payload = res?.data;
+  if (!payload || typeof payload !== 'object') return null;
+  if ('data' in payload && payload.data && typeof payload.data === 'object') {
+    const inner = payload.data as AdminRecord;
+    if (inner?.fullName != null) return inner;
+  }
+  const direct = payload as AdminRecord;
+  return direct?.fullName != null ? direct : null;
+}
+
 export default function AdminDetail() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
+  const rawId = params?.id;
+  const id = Array.isArray(rawId) ? rawId[0] : rawId;
   const router = useRouter();
 
-  const { data, isLoading, isError } = useGetAdminByIdQuery(id);
+  const { data, isLoading, isError } = useGetAdminByIdQuery(id ?? '', {
+    skip: !id || id === 'undefined',
+  });
+
+  if (!id || id === 'undefined') {
+    return <p className="text-red-600">Invalid admin link.</p>;
+  }
 
   if (isLoading) {
     return (
@@ -30,9 +61,11 @@ export default function AdminDetail() {
       </div>
     );
   }
-  if (isError || !data?.data?.data) return <p>Failed to load admin</p>;
 
-  const admin = data.data.data;
+  const admin = normalizeAdminFromResponse(data);
+  if (isError || !admin) {
+    return <p className="text-red-600">Admin not found or failed to load.</p>;
+  }
 
   /*  const statusStyles: Record<any['status'], string> = {
     Active: 'bg-green-50 text-green-600',
@@ -48,7 +81,7 @@ export default function AdminDetail() {
         <GoBackIcon />
         <h3 className="text-sm text-green-200 font-medium">Back</h3>
       </div>
-      <PageTitle title={admin.role} />
+      <PageTitle title={admin.role ?? 'Admin'} />
       <div className="flex gap-[37px] flex-col">
         <h3 className="text-green-200 text-3xl font-bold">Admin Details</h3>
 
@@ -78,17 +111,17 @@ export default function AdminDetail() {
             <DetailRow
               icon={<EmailIcon color="#6CBB01" />}
               label="Email"
-              value={admin.email}
+              value={admin.email ?? '—'}
             />
             <DetailRow
               icon={<PhoneIcon color="#6CBB01" />}
               label="Phone Number"
-              value={admin.phoneNumber}
+              value={admin.phoneNumber ?? '—'}
             />
             <DetailRow
               icon={<LocationIcon color="#6CBB01" />}
               label="Address"
-              value={admin.address}
+              value={admin.address ?? '—'}
             />
 
             <div className="ml-8">

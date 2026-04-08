@@ -1,174 +1,165 @@
-'use client';
+﻿'use client';
 
-import { MoreIcon, SearchIcon, StarIcon } from '@/assets/icons';
+import { DownloadIcon, SearchIcon, StarIcon } from '@/assets/icons';
 import { Column, DataTable } from '@/components/ui/table';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
+import Button from '@/components/ui/button/Button';
 import { useEffect, useState } from 'react';
 import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 import CallDetail from './CallDetail';
-import { useMentorPreviousCallsQuery } from '@/store/dashboard/dashboard.api';
-
-function pickArray(payload: any): any[] {
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.data)) return payload.data;
-  if (Array.isArray(payload?.data?.data)) return payload.data.data;
-  if (Array.isArray(payload?.data?.data?.data)) return payload.data.data.data;
-  return [];
-}
-
-function formatDate(dateLike: any) {
-  const d = dateLike ? new Date(dateLike) : null;
-  if (!d || Number.isNaN(d.getTime())) return '';
-  return d.toLocaleDateString(undefined, {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-}
+import { downloadCallReport } from '@/utils/downloadCallReport';
 
 type CallHistoryRow = {
   id: string;
   menteeName: string;
   date: string;
+  time?: string;
   topic: string;
   callLength: string;
   comment: string;
   rating: number;
 };
 
-export default function CallHistoryTable() {
-  const { data: apiData, isLoading, isError } = useMentorPreviousCallsQuery();
+const callHistoryData: CallHistoryRow[] = [
+  {
+    id: '1',
+    menteeName: 'Olivia Rhye',
+    date: '12 Dec, 2025',
+    time: '10:00 AM',
+    topic: 'Hope',
+    callLength: '55m 34s',
+    comment: 'Good',
+    rating: 3,
+  },
+  {
+    id: '2',
+    menteeName: 'Phoenix Baker',
+    date: '12 Dec, 2025',
+    time: '2:30 PM',
+    topic: 'Joy in Chaos',
+    callLength: '1h 23m 5s',
+    comment: 'Rescheduled',
+    rating: 2,
+  },
+  {
+    id: '3',
+    menteeName: 'Lana Steiner',
+    date: '12 Dec, 2025',
+    time: '4:15 PM',
+    topic: 'Shame',
+    callLength: '1h 23m 5s',
+    comment: 'Completed',
+    rating: 4,
+  },
+  {
+    id: '4',
+    menteeName: 'Demi Wilkinson',
+    date: '12 Dec, 2025',
+    time: '11:00 AM',
+    topic: 'Overcoming Fear',
+    callLength: '1h 23m 5s',
+    comment: 'Good',
+    rating: 4,
+  },
+];
+
+interface CallHistoryTableProps {
+  mentorId?: string;
+  mentorName?: string;
+}
+
+export default function CallHistoryTable({ mentorId, mentorName }: CallHistoryTableProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [openId, setOpenId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [viewCallDetails, setViewCallDetails] = useState(false);
   const [selectedCall, setSelectedCall] = useState<CallHistoryRow | null>(null);
 
   const handleDelete = async () => {
-    // setLoading(true);
     try {
       // await deleteApiCall()
     } finally {
-      //setLoading(false);
-      //setOpen(false);
+      setOpen(false);
     }
   };
+
+  const handleDownloadReport = (scope?: 'all' | string) => {
+    const toExport = scope
+      ? filtered.filter((r) => r.menteeName === scope)
+      : filtered;
+    const reportData = toExport.map((r) => ({
+      'Mentee Name': r.menteeName,
+      'Date & Time': r.time ? `${r.date}, ${r.time}` : r.date,
+      Topic: r.topic,
+      Comment: r.comment,
+      Rating: r.rating,
+    }));
+    const filename = scope
+      ? `call-history-${scope.replace(/\s+/g, '-')}.csv`
+      : mentorName
+        ? `call-history-${mentorName.replace(/\s+/g, '-')}.csv`
+        : 'mentor-call-history.csv';
+    downloadCallReport(reportData, filename);
+  };
+
   const perPage = 5;
 
   const columns: Column<CallHistoryRow>[] = [
     {
       key: 'menteeName',
-      label: 'Mentees Name',
+      label: 'Mentee Name',
       render: (row) => (
-        <span className="font-medium text-sm text-[#667085]">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedCall(row);
+            setViewCallDetails(true);
+          }}
+          className="font-medium text-sm text-[#101828] hover:text-green-600 cursor-pointer text-left"
+        >
           {row.menteeName}
-        </span>
+        </button>
       ),
     },
     {
       key: 'date',
-      label: 'Date',
-      render: (row) => (
-        <span className="text-sm font-medium text-[#667085]">{row.date}</span>
-      ),
+      label: 'Date & Time',
+      render: (row) => {
+        const dateTime = row.time ? `${row.date}, ${row.time}` : row.date;
+        return (
+          <span className="text-sm font-medium text-gray-600">{dateTime}</span>
+        );
+      },
     },
     {
       key: 'topic',
       label: 'Topic',
       render: (row) => (
-        <span className=" font-medium text-sm text-[#667085]">{row.topic}</span>
-      ),
-    },
-    {
-      key: 'callLength',
-      label: 'Call Length',
-      render: (row) => (
-        <span className="text-sm font-medium text-[#667085]">
-          {row.callLength}
-        </span>
+        <span className="font-medium text-sm text-green-200">{row.topic}</span>
       ),
     },
     {
       key: 'comment',
       label: 'Comment',
       render: (row) => (
-        <span className="text-sm font-medium text-[#667085]">
-          {row.comment}
-        </span>
+        <span className="text-sm font-medium text-gray-600">{row.comment}</span>
       ),
     },
     {
       key: 'rating',
       label: 'Rating',
       render: (row) => (
-        <div className="flex gap-1">
+        <div className="flex gap-0.5">
           {Array.from({ length: 5 }).map((_, i) => (
             <StarIcon key={i} fill={i < row.rating ? '#F59E0B' : '#E5E7EB'} />
           ))}
         </div>
       ),
     },
-    {
-      key: 'actions',
-      label: 'Action',
-      render: (row) => (
-        <div className="relative flex items-center space-x-2">
-          <div
-            onClick={() =>
-              setOpenId((prev) => (prev === row.id ? null : row.id))
-            }
-            className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer"
-          >
-            <MoreIcon />
-          </div>
-
-          {openId === row.id && (
-            <div className="absolute top-8 right-0 z-50 flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg text-sm text-green-300 py-2">
-              <button
-                type="button"
-                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                onClick={() => {
-                  // show details for this row
-                  setSelectedCall(row);
-                  setViewCallDetails(true);
-                  setOpenId(null);
-                }}
-              >
-                View
-              </button>
-
-              <button
-                type="button"
-                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                onClick={() => {
-                  setOpen(true);
-                  setOpenId(null);
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          )}
-        </div>
-      ),
-    },
   ];
 
-  const rows: CallHistoryRow[] = pickArray(apiData).map((c: any) => ({
-    id: String(c?.id ?? c?._id ?? c?.callId ?? ''),
-    menteeName:
-      c?.teenager?.fullName ?? c?.teenagerName ?? c?.menteeName ?? '—',
-    date:
-      formatDate(c?.scheduledAt ?? c?.startTime ?? c?.date) ||
-      String(c?.date ?? ''),
-    topic: c?.topic ?? c?.sessionTopic ?? '—',
-    callLength: String(c?.duration ?? c?.callLength ?? '—'),
-    comment: c?.mentorFeedback?.notes ?? c?.comment ?? '—',
-    rating: Number(c?.rating ?? c?.mentorFeedback?.rating ?? 0),
-  }));
-
-  const filtered = rows.filter((row) => {
+  const filtered = callHistoryData.filter((row) => {
     const q = search.toLowerCase();
     if (!q) return true;
     return (
@@ -197,49 +188,52 @@ export default function CallHistoryTable() {
           }}
         />
       ) : (
-        <div className="space-y-4 mt-4 rounded-md border  border-[#6CBB0180] py-5">
-          <div className="flex flex-col mx-6 md:flex-row md:items-center md:justify-between gap-3">
-            <div className="flex items-center gap-4">
-              <h3 className="text-green-200 text-3xl font-bold">
+        <div className="mt-6 max-w-5xl">
+          <div className="rounded-xl border border-green-200/60 bg-white shadow-sm overflow-hidden">
+            <div className="flex flex-col gap-4 p-6 border-b border-gray-100 sm:flex-row sm:items-center sm:justify-between">
+              <h3 className="text-xl font-bold text-green-200">
                 Call History
               </h3>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="flex items-center gap-2 rounded-lg border border-green-200/60 bg-gray-50/50 px-3 py-2 min-w-[200px] sm:min-w-[260px]">
+                  <SearchIcon className="text-gray-400 shrink-0" />
+                  <input
+                    type="search"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search by mentee or topic"
+                    className="w-full text-sm bg-transparent focus:outline-none text-green-200 placeholder:text-gray-400"
+                  />
+                </div>
+                <Button
+                  variant="primary"
+                  onClick={() => handleDownloadReport()}
+                  leftIcon={<DownloadIcon width="18" height="18" className="text-white" />}
+                  className="shrink-0"
+                >
+                  Download Report
+                </Button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 bg-[#DCFFAD91] px-3 py-2 rounded-lg max-w-[360px] w-full">
-              <SearchIcon />
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search"
-                className="w-full text-sm bg-transparent focus:outline-none"
+            <DeleteModal
+              isOpen={open}
+              onCancel={() => setOpen(false)}
+              onConfirm={handleDelete}
+              title="Delete Call Record"
+              description="This call record will be permanently removed. This action cannot be undone."
+            />
+
+            <DataTable columns={columns} data={paginated} compact />
+
+            <div className="px-6 py-4 border-t border-gray-100">
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
               />
             </div>
           </div>
-          <DeleteModal
-            isOpen={open}
-            onCancel={() => setOpen(false)}
-            onConfirm={handleDelete}
-            //isLoading={loading}
-            title="Delete Call History"
-            description="Deleting this Call History will permanently Delete."
-          />
-          {isError && (
-            <p className="mx-6 text-sm text-red-600">
-              Failed to load call history. Please try again.
-            </p>
-          )}
-          {isLoading ? (
-            <p className="mx-6 text-sm text-green-200/70">Loading…</p>
-          ) : (
-          <DataTable columns={columns} data={paginated} />
-          )}
-
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
         </div>
       )}
     </>

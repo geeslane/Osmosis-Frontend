@@ -1,118 +1,93 @@
-'use client';
-import { MoreIcon, SearchIcon } from '@/assets/icons';
+﻿'use client';
+import { DownloadIcon, SearchIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
+import { useGetMentorPreviousCallsQuery } from '@/store/calls/calls.api';
+import { useMentorCallFeedbackMutation } from '@/store/dashboard/dashboard.api';
+import { callRecordToPreviousRow, type PreviousCallRow } from '@/utils/mapCallApi';
 import { useEffect, useMemo, useState } from 'react';
 import useToastify from '@/hooks/useToastify';
-import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
+import { downloadCallReport } from '@/utils/downloadCallReport';
 import ActionModal from '@/components/ui/modal/ActionModal';
-import {
-  useMentorCallFeedbackMutation,
-  useMentorPreviousCallsQuery,
-} from '@/store/dashboard/dashboard.api';
 
-function pickArray(payload: any): any[] {
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.data)) return payload.data;
-  if (Array.isArray(payload?.data?.data)) return payload.data.data;
-  if (Array.isArray(payload?.data?.data?.data)) return payload.data.data.data;
-  return [];
-}
+type PreviousCall = PreviousCallRow;
 
-function formatDate(dateLike: any) {
-  const d = dateLike ? new Date(dateLike) : null;
-  if (!d || Number.isNaN(d.getTime())) return '';
-  return d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
-}
-
-type PreviousCall = {
-  id: string;
-  name: string;
-  date: string;
-  topic: string;
-  phone: string;
-  status: 'Active' | 'Inactive' | 'Pending';
-  image?: string;
-};
-
-export default function PreviousCallTable({ onView }: any) {
+export default function PreviousCallTable({ onView }: { onView?: () => void }) {
   const { showToast } = useToastify();
-  const { data: apiData, isLoading, isError } = useMentorPreviousCallsQuery();
-  const [sendFeedback, { isLoading: isSendingFeedback }] =
-    useMentorCallFeedbackMutation();
+  const { data, isLoading, isError } = useGetMentorPreviousCallsQuery();
+  const [submitFeedback, { isLoading: isSubmitting }] = useMentorCallFeedbackMutation();
 
-  const data = useMemo<PreviousCall[]>(() => {
-    const rows = pickArray(apiData);
-    return rows.map((c: any) => ({
-      id: String(c?.id ?? c?._id ?? c?.callId ?? ''),
-      name: c?.teenager?.fullName ?? c?.teenagerName ?? c?.menteeName ?? c?.name ?? '—',
-      date: formatDate(c?.scheduledAt ?? c?.startTime ?? c?.date) || String(c?.date ?? ''),
-      topic: c?.topic ?? c?.sessionTopic ?? '—',
-      phone: c?.teenager?.phoneNumber ?? c?.phoneNumber ?? c?.phone ?? '—',
-      status: 'Active',
-      image: c?.teenager?.pictureUrl ?? c?.image,
-    }));
-  }, [apiData]);
+  const rows = useMemo(
+    () => (data?.data ?? []).map((c) => callRecordToPreviousRow(c, 'mentor')),
+    [data?.data]
+  );
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [openModal, setOpenModal] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<PreviousCall | null>(null);
   const [statusFilter] = useState<'All' | PreviousCall['status']>('All');
-  const [feedbackCallId, setFeedbackCallId] = useState<string | null>(null);
-  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackNotes, setFeedbackNotes] = useState('');
 
   const [perPage] = useState(5);
-  const [processingId, setProcessingId] = useState<string | null>(null);
-  const [declineModalOpen, setDeclineModalOpen] = useState(false);
-  const [declineId, setDeclineId] = useState<string | null>(null);
 
-  const handleUpdateStatus = async () => {
-    if (!feedbackCallId) return;
-    try {
-      await sendFeedback({ callId: feedbackCallId, notes: feedbackText }).unwrap();
-      showToast('Feedback submitted', 'success');
-      setOpenModal(false);
-      setFeedbackCallId(null);
-      setFeedbackText('');
-    } catch (err: any) {
-      showToast(err?.data?.message || 'Failed to submit feedback', 'error');
-    }
+  const openFeedbackModal = (row: PreviousCall, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedRow(row);
+    setFeedbackNotes(row.mentorNotes ?? '');
+    setOpenModal(true);
   };
 
-  const handleDeclineConfirm = async (reason: string) => {
-    if (!declineId) return;
-
-    setProcessingId(declineId);
-    setDeclineModalOpen(false);
-
-    showToast(`Declined: ${reason}`, 'success');
-    setProcessingId(null);
-    setDeclineId(null);
+  const handleSaveFeedback = async () => {
+    if (!selectedRow) return;
+    const notes = feedbackNotes.trim();
+    if (notes.length < 2) {
+      showToast('Please add a short note (at least 2 characters).', 'error');
+      return;
+    }
+    try {
+      await submitFeedback({
+        callId: selectedRow.id,
+        notes,
+      }).unwrap();
+      showToast('Feedback saved.', 'success');
+      setOpenModal(false);
+      setSelectedRow(null);
+      setFeedbackNotes('');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'data' in err
+          ? String((err as { data?: { message?: string } }).data?.message ?? '')
+          : '';
+      showToast(msg || 'Could not save feedback', 'error');
+    }
   };
 
   const columns: Column<PreviousCall>[] = [
     {
       key: 'name',
-      label: 'Mentor Name',
+      label: 'Mentee Name',
       render: (row) => {
         return (
-          <div
+          <button
+            type="button"
             onClick={onView}
-            className="flex cursor-pointer items-center gap-2 w-[200px]"
+            className="flex cursor-pointer items-center gap-2 w-[200px] text-left font-medium text-sm text-[#101828] hover:text-green-600"
           >
-            <p className="font-medium text-sm text-[#667085]">{row.name}</p>
-          </div>
+            {row.name}
+          </button>
         );
       },
     },
     {
       key: 'date',
-      label: 'Date',
+      label: 'Date & Time',
       render: (row) => {
+        const dateTime = row.time ? `${row.date}, ${row.time}` : row.date;
         return (
-          <div className="flex items-center gap-2 w-[200px]">
-            <p className="font-medium text-sm text-[#667085]">{row.date}</p>
+          <div className="w-[200px]">
+            <p className="font-medium text-sm text-[#101828]">{dateTime}</p>
           </div>
         );
       },
@@ -123,7 +98,7 @@ export default function PreviousCallTable({ onView }: any) {
       render: (row) => {
         return (
           <div className="flex items-center gap-2 w-[200px] ">
-            <p className="font-medium text-sm text-[#667085]">{row.topic}</p>
+            <p className="font-medium text-sm text-[#101828]">{row.topic}</p>
           </div>
         );
       },
@@ -132,48 +107,30 @@ export default function PreviousCallTable({ onView }: any) {
       key: 'status',
       label: '',
       render: (row) => {
-        const isProcessing = processingId === row.id;
+        const isProcessing = isSubmitting && selectedRow?.id === row.id;
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Button
-              onClick={() => {
-                setFeedbackCallId(row.id);
-                setOpenModal(true);
-              }}
+              onClick={(e) => openFeedbackModal(row, e)}
               disabled={isProcessing}
               className="bg-green-200 text-white px-8 py-2 rounded-xl"
             >
-              Give feedback
+              Add feedback
             </Button>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'actions',
-      label: 'Action',
-      render: () => {
-        return (
-          <div className="flex items-center">
-            <button
-              onClick={onView}
-              className="px-3 py-3 text-green-300  text-xs underline"
-            >
-              <MoreIcon />
-            </button>
           </div>
         );
       },
     },
   ];
 
-  const filtered = data.filter((row) => {
+  const filtered = rows.filter((row) => {
     const q = search.toLowerCase();
     if (statusFilter !== 'All' && row.status !== statusFilter) return false;
     if (!q) return true;
     return (
       row.name.toLowerCase().includes(q) ||
       row.date.toLowerCase().includes(q) ||
+      (row.time?.toLowerCase().includes(q) ?? false) ||
       row.topic.toLowerCase().includes(q) ||
       row.phone.toLowerCase().includes(q)
     );
@@ -188,71 +145,87 @@ export default function PreviousCallTable({ onView }: any) {
   const paginated = filtered.slice((page - 1) * perPage, page * perPage);
 
   return (
-    <div className="space-y-3  border-[#DCFFAD] border-1 mt-10 pb-10">
+    <div className="space-y-3 border-[#DCFFAD] border-1 mt-10 pb-10">
       <div className="flex flex-col mx-6 my-[18px] md:flex-row md:items-center md:justify-between gap-2">
-        <div className="relative inline-flex items-center ">
+        <div className="relative inline-flex items-center">
           <h3 className="font-semibold text-2xl text-green-200">
             Call History
           </h3>
         </div>
-        <div className="relative flex items-center h-[44px] gap-3 w-[363px] bg-[#DCFFAD91] px-2 rounded-lg">
-          <SearchIcon className="text-gray-400" />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name"
-            className="w-full h-full text-sm bg-transparent focus:outline-none"
-          />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex items-center h-[44px] gap-3 w-[363px] bg-[#DCFFAD91] px-2 rounded-lg">
+            <SearchIcon className="text-gray-400" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by mentee name"
+              className="w-full h-full text-sm bg-transparent focus:outline-none"
+            />
+          </div>
+          <Button
+            variant="primary"
+            onClick={() => {
+              const reportData = filtered.map((r) => ({
+                'Mentee Name': r.name,
+                'Date & Time': r.time ? `${r.date}, ${r.time}` : r.date,
+                Topic: r.topic,
+                Status: r.status,
+              }));
+              downloadCallReport(reportData, 'mentor-call-history.csv');
+            }}
+            leftIcon={<DownloadIcon width="18" height="18" className="text-white" />}
+            className="shrink-0"
+          >
+            Print call history
+          </Button>
         </div>
       </div>
 
+      {isLoading && (
+        <p className="mx-6 text-sm text-gray-500">Loading call history…</p>
+      )}
+      {isError && !isLoading && (
+        <p className="mx-6 text-sm text-red-600">Could not load call history.</p>
+      )}
+      {!isLoading && !isError && filtered.length === 0 && (
+        <p className="mx-6 text-sm text-gray-500">No previous calls yet.</p>
+      )}
+
       <ActionModal
         isOpen={openModal}
-        title="How was the call"
-        description="Give feedback about the mentee, what Osmosis team &  parents might need to be aware of about them."
-        confirmText="Continue"
+        title="How was the call?"
+        description={
+          selectedRow
+            ? `Share how ${selectedRow.name.split(' ')[0]} is doing and anything the Osmosis team or their parents should know.`
+            : 'Share how the teenager is doing and anything the Osmosis team or their parents should know.'
+        }
+        confirmText="Save feedback"
         color="text-green-200"
-        isLoading={isSendingFeedback}
         onCancel={() => {
-          if (isSendingFeedback) return;
           setOpenModal(false);
-          setFeedbackCallId(null);
-          setFeedbackText('');
+          setSelectedRow(null);
+          setFeedbackNotes('');
         }}
-        onConfirm={handleUpdateStatus}
+        onConfirm={handleSaveFeedback}
       >
-        <div className="mt-10">
-          <div>
-            <input
-              placeholder="Type your comment here."
-              value={feedbackText}
-              onChange={(e) => setFeedbackText(e.target.value)}
-              className="rounded-lg border text-[#ACACAC] focus:outline-none h-[38px] px-2 border-green-200 w-full"
-            />
-          </div>
+        <div className="mt-6">
+          <textarea
+            value={feedbackNotes}
+            onChange={(e) => setFeedbackNotes(e.target.value)}
+            placeholder="E.g. how they're doing overall, any concerns or wins, and what the team or parents should know..."
+            rows={4}
+            className="rounded-lg border border-green-200/60 text-[#101828] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-200/40 w-full p-3 text-sm"
+          />
         </div>
       </ActionModal>
 
-      <DeclineModal
-        isOpen={declineModalOpen}
-        onConfirm={handleDeclineConfirm}
-        onCancel={() => {
-          setDeclineModalOpen(false);
-          setDeclineId(null);
-        }}
-        isLoading={processingId === declineId}
+      <DataTable
+        columns={columns}
+        data={paginated}
+        onRowClick={() => onView?.()}
+        compact
       />
-      {isError && (
-        <p className="mx-6 text-sm text-red-600">
-          Failed to load calls. Please try again.
-        </p>
-      )}
-      {isLoading ? (
-        <p className="mx-6 text-sm text-green-200/70">Loading…</p>
-      ) : (
-        <DataTable columns={columns} data={paginated} />
-      )}
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

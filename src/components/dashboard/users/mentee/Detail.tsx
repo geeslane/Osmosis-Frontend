@@ -16,7 +16,6 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useGetTeenagerByIdQuery } from '@/store/users/users.api';
-import ModulesTable from './ModulesTable';
 import CallHistoryTable from './CallHistory';
 import ProgressGauge from '@/components/ui/Progress/ProgressGauge';
 import { Info } from '@/components/common/Details/Info';
@@ -53,6 +52,7 @@ const statusStyles: Record<MenteeStatus, string> = {
 };
 
 const MENTEES_LIST_PATH = '/dashboard/users?role=mentee';
+const MENTOR_MENTEES_PATH = '/dashboard/mentee';
 
 export default function Detail() {
   const { id } = useParams<{ id: string }>();
@@ -62,6 +62,7 @@ export default function Detail() {
   const [imageError, setImageError] = useState(false);
   const user = useSelector((state: RootState) => state.profile.user);
   const mentee: TeenagerDTO | undefined = data?.data?.data;
+  const backPath = user?.role === 'MENTOR' ? MENTOR_MENTEES_PATH : MENTEES_LIST_PATH;
 
   if (isLoading) {
     return (
@@ -96,7 +97,7 @@ export default function Detail() {
           {/* Back + Header row */}
           <div className="flex flex-wrap items-center gap-4">
             <button
-              onClick={() => router.push(MENTEES_LIST_PATH)}
+              onClick={() => router.push(backPath)}
               className="flex items-center gap-2 text-green-200 font-medium hover:opacity-80 transition-opacity shrink-0"
               type="button"
             >
@@ -231,20 +232,29 @@ export default function Detail() {
                 </div>
               </div>
             </div>
-            {/* Progress: right-aligned, clearer card */}
+            {/* Progress: right-aligned card with gauge + module progress inside */}
             <div className="shrink-0 flex justify-center lg:justify-end">
-              <div className="w-full max-w-[240px] rounded-xl border border-[#6CBB0180] bg-[#F7FDF2] p-6 flex flex-col items-center shadow-sm">
+              <div className="w-full max-w-[280px] rounded-xl border border-[#6CBB0180] bg-[#F7FDF2] p-6 flex flex-col items-center gap-5 shadow-sm">
                 <ProgressGauge percentage={25} />
+                <div className="w-full text-center space-y-3">
+                  <h3 className="text-lg font-semibold text-green-300">
+                    Module Progress
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    View progress, deliverables, and assignment submissions.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      router.push(`/dashboard/users/mentee/${id}/modules`)
+                    }
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#DCFFAD91] hover:opacity-90 transition-opacity font-medium text-green-300 text-sm"
+                  >
+                    View Modules
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Modules */}
-          <div className="rounded-lg border border-[#6CBB0180] p-5 md:p-6">
-            <h3 className="text-xl md:text-2xl text-green-300 font-semibold mb-4">
-              Modules
-            </h3>
-            <ModulesTable />
           </div>
         </div>
       )}

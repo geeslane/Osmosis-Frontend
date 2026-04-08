@@ -1,5 +1,6 @@
-\'use client\';
-\n+import React, { useEffect, useMemo, useState } from 'react';
+'use client';
+
+import React, { useEffect, useMemo, useState } from 'react';
 import Button from '@/components/ui/button/Button';
 import useToastify from '@/hooks/useToastify';
 import {
@@ -8,7 +9,8 @@ import {
   useMentorGoogleCalendarSyncMutation,
   useUpdateMentorAvailabilityMutation,
 } from '@/store/dashboard/dashboard.api';
-\n+type DayKey =
+
+type DayKey =
   | 'MONDAY'
   | 'TUESDAY'
   | 'WEDNESDAY'
@@ -16,16 +18,19 @@ import {
   | 'FRIDAY'
   | 'SATURDAY'
   | 'SUNDAY';
-\n+type AvailabilitySlot = {
+
+type AvailabilitySlot = {
   startTime: string; // "HH:mm"
   endTime: string; // "HH:mm"
 };
-\n+type DayAvailability = {
+
+type DayAvailability = {
   day: DayKey;
   isAvailable: boolean;
   slots: AvailabilitySlot[];
 };
-\n+function pickAvailability(raw: any): DayAvailability[] {
+
+function pickAvailability(raw: any): DayAvailability[] {
   const src =
     raw?.data?.data?.availability ??
     raw?.data?.data ??
@@ -35,7 +40,8 @@ import {
   if (!Array.isArray(src)) return [];
   return src;
 }
-\n+const DAYS: { key: DayKey; label: string }[] = [
+
+const DAYS: { key: DayKey; label: string }[] = [
   { key: 'MONDAY', label: 'Monday' },
   { key: 'TUESDAY', label: 'Tuesday' },
   { key: 'WEDNESDAY', label: 'Wednesday' },
@@ -44,7 +50,8 @@ import {
   { key: 'SATURDAY', label: 'Saturday' },
   { key: 'SUNDAY', label: 'Sunday' },
 ];
-\n+function ensureAllDays(days: DayAvailability[]): DayAvailability[] {
+
+function ensureAllDays(days: DayAvailability[]): DayAvailability[] {
   const byDay = new Map(days.map((d) => [d.day, d] as const));
   return DAYS.map(({ key }) => {
     const existing = byDay.get(key);
@@ -57,7 +64,8 @@ import {
     );
   });
 }
-\n+export default function MentorAvailability() {
+
+export default function MentorAvailability() {
   const { showToast } = useToastify();
   const { data, isLoading, isError } = useMentorAvailabilityQuery();
   const [updateAvailability, { isLoading: isSaving }] =
@@ -66,10 +74,12 @@ import {
     useMentorGoogleCalendarSyncMutation();
   const [getAuthUrl, { isFetching: isFetchingAuthUrl }] =
     useLazyMentorGoogleCalendarAuthUrlQuery();
-\n+  const initial = useMemo(() => ensureAllDays(pickAvailability(data)), [data]);
+
+  const initial = useMemo(() => ensureAllDays(pickAvailability(data)), [data]);
   const [meetingLink, setMeetingLink] = useState<string>('');
   const [days, setDays] = useState<DayAvailability[]>(initial);
-\n+  useEffect(() => {
+
+  useEffect(() => {
     setDays(initial);
     const link =
       data?.data?.data?.meetingLink ??
@@ -78,7 +88,8 @@ import {
       '';
     setMeetingLink(link || '');
   }, [initial, data]);
-\n+  const addSlot = (day: DayKey) => {
+
+  const addSlot = (day: DayKey) => {
     setDays((prev) =>
       prev.map((d) =>
         d.day === day
@@ -91,7 +102,8 @@ import {
       )
     );
   };
-\n+  const updateSlot = (
+
+  const updateSlot = (
     day: DayKey,
     idx: number,
     patch: Partial<AvailabilitySlot>
@@ -105,7 +117,8 @@ import {
       })
     );
   };
-\n+  const removeSlot = (day: DayKey, idx: number) => {
+
+  const removeSlot = (day: DayKey, idx: number) => {
     setDays((prev) =>
       prev.map((d) => {
         if (d.day !== day) return d;
@@ -115,7 +128,8 @@ import {
       })
     );
   };
-\n+  const toggleDay = (day: DayKey, isAvailable: boolean) => {
+
+  const toggleDay = (day: DayKey, isAvailable: boolean) => {
     setDays((prev) =>
       prev.map((d) =>
         d.day === day
@@ -128,7 +142,8 @@ import {
       )
     );
   };
-\n+  const handleSave = async () => {
+
+  const handleSave = async () => {
     try {
       const payload = {
         meetingLink: meetingLink || undefined,
@@ -144,7 +159,8 @@ import {
       showToast(err?.data?.message || 'Failed to update availability', 'error');
     }
   };
-\n+  const handleConnectCalendar = async () => {
+
+  const handleConnectCalendar = async () => {
     try {
       const res: any = await getAuthUrl().unwrap();
       const url =
@@ -162,7 +178,8 @@ import {
       showToast(err?.data?.message || 'Failed to start Google Calendar connect', 'error');
     }
   };
-\n+  const handleSyncCalendar = async () => {
+
+  const handleSyncCalendar = async () => {
     try {
       await syncCalendar().unwrap();
       showToast('Google Calendar sync verified', 'success');
@@ -170,92 +187,96 @@ import {
       showToast(err?.data?.message || 'Failed to sync Google Calendar', 'error');
     }
   };
-\n+  return (
-    <div className=\"space-y-6\">
-      <div className=\"flex flex-col gap-2\">
-        <label className=\"text-green-300 font-medium\">Meeting link (optional)</label>
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-2">
+        <label className="text-green-300 font-medium">Meeting link (optional)</label>
         <input
           value={meetingLink}
           onChange={(e) => setMeetingLink(e.target.value)}
-          placeholder=\"https://meet.google.com/... or Zoom link\"
-          className=\"w-full max-w-[640px] rounded-lg border border-green-100 px-3 py-2 text-sm focus:outline-none\"
+          placeholder="https://meet.google.com/... or Zoom link"
+          className="w-full max-w-[640px] rounded-lg border border-green-100 px-3 py-2 text-sm focus:outline-none"
         />
       </div>
-\n+      <div className=\"flex flex-wrap gap-3\">
+
+      <div className="flex flex-wrap gap-3">
         <Button
-          variant=\"primary\"
+          variant="primary"
           disabled={isFetchingAuthUrl}
           onClick={handleConnectCalendar}
         >
           Connect Google Calendar
         </Button>
         <Button
-          variant=\"secondary\"
+          variant="secondary"
           disabled={isSyncing}
           onClick={handleSyncCalendar}
         >
           Verify / Sync Calendar
         </Button>
-        <Button variant=\"primary\" disabled={isSaving} onClick={handleSave}>
+        <Button variant="primary" disabled={isSaving} onClick={handleSave}>
           Save availability
         </Button>
       </div>
-\n+      {isError && (
-        <p className=\"text-sm text-red-600\">Failed to load availability.</p>
+
+      {isError && (
+        <p className="text-sm text-red-600">Failed to load availability.</p>
       )}
       {isLoading ? (
-        <p className=\"text-sm text-green-200/70\">Loading…</p>
+        <p className="text-sm text-green-200/70">Loading…</p>
       ) : (
-        <div className=\"space-y-4\">
+        <div className="space-y-4">
           {days.map((d) => (
             <div
               key={d.day}
-              className=\"rounded-lg border border-[#6CBB0180] p-4 space-y-3\"
+              className="rounded-lg border border-[#6CBB0180] p-4 space-y-3"
             >
-              <div className=\"flex items-center justify-between gap-3\">
-                <div className=\"font-semibold text-green-200\">
+              <div className="flex items-center justify-between gap-3">
+                <div className="font-semibold text-green-200">
                   {DAYS.find((x) => x.key === d.day)?.label ?? d.day}
                 </div>
-                <label className=\"flex items-center gap-2 text-sm text-green-200\">
+                <label className="flex items-center gap-2 text-sm text-green-200">
                   <input
-                    type=\"checkbox\"
+                    type="checkbox"
                     checked={!!d.isAvailable}
                     onChange={(e) => toggleDay(d.day, e.target.checked)}
                   />
                   Available
                 </label>
               </div>
-\n+              {d.isAvailable && (
-                <div className=\"space-y-3\">
+
+              {d.isAvailable && (
+                <div className="space-y-3">
                   {(d.slots ?? []).length === 0 ? (
-                    <p className=\"text-sm text-green-200/70\">
+                    <p className="text-sm text-green-200/70">
                       No time ranges yet. Add one.
                     </p>
                   ) : (
-                    <div className=\"space-y-2\">
+                    <div className="space-y-2">
                       {(d.slots ?? []).map((s, idx) => (
-                        <div key={idx} className=\"flex flex-wrap items-center gap-2\">
+                        <div key={idx} className="flex flex-wrap items-center gap-2">
                           <input
-                            type=\"time\"
+                            type="time"
                             value={s.startTime}
                             onChange={(e) =>
                               updateSlot(d.day, idx, { startTime: e.target.value })
                             }
-                            className=\"rounded-md border border-green-100 px-2 py-1 text-sm\"
+                            className="rounded-md border border-green-100 px-2 py-1 text-sm"
                           />
-                          <span className=\"text-sm text-green-200/70\">to</span>
+                          <span className="text-sm text-green-200/70">to</span>
                           <input
-                            type=\"time\"
+                            type="time"
                             value={s.endTime}
                             onChange={(e) =>
                               updateSlot(d.day, idx, { endTime: e.target.value })
                             }
-                            className=\"rounded-md border border-green-100 px-2 py-1 text-sm\"
+                            className="rounded-md border border-green-100 px-2 py-1 text-sm"
                           />
                           <button
-                            type=\"button\"
+                            type="button"
                             onClick={() => removeSlot(d.day, idx)}
-                            className=\"text-sm font-semibold text-red-600 hover:text-red-700\"
+                            className="text-sm font-semibold text-red-600 hover:text-red-700"
                           >
                             Remove
                           </button>
@@ -263,10 +284,11 @@ import {
                       ))}
                     </div>
                   )}
-\n+                  <button
-                    type=\"button\"
+
+                  <button
+                    type="button"
                     onClick={() => addSlot(d.day)}
-                    className=\"text-sm font-semibold text-green-200 underline hover:no-underline\"
+                    className="text-sm font-semibold text-green-200 underline hover:no-underline"
                   >
                     Add time range
                   </button>

@@ -22,7 +22,7 @@ export const metadata: Metadata = generateMetadata({
 
 export default function Page() {
   return (
-    <div className="h-full w-full max-w-[1600px] mx-auto">
+    <div className="h-full w-full ">
       <Navbar />
       <div className=" mt-18 z-10 h-full">
         <HomeHero />
