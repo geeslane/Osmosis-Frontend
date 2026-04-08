@@ -1,11 +1,28 @@
 import { Edit } from '@/assets/icons';
 import MentorDetail from '@/components/common/Details/MentorDetails';
 import Button from '@/components/ui/button/Button';
-import { data } from '@/utils/data';
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 export default function Profile() {
-  const mentor = data[0];
+  const user = useSelector((state: RootState) => state.profile.user);
+
+  const mentor = {
+    name: user?.full_name ?? '—',
+    email: user?.email ?? '—',
+    status: 'Active',
+    image: user?.avatar,
+    phone: '—',
+    address: '—',
+    dateOfBirth: undefined,
+    gender: undefined,
+    occupation: undefined,
+    topics: undefined,
+    linkedinUrl: undefined,
+    inspiration: undefined,
+    bio: undefined,
+  };
 
   return (
     <div>

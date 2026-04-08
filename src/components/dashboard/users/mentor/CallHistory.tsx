@@ -6,6 +6,25 @@ import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { useEffect, useState } from 'react';
 import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 import CallDetail from './CallDetail';
+import { useMentorPreviousCallsQuery } from '@/store/dashboard/dashboard.api';
+
+function pickArray(payload: any): any[] {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.data?.data)) return payload.data.data;
+  if (Array.isArray(payload?.data?.data?.data)) return payload.data.data.data;
+  return [];
+}
+
+function formatDate(dateLike: any) {
+  const d = dateLike ? new Date(dateLike) : null;
+  if (!d || Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString(undefined, {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
 
 type CallHistoryRow = {
   id: string;
@@ -17,46 +36,8 @@ type CallHistoryRow = {
   rating: number;
 };
 
-const callHistoryData: CallHistoryRow[] = [
-  {
-    id: '1',
-    menteeName: 'Olivia Rhye',
-    date: '12 Dec, 2025',
-    topic: 'Hope',
-    callLength: '55mins 34s',
-    comment: 'Good',
-    rating: 3,
-  },
-  {
-    id: '2',
-    menteeName: 'Phoenix Baker',
-    date: '12 Dec, 2025',
-    topic: 'Joy in Chaos',
-    callLength: '1hr 23mins 5s',
-    comment: 'Rescheduled',
-    rating: 2,
-  },
-  {
-    id: '3',
-    menteeName: 'Lana Steiner',
-    date: '12 Dec, 2025',
-    topic: 'Shame',
-    callLength: '1hr 23mins 5s',
-    comment: 'Completed',
-    rating: 4,
-  },
-  {
-    id: '4',
-    menteeName: 'Demi Wilkinson',
-    date: '12 Dec, 2025',
-    topic: 'Overcoming fear',
-    callLength: '1hr 23mins 5s',
-    comment: 'Good',
-    rating: 4,
-  },
-];
-
 export default function CallHistoryTable() {
+  const { data: apiData, isLoading, isError } = useMentorPreviousCallsQuery();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
@@ -174,7 +155,20 @@ export default function CallHistoryTable() {
     },
   ];
 
-  const filtered = callHistoryData.filter((row) => {
+  const rows: CallHistoryRow[] = pickArray(apiData).map((c: any) => ({
+    id: String(c?.id ?? c?._id ?? c?.callId ?? ''),
+    menteeName:
+      c?.teenager?.fullName ?? c?.teenagerName ?? c?.menteeName ?? '—',
+    date:
+      formatDate(c?.scheduledAt ?? c?.startTime ?? c?.date) ||
+      String(c?.date ?? ''),
+    topic: c?.topic ?? c?.sessionTopic ?? '—',
+    callLength: String(c?.duration ?? c?.callLength ?? '—'),
+    comment: c?.mentorFeedback?.notes ?? c?.comment ?? '—',
+    rating: Number(c?.rating ?? c?.mentorFeedback?.rating ?? 0),
+  }));
+
+  const filtered = rows.filter((row) => {
     const q = search.toLowerCase();
     if (!q) return true;
     return (
@@ -230,7 +224,16 @@ export default function CallHistoryTable() {
             title="Delete Call History"
             description="Deleting this Call History will permanently Delete."
           />
+          {isError && (
+            <p className="mx-6 text-sm text-red-600">
+              Failed to load call history. Please try again.
+            </p>
+          )}
+          {isLoading ? (
+            <p className="mx-6 text-sm text-green-200/70">Loading…</p>
+          ) : (
           <DataTable columns={columns} data={paginated} />
+          )}
 
           <Pagination
             page={page}

@@ -3,10 +3,38 @@ import { MoreIcon, SearchIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useToastify from '@/hooks/useToastify';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
 import ActionModal from '@/components/ui/modal/ActionModal';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import {
+  useAcceptCallRequestMutation,
+  useMentorCallRequestsQuery,
+  useRejectCallRequestMutation,
+} from '@/store/dashboard/dashboard.api';
+
+function pickArray(payload: any): any[] {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.data?.data)) return payload.data.data;
+  if (Array.isArray(payload?.data?.data?.data)) return payload.data.data.data;
+  return [];
+}
+
+function formatDateTime(dateLike: any) {
+  const d = dateLike ? new Date(dateLike) : null;
+  if (!d || Number.isNaN(d.getTime())) return { date: '', time: '' };
+  return {
+    date: d.toLocaleDateString(undefined, {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }),
+    time: d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }),
+  };
+}
 
 type RequestCall = {
   id: string;
@@ -21,62 +49,46 @@ type RequestCall = {
 
 export default function CallRequestTable({ onView }: any) {
   const { showToast } = useToastify();
-  const [data, setData] = useState<RequestCall[]>([
-    {
-      id: '1',
-      name: 'John Doe',
-      date: '12 Dec., 2025',
-      time: '10am',
-      topic: 'Hope',
-      phone: '08012345678',
-      status: 'Pending',
-    },
-    {
-      id: '2',
-      name: 'Mary Johnson',
-      date: '12 Dec., 2025',
-      time: '10am',
+  const user = useSelector((state: RootState) => state.profile.user);
+  const isMentor = user?.role === 'MENTOR';
+  const { data: apiData, isLoading, isError } = useMentorCallRequestsQuery(
+    undefined,
+    { skip: !isMentor }
+  );
+  const [acceptRequest, { isLoading: isAccepting }] =
+    useAcceptCallRequestMutation();
+  const [rejectRequest, { isLoading: isRejecting }] =
+    useRejectCallRequestMutation();
 
-      topic: 'Hope',
-      phone: '08087654321',
-      status: 'Active',
-    },
-    {
-      id: '3',
-      name: 'David Smith',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      time: '10am',
-
-      phone: '08123456789',
-      status: 'Inactive',
-    },
-    {
-      id: '4',
-      name: 'Sarah Wilson',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      time: '10am',
-
-      phone: '08099887766',
-      status: 'Pending',
-    },
-    {
-      id: '5',
-      name: 'Daniel Adams',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      time: '10am',
-
-      phone: '08111112222',
-      status: 'Pending',
-    },
-  ]);
+  const data = useMemo<RequestCall[]>(() => {
+    if (!isMentor) return [];
+    const rows = pickArray(apiData);
+    return rows.map((r: any) => {
+      const { date, time } = formatDateTime(r?.scheduledAt ?? r?.startTime ?? r?.date);
+      return {
+        id: String(r?.id ?? r?._id ?? r?.requestId ?? ''),
+        name:
+          r?.teenager?.fullName ??
+          r?.teenagerName ??
+          r?.menteeName ??
+          r?.name ??
+          '—',
+        date: date || String(r?.date ?? ''),
+        time: time || String(r?.time ?? ''),
+        topic: r?.topic ?? r?.sessionTopic ?? '—',
+        phone: r?.teenager?.phoneNumber ?? r?.phoneNumber ?? r?.phone ?? '—',
+        status: 'Pending',
+        image: r?.teenager?.pictureUrl ?? r?.image,
+      };
+    });
+  }, [apiData, isMentor]);
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [statusFilter] = useState<'All' | RequestCall['status']>('All');
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
 
   const [perPage] = useState(5);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -84,7 +96,16 @@ export default function CallRequestTable({ onView }: any) {
   const [declineId, setDeclineId] = useState<string | null>(null);
 
   const handleUpdateStatus = async () => {
-    console.log('hellow world');
+    if (!rejectingId) return;
+    try {
+      await rejectRequest({ id: rejectingId, reason: rejectReason }).unwrap();
+      showToast('Request rejected', 'success');
+      setOpenModal(false);
+      setRejectReason('');
+      setRejectingId(null);
+    } catch (err: any) {
+      showToast(err?.data?.message || 'Failed to reject request', 'error');
+    }
   };
 
   const handleDeclineConfirm = async (reason: string) => {
@@ -92,19 +113,9 @@ export default function CallRequestTable({ onView }: any) {
 
     setProcessingId(declineId);
     setDeclineModalOpen(false);
-
-    setTimeout(() => {
-      setData((prev) =>
-        prev.map((item) =>
-          item.id === declineId ? { ...item, status: 'Inactive' } : item
-        )
-      );
-
-      showToast(`Declined: ${reason}`, 'success');
-
-      setProcessingId(null);
-      setDeclineId(null);
-    }, 500);
+    showToast(`Declined: ${reason}`, 'success');
+    setProcessingId(null);
+    setDeclineId(null);
   };
 
   const columns: Column<RequestCall>[] = [
@@ -159,17 +170,32 @@ export default function CallRequestTable({ onView }: any) {
       key: 'status',
       label: '',
       render: (row) => {
-        const isProcessing = processingId === row.id;
+        const isProcessing =
+          processingId === row.id || isAccepting || isRejecting;
         return (
           <div className="flex items-center gap-2">
             <Button
+              onClick={async () => {
+                setProcessingId(row.id);
+                try {
+                  await acceptRequest(row.id).unwrap();
+                  showToast('Request accepted', 'success');
+                } catch (err: any) {
+                  showToast(err?.data?.message || 'Failed to accept request', 'error');
+                } finally {
+                  setProcessingId(null);
+                }
+              }}
               disabled={isProcessing}
               className="bg-green-200 text-white px-8 py-2 rounded-xl"
             >
               Accept
             </Button>
             <Button
-              onClick={() => setOpenModal(true)}
+              onClick={() => {
+                setRejectingId(row.id);
+                setOpenModal(true);
+              }}
               disabled={isProcessing}
               className="bg-red-100 text-white px-8 py-2 rounded-xl"
             >
@@ -243,14 +269,21 @@ export default function CallRequestTable({ onView }: any) {
         description="Give reason for rejection"
         confirmText="Continue"
         color="text-green-200"
-        //isLoading={isUpdating}
-        onCancel={() => setOpenModal(false)}
+        isLoading={isRejecting}
+        onCancel={() => {
+          if (isRejecting) return;
+          setOpenModal(false);
+          setRejectReason('');
+          setRejectingId(null);
+        }}
         onConfirm={handleUpdateStatus}
       >
         <div className="mt-10">
           <div>
             <input
               placeholder="Type your comment here."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
               className="rounded-lg border text-[#ACACAC] focus:outline-none h-[38px] px-2 border-green-200 w-full"
             />
           </div>
@@ -266,7 +299,21 @@ export default function CallRequestTable({ onView }: any) {
         }}
         isLoading={processingId === declineId}
       />
-      <DataTable columns={columns} data={paginated} />
+      {!isMentor && (
+        <p className="mx-6 text-sm text-green-200/70">
+          Call requests are only available for mentors.
+        </p>
+      )}
+      {isMentor && isError && (
+        <p className="mx-6 text-sm text-red-600">
+          Failed to load call requests. Please try again.
+        </p>
+      )}
+      {isMentor && isLoading ? (
+        <p className="mx-6 text-sm text-green-200/70">Loading…</p>
+      ) : (
+        <DataTable columns={columns} data={paginated} />
+      )}
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

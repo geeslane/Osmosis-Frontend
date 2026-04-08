@@ -8,10 +8,24 @@ export type GetModulesParams = {
   title?: string;
 };
 
+export type GetMentorsParams = {
+  page?: number;
+  limit?: number;
+  topic?: string;
+  status?: 'ACTIVE' | 'INACTIVE';
+};
+
 export const DashboardApi = createApi({
   reducerPath: 'dashboardApi',
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['Modules', 'AllCourses'],
+  tagTypes: [
+    'Modules',
+    'AllCourses',
+    'Calls',
+    'CallRequests',
+    'Notifications',
+    'Availability',
+  ],
   endpoints: (builder) => ({
     modules: builder.query<ModulesResponse, GetModulesParams | void>({
       query: (params) => ({
@@ -65,6 +79,202 @@ export const DashboardApi = createApi({
         params: { folder, resourceType },
       }),
     }),
+
+    // Calls (Mentor)
+    mentorUpcomingCalls: builder.query<any, void>({
+      query: () => ({
+        url: '/mentor/me/calls/upcoming',
+        method: 'GET',
+      }),
+      providesTags: ['Calls'],
+    }),
+    mentorPreviousCalls: builder.query<any, void>({
+      query: () => ({
+        url: '/mentor/me/calls/previous',
+        method: 'GET',
+      }),
+      providesTags: ['Calls'],
+    }),
+    mentorCallRequests: builder.query<any, void>({
+      query: () => ({
+        url: '/mentor/me/call-requests',
+        method: 'GET',
+      }),
+      providesTags: ['CallRequests'],
+    }),
+    acceptCallRequest: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/call-requests/${id}/accept`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['CallRequests', 'Calls'],
+    }),
+    rejectCallRequest: builder.mutation<any, { id: string; reason?: string }>({
+      query: ({ id, reason }) => ({
+        url: `/call-requests/${id}/reject`,
+        method: 'POST',
+        data: reason ? { reason } : undefined,
+      }),
+      invalidatesTags: ['CallRequests', 'Calls'],
+    }),
+    mentorCallFeedback: builder.mutation<
+      any,
+      { callId: string; notes?: string; rating?: number; comment?: string }
+    >({
+      query: ({ callId, ...data }) => ({
+        url: `/mentor/me/calls/${callId}/feedback`,
+        method: 'PATCH',
+        data,
+      }),
+      invalidatesTags: ['Calls'],
+    }),
+
+    // Calls (Teenager / mentee)
+    teenagerUpcomingCalls: builder.query<any, void>({
+      query: () => ({
+        url: '/teenager/me/calls/upcoming',
+        method: 'GET',
+      }),
+      providesTags: ['Calls'],
+    }),
+    teenagerPreviousCalls: builder.query<any, void>({
+      query: () => ({
+        url: '/teenager/me/calls/previous',
+        method: 'GET',
+      }),
+      providesTags: ['Calls'],
+    }),
+    teenagerCallFeedback: builder.mutation<
+      any,
+      { callId: string; rating?: number; comment?: string }
+    >({
+      query: ({ callId, ...data }) => ({
+        url: `/teenager/me/calls/${callId}/feedback`,
+        method: 'PATCH',
+        data,
+      }),
+      invalidatesTags: ['Calls'],
+    }),
+    completeTeenagerCall: builder.mutation<any, string>({
+      query: (callId) => ({
+        url: `/teenager/me/calls/${callId}/complete`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Calls'],
+    }),
+    cancelTeenagerCall: builder.mutation<any, string>({
+      query: (callId) => ({
+        url: `/teenager/me/calls/${callId}/cancel`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Calls'],
+    }),
+
+    // Notifications
+    notifications: builder.query<any, void>({
+      query: () => ({
+        url: '/me/notifications',
+        method: 'GET',
+      }),
+      providesTags: ['Notifications'],
+    }),
+    markAllNotificationsRead: builder.mutation<any, void>({
+      query: () => ({
+        url: '/me/notifications/read-all',
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
+    markNotificationRead: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/me/notifications/${id}/read`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
+    setNotificationReadState: builder.mutation<any, { id: string; read: boolean }>(
+      {
+        query: ({ id, read }) => ({
+          url: `/me/notifications/${id}`,
+          method: 'PATCH',
+          data: { read },
+        }),
+        invalidatesTags: ['Notifications'],
+      }
+    ),
+
+    // Mentor availability + Google Calendar
+    mentorAvailability: builder.query<any, void>({
+      query: () => ({
+        url: '/mentor/availability',
+        method: 'GET',
+      }),
+      providesTags: ['Availability'],
+    }),
+    updateMentorAvailability: builder.mutation<any, any>({
+      query: (data) => ({
+        url: '/mentor/availability',
+        method: 'PUT',
+        data,
+      }),
+      invalidatesTags: ['Availability'],
+    }),
+    mentorGoogleCalendarAuthUrl: builder.query<any, void>({
+      query: () => ({
+        url: '/mentor/availability/google-calendar/auth-url',
+        method: 'GET',
+      }),
+    }),
+    mentorGoogleCalendarSync: builder.mutation<any, void>({
+      query: () => ({
+        url: '/mentor/availability/google-calendar/sync',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Availability'],
+    }),
+
+    // Teenager booking flow
+    liveSessionTopics: builder.query<any, void>({
+      query: () => ({
+        url: '/api/live-sessions/topics',
+        method: 'GET',
+      }),
+    }),
+    mentorsForBooking: builder.query<any, GetMentorsParams>({
+      query: (params) => ({
+        url: '/mentor',
+        method: 'GET',
+        params,
+      }),
+    }),
+    mentorAvailableSlots: builder.query<any, { mentorId: string; date: string }>({
+      query: ({ mentorId, date }) => ({
+        url: `/mentor/${mentorId}/available-slots`,
+        method: 'GET',
+        params: { date },
+      }),
+    }),
+    createCallRequest: builder.mutation<
+      any,
+      { mentorId: string; topic: string; date: string; slot: any }
+    >({
+      query: (data) => ({
+        url: '/call-requests',
+        method: 'POST',
+        data,
+      }),
+      invalidatesTags: ['CallRequests', 'Calls'],
+    }),
+
+    // Admin calls list
+    adminCalls: builder.query<any, { page?: number; limit?: number; q?: string } | void>({
+      query: (params) => ({
+        url: '/calls',
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['Calls'],
+    }),
   }),
 });
 
@@ -75,4 +285,29 @@ export const {
   useGetModuleByIdQuery,
   useDeleteModuleMutation,
   useUploadFileMutation,
+  useMentorUpcomingCallsQuery,
+  useMentorPreviousCallsQuery,
+  useMentorCallRequestsQuery,
+  useAcceptCallRequestMutation,
+  useRejectCallRequestMutation,
+  useMentorCallFeedbackMutation,
+  useTeenagerUpcomingCallsQuery,
+  useTeenagerPreviousCallsQuery,
+  useTeenagerCallFeedbackMutation,
+  useCompleteTeenagerCallMutation,
+  useCancelTeenagerCallMutation,
+  useNotificationsQuery,
+  useMarkAllNotificationsReadMutation,
+  useMarkNotificationReadMutation,
+  useSetNotificationReadStateMutation,
+  useMentorAvailabilityQuery,
+  useUpdateMentorAvailabilityMutation,
+  useMentorGoogleCalendarAuthUrlQuery,
+  useLazyMentorGoogleCalendarAuthUrlQuery,
+  useMentorGoogleCalendarSyncMutation,
+  useLiveSessionTopicsQuery,
+  useMentorsForBookingQuery,
+  useMentorAvailableSlotsQuery,
+  useCreateCallRequestMutation,
+  useAdminCallsQuery,
 } = DashboardApi;

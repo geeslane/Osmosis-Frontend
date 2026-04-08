@@ -3,10 +3,28 @@ import { MoreIcon, SearchIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useToastify from '@/hooks/useToastify';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
 import ActionModal from '@/components/ui/modal/ActionModal';
+import {
+  useMentorCallFeedbackMutation,
+  useMentorPreviousCallsQuery,
+} from '@/store/dashboard/dashboard.api';
+
+function pickArray(payload: any): any[] {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.data?.data)) return payload.data.data;
+  if (Array.isArray(payload?.data?.data?.data)) return payload.data.data.data;
+  return [];
+}
+
+function formatDate(dateLike: any) {
+  const d = dateLike ? new Date(dateLike) : null;
+  if (!d || Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
 type PreviousCall = {
   id: string;
@@ -20,53 +38,29 @@ type PreviousCall = {
 
 export default function PreviousCallTable({ onView }: any) {
   const { showToast } = useToastify();
-  const [data, setData] = useState<PreviousCall[]>([
-    {
-      id: '1',
-      name: 'John Doe',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      phone: '08012345678',
-      status: 'Pending',
-    },
-    {
-      id: '2',
-      name: 'Mary Johnson',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      phone: '08087654321',
+  const { data: apiData, isLoading, isError } = useMentorPreviousCallsQuery();
+  const [sendFeedback, { isLoading: isSendingFeedback }] =
+    useMentorCallFeedbackMutation();
+
+  const data = useMemo<PreviousCall[]>(() => {
+    const rows = pickArray(apiData);
+    return rows.map((c: any) => ({
+      id: String(c?.id ?? c?._id ?? c?.callId ?? ''),
+      name: c?.teenager?.fullName ?? c?.teenagerName ?? c?.menteeName ?? c?.name ?? '—',
+      date: formatDate(c?.scheduledAt ?? c?.startTime ?? c?.date) || String(c?.date ?? ''),
+      topic: c?.topic ?? c?.sessionTopic ?? '—',
+      phone: c?.teenager?.phoneNumber ?? c?.phoneNumber ?? c?.phone ?? '—',
       status: 'Active',
-    },
-    {
-      id: '3',
-      name: 'David Smith',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      phone: '08123456789',
-      status: 'Inactive',
-    },
-    {
-      id: '4',
-      name: 'Sarah Wilson',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      phone: '08099887766',
-      status: 'Pending',
-    },
-    {
-      id: '5',
-      name: 'Daniel Adams',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      phone: '08111112222',
-      status: 'Pending',
-    },
-  ]);
+      image: c?.teenager?.pictureUrl ?? c?.image,
+    }));
+  }, [apiData]);
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [statusFilter] = useState<'All' | PreviousCall['status']>('All');
+  const [feedbackCallId, setFeedbackCallId] = useState<string | null>(null);
+  const [feedbackText, setFeedbackText] = useState('');
 
   const [perPage] = useState(5);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -74,7 +68,16 @@ export default function PreviousCallTable({ onView }: any) {
   const [declineId, setDeclineId] = useState<string | null>(null);
 
   const handleUpdateStatus = async () => {
-    console.log('hellow world');
+    if (!feedbackCallId) return;
+    try {
+      await sendFeedback({ callId: feedbackCallId, notes: feedbackText }).unwrap();
+      showToast('Feedback submitted', 'success');
+      setOpenModal(false);
+      setFeedbackCallId(null);
+      setFeedbackText('');
+    } catch (err: any) {
+      showToast(err?.data?.message || 'Failed to submit feedback', 'error');
+    }
   };
 
   const handleDeclineConfirm = async (reason: string) => {
@@ -83,18 +86,9 @@ export default function PreviousCallTable({ onView }: any) {
     setProcessingId(declineId);
     setDeclineModalOpen(false);
 
-    setTimeout(() => {
-      setData((prev) =>
-        prev.map((item) =>
-          item.id === declineId ? { ...item, status: 'Inactive' } : item
-        )
-      );
-
-      showToast(`Declined: ${reason}`, 'success');
-
-      setProcessingId(null);
-      setDeclineId(null);
-    }, 500);
+    showToast(`Declined: ${reason}`, 'success');
+    setProcessingId(null);
+    setDeclineId(null);
   };
 
   const columns: Column<PreviousCall>[] = [
@@ -142,7 +136,10 @@ export default function PreviousCallTable({ onView }: any) {
         return (
           <div className="flex items-center gap-2">
             <Button
-              onClick={() => setOpenModal(true)}
+              onClick={() => {
+                setFeedbackCallId(row.id);
+                setOpenModal(true);
+              }}
               disabled={isProcessing}
               className="bg-green-200 text-white px-8 py-2 rounded-xl"
             >
@@ -216,14 +213,21 @@ export default function PreviousCallTable({ onView }: any) {
         description="Give feedback about the mentee, what Osmosis team &  parents might need to be aware of about them."
         confirmText="Continue"
         color="text-green-200"
-        //isLoading={isUpdating}
-        onCancel={() => setOpenModal(false)}
+        isLoading={isSendingFeedback}
+        onCancel={() => {
+          if (isSendingFeedback) return;
+          setOpenModal(false);
+          setFeedbackCallId(null);
+          setFeedbackText('');
+        }}
         onConfirm={handleUpdateStatus}
       >
         <div className="mt-10">
           <div>
             <input
               placeholder="Type your comment here."
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
               className="rounded-lg border text-[#ACACAC] focus:outline-none h-[38px] px-2 border-green-200 w-full"
             />
           </div>
@@ -239,7 +243,16 @@ export default function PreviousCallTable({ onView }: any) {
         }}
         isLoading={processingId === declineId}
       />
-      <DataTable columns={columns} data={paginated} />
+      {isError && (
+        <p className="mx-6 text-sm text-red-600">
+          Failed to load calls. Please try again.
+        </p>
+      )}
+      {isLoading ? (
+        <p className="mx-6 text-sm text-green-200/70">Loading…</p>
+      ) : (
+        <DataTable columns={columns} data={paginated} />
+      )}
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

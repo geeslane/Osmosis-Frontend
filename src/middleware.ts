@@ -14,6 +14,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
     '/dashboard/pending-requests',
     '/dashboard/live-sessions',
     '/dashboard/account-settings',
+    '/dashboard/calls',
   ],
   ADMIN: [
     '/dashboard',
@@ -23,6 +24,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
     '/dashboard/live-sessions',
     '/dashboard/account-settings',
     '/dashboard/modules',
+    '/dashboard/calls',
   ],
   MENTOR: [
     '/dashboard',

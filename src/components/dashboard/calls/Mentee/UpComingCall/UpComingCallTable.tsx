@@ -3,10 +3,31 @@ import { MoreIcon, SearchIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
-import { useEffect, useState } from 'react';
-import useToastify from '@/hooks/useToastify';
+import { useEffect, useMemo, useState } from 'react';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
 import ActionModal from '@/components/ui/modal/ActionModal';
+import useToastify from '@/hooks/useToastify';
+import {
+  useCancelTeenagerCallMutation,
+  useTeenagerUpcomingCallsQuery,
+} from '@/store/dashboard/dashboard.api';
+
+function pickArray(payload: any): any[] {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.data?.data)) return payload.data.data;
+  if (Array.isArray(payload?.data?.data?.data)) return payload.data.data.data;
+  return [];
+}
+
+function formatDateTime(dateLike: any) {
+  const d = dateLike ? new Date(dateLike) : null;
+  if (!d || Number.isNaN(d.getTime())) return { date: '', time: '' };
+  return {
+    date: d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }),
+    time: d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }),
+  };
+}
 
 type UpcomingCall = {
   id: string;
@@ -21,57 +42,26 @@ type UpcomingCall = {
 
 export default function UpcomingCallTable({ onView }: any) {
   const { showToast } = useToastify();
-  const [data, setData] = useState<UpcomingCall[]>([
-    {
-      id: '1',
-      name: 'John Doe',
-      date: '12 Dec., 2025',
-      time: '10am',
-      topic: 'Hope',
-      phone: '08012345678',
-      status: 'Pending',
-    },
-    {
-      id: '2',
-      name: 'Mary Johnson',
-      date: '12 Dec., 2025',
-      time: '10am',
+  const { data: apiData, isLoading, isError } = useTeenagerUpcomingCallsQuery();
+  const [cancelCall, { isLoading: isCancelling }] =
+    useCancelTeenagerCallMutation();
 
-      topic: 'Hope',
-      phone: '08087654321',
-      status: 'Active',
-    },
-    {
-      id: '3',
-      name: 'David Smith',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      time: '10am',
-
-      phone: '08123456789',
-      status: 'Inactive',
-    },
-    {
-      id: '4',
-      name: 'Sarah Wilson',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      time: '10am',
-
-      phone: '08099887766',
-      status: 'Pending',
-    },
-    {
-      id: '5',
-      name: 'Daniel Adams',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      time: '10am',
-
-      phone: '08111112222',
-      status: 'Pending',
-    },
-  ]);
+  const data = useMemo<UpcomingCall[]>(() => {
+    const rows = pickArray(apiData);
+    return rows.map((c: any) => {
+      const { date, time } = formatDateTime(c?.scheduledAt ?? c?.startTime ?? c?.date);
+      return {
+        id: String(c?.id ?? c?._id ?? c?.callId ?? ''),
+        name: c?.mentor?.fullName ?? c?.mentorName ?? c?.name ?? '—',
+        date: date || String(c?.date ?? ''),
+        time: time || String(c?.time ?? ''),
+        topic: c?.topic ?? c?.sessionTopic ?? '—',
+        phone: c?.mentor?.phoneNumber ?? c?.phoneNumber ?? c?.phone ?? '—',
+        status: 'Active',
+        image: c?.mentor?.pictureUrl ?? c?.image,
+      };
+    });
+  }, [apiData]);
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -92,19 +82,14 @@ export default function UpcomingCallTable({ onView }: any) {
 
     setProcessingId(declineId);
     setDeclineModalOpen(false);
-
-    setTimeout(() => {
-      setData((prev) =>
-        prev.map((item) =>
-          item.id === declineId ? { ...item, status: 'Inactive' } : item
-        )
-      );
-
-      showToast(`Declined: ${reason}`, 'success');
-
-      setProcessingId(null);
-      setDeclineId(null);
-    }, 500);
+    try {
+      await cancelCall(declineId).unwrap();
+      showToast('Call cancelled', 'success');
+    } catch (err: any) {
+      showToast(err?.data?.message || 'Failed to cancel call', 'error');
+    }
+    setProcessingId(null);
+    setDeclineId(null);
   };
 
   const columns: Column<UpcomingCall>[] = [
@@ -159,7 +144,7 @@ export default function UpcomingCallTable({ onView }: any) {
       key: 'status',
       label: '',
       render: (row) => {
-        const isProcessing = processingId === row.id;
+        const isProcessing = processingId === row.id || isCancelling;
         return (
           <div className="flex items-center gap-2">
             <Button
@@ -168,6 +153,16 @@ export default function UpcomingCallTable({ onView }: any) {
               className="bg-green-100 text-white px-8 py-2 rounded-xl"
             >
               Join call
+            </Button>
+            <Button
+              onClick={() => {
+                setDeclineId(row.id);
+                setDeclineModalOpen(true);
+              }}
+              disabled={isProcessing}
+              className="bg-red-100 text-white px-8 py-2 rounded-xl"
+            >
+              Cancel
             </Button>
           </div>
         );
@@ -260,7 +255,16 @@ export default function UpcomingCallTable({ onView }: any) {
         }}
         isLoading={processingId === declineId}
       />
-      <DataTable columns={columns} data={paginated} />
+      {isError && (
+        <p className="mx-6 text-sm text-red-600">
+          Failed to load calls. Please try again.
+        </p>
+      )}
+      {isLoading ? (
+        <p className="mx-6 text-sm text-green-200/70">Loading…</p>
+      ) : (
+        <DataTable columns={columns} data={paginated} />
+      )}
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

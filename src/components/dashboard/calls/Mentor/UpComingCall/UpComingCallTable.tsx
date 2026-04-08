@@ -3,9 +3,27 @@ import { MoreIcon, SearchIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useToastify from '@/hooks/useToastify';
 import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
+import { useMentorUpcomingCallsQuery } from '@/store/dashboard/dashboard.api';
+
+function pickArray(payload: any): any[] {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.data?.data)) return payload.data.data;
+  if (Array.isArray(payload?.data?.data?.data)) return payload.data.data.data;
+  return [];
+}
+
+function formatDateTime(dateLike: any) {
+  const d = dateLike ? new Date(dateLike) : null;
+  if (!d || Number.isNaN(d.getTime())) return { date: '', time: '' };
+  return {
+    date: d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }),
+    time: d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }),
+  };
+}
 
 type UpcomingCall = {
   id: string;
@@ -20,57 +38,24 @@ type UpcomingCall = {
 
 export default function UpcomingCallTable({ onView }: any) {
   const { showToast } = useToastify();
-  const [data, setData] = useState<UpcomingCall[]>([
-    {
-      id: '1',
-      name: 'John Doe',
-      date: '12 Dec., 2025',
-      time: '10am',
-      topic: 'Hope',
-      phone: '08012345678',
-      status: 'Pending',
-    },
-    {
-      id: '2',
-      name: 'Mary Johnson',
-      date: '12 Dec., 2025',
-      time: '10am',
+  const { data: apiData, isLoading, isError } = useMentorUpcomingCallsQuery();
 
-      topic: 'Hope',
-      phone: '08087654321',
-      status: 'Active',
-    },
-    {
-      id: '3',
-      name: 'David Smith',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      time: '10am',
-
-      phone: '08123456789',
-      status: 'Inactive',
-    },
-    {
-      id: '4',
-      name: 'Sarah Wilson',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      time: '10am',
-
-      phone: '08099887766',
-      status: 'Pending',
-    },
-    {
-      id: '5',
-      name: 'Daniel Adams',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      time: '10am',
-
-      phone: '08111112222',
-      status: 'Pending',
-    },
-  ]);
+  const data = useMemo<UpcomingCall[]>(() => {
+    const rows = pickArray(apiData);
+    return rows.map((c: any) => {
+      const { date, time } = formatDateTime(c?.scheduledAt ?? c?.startTime ?? c?.date);
+      return {
+        id: String(c?.id ?? c?._id ?? c?.callId ?? ''),
+        name: c?.teenager?.fullName ?? c?.teenagerName ?? c?.menteeName ?? c?.name ?? '—',
+        date: date || String(c?.date ?? ''),
+        time: time || String(c?.time ?? ''),
+        topic: c?.topic ?? c?.sessionTopic ?? '—',
+        phone: c?.teenager?.phoneNumber ?? c?.phoneNumber ?? c?.phone ?? '—',
+        status: 'Active',
+        image: c?.teenager?.pictureUrl ?? c?.image,
+      };
+    });
+  }, [apiData]);
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -87,18 +72,9 @@ export default function UpcomingCallTable({ onView }: any) {
     setProcessingId(declineId);
     setDeclineModalOpen(false);
 
-    setTimeout(() => {
-      setData((prev) =>
-        prev.map((item) =>
-          item.id === declineId ? { ...item, status: 'Inactive' } : item
-        )
-      );
-
-      showToast(`Declined: ${reason}`, 'success');
-
-      setProcessingId(null);
-      setDeclineId(null);
-    }, 500);
+    showToast(`Declined: ${reason}`, 'success');
+    setProcessingId(null);
+    setDeclineId(null);
   };
 
   const columns: Column<UpcomingCall>[] = [
@@ -229,7 +205,16 @@ export default function UpcomingCallTable({ onView }: any) {
         }}
         isLoading={processingId === declineId}
       />
+      {isError && (
+        <p className="mx-6 text-sm text-red-600">
+          Failed to load calls. Please try again.
+        </p>
+      )}
+      {isLoading ? (
+        <p className="mx-6 text-sm text-green-200/70">Loading…</p>
+      ) : (
       <DataTable columns={columns} data={paginated} />
+      )}
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );
