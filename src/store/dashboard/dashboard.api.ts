@@ -29,6 +29,94 @@ export type ProgramConfig = {
   numberOfModules: number;
 };
 
+/** Admin / Super Admin home summary. Prefer GET `/admin/dashboard/stats`; see JSDoc on endpoint for contract. */
+export type AdminDashboardStats = {
+  totalAdmins: number;
+  totalMentors: number;
+  totalMentees: number;
+  totalModules: number;
+  totalCalls: number;
+  /** Scheduled mentorship calls not yet held (optional). */
+  upcomingCalls?: number;
+  /** Count of live sessions in `scheduled` status (optional). */
+  upcomingLiveSessions?: number;
+  totalLiveSessions: number;
+  /** Combined pending mentor + mentee application requests (optional). */
+  pendingRequests?: number;
+};
+
+function emptyAdminDashboardStats(): AdminDashboardStats {
+  return {
+    totalAdmins: 0,
+    totalMentors: 0,
+    totalMentees: 0,
+    totalModules: 0,
+    totalCalls: 0,
+    totalLiveSessions: 0,
+  };
+}
+
+function parsePaginationTotal(res: { data?: unknown }): number {
+  const body = res.data;
+  if (!body || typeof body !== 'object') return 0;
+  const b = body as Record<string, unknown>;
+  const pag = b.pagination;
+  if (pag && typeof pag === 'object' && 'total' in pag) {
+    return Number((pag as { total?: number }).total) || 0;
+  }
+  return 0;
+}
+
+function parseModulesListTotal(res: { data?: unknown }): number {
+  const body = res.data;
+  if (!body || typeof body !== 'object') return 0;
+  const b = body as Record<string, unknown>;
+  const inner = b.data;
+  if (inner && typeof inner === 'object' && 'total' in inner) {
+    return Number((inner as { total?: number }).total) || 0;
+  }
+  return 0;
+}
+
+function parseLiveSessionsListTotal(res: { data?: unknown }): number {
+  const body = res.data;
+  if (!body || typeof body !== 'object') return 0;
+  const b = body as Record<string, unknown>;
+  const nested = b.data;
+  if (nested && typeof nested === 'object' && 'total' in nested) {
+    return Number((nested as { total?: number }).total) || 0;
+  }
+  if ('total' in b) return Number((b as { total?: number }).total) || 0;
+  return 0;
+}
+
+function normalizeAdminStatsPayload(raw: unknown): AdminDashboardStats | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const r = raw as Record<string, unknown>;
+  let d: Record<string, unknown> = r;
+  if (r.data && typeof r.data === 'object' && !Array.isArray(r.data)) {
+    d = r.data as Record<string, unknown>;
+    if (d.data && typeof d.data === 'object' && !Array.isArray(d.data)) {
+      d = d.data as Record<string, unknown>;
+    }
+  }
+  const num = (k: string, alt?: string) => {
+    const v = d[k] ?? (alt ? d[alt] : undefined);
+    return v === undefined || v === null ? undefined : Number(v);
+  };
+  return {
+    totalAdmins: num('totalAdmins', 'admins') ?? 0,
+    totalMentors: num('totalMentors', 'mentors') ?? 0,
+    totalMentees: num('totalMentees', 'mentees') ?? 0,
+    totalModules: num('totalModules', 'modules') ?? 0,
+    totalCalls: num('totalCalls', 'calls') ?? 0,
+    upcomingCalls: num('upcomingCalls'),
+    upcomingLiveSessions: num('upcomingLiveSessions'),
+    totalLiveSessions: num('totalLiveSessions', 'liveSessions') ?? 0,
+    pendingRequests: num('pendingRequests'),
+  };
+}
+
 export const DashboardApi = createApi({
   reducerPath: 'dashboardApi',
   baseQuery: axiosBaseQuery(),
@@ -42,6 +130,7 @@ export const DashboardApi = createApi({
     'Availability',
     /** Per-teenager module progress (admin/mentor view + cache bust on submit/complete). */
     'TeenagerModuleProgress',
+    'AdminDashboardStats',
   ],
   endpoints: (builder) => ({
     modules: builder.query<ModulesResponse, GetModulesParams | void>({
@@ -154,6 +243,67 @@ export const DashboardApi = createApi({
         method: 'DELETE',
       }),
       invalidatesTags: ['Modules'],
+    }),
+
+    /**
+     * Admin / Super Admin dashboard summary (user counts, calls, modules, live sessions, pending queue).
+     * **Primary:** `GET /admin/dashboard/stats` — see `normalizeAdminStatsPayload` for accepted JSON shapes.
+     * **Fallback:** If that route returns 404/501, totals are approximated from `limit=1` list responses (may omit fields on partial errors).
+     */
+    getAdminDashboardStats: builder.query<
+      AdminDashboardStats,
+      { role?: 'SUPERADMIN' | 'ADMIN' } | void
+    >({
+      queryFn: async (arg, _api, _extraOptions, fetchWithBQ) => {
+        const role =
+          arg && typeof arg === 'object' && 'role' in arg
+            ? (arg as { role?: 'SUPERADMIN' | 'ADMIN' }).role
+            : undefined;
+
+        const primary = await fetchWithBQ({ url: '/admin/dashboard/stats', method: 'GET' });
+
+        if (!primary.error && primary.data) {
+          const parsed = normalizeAdminStatsPayload(primary.data);
+          if (parsed) return { data: parsed };
+        }
+
+        const st =
+          primary.error && typeof primary.error === 'object'
+            ? (primary.error as { status?: number }).status
+            : undefined;
+        if (primary.error && st != null && st !== 404 && st !== 501) {
+          return { error: primary.error };
+        }
+
+        const stats = emptyAdminDashboardStats();
+        const results = await Promise.all([
+          fetchWithBQ({ url: '/module', method: 'GET', params: { page: 1, limit: 1 } }),
+          fetchWithBQ({ url: '/mentor', method: 'GET', params: { page: 1, limit: 1 } }),
+          fetchWithBQ({ url: '/teenager', method: 'GET', params: { page: 1, limit: 1 } }),
+          fetchWithBQ({ url: '/calls', method: 'GET', params: { page: 1, limit: 1 } }),
+          fetchWithBQ({ url: '/mentor/requests', method: 'GET', params: { page: 1, limit: 1 } }),
+          fetchWithBQ({ url: '/teenager/requests', method: 'GET', params: { page: 1, limit: 1 } }),
+          fetchWithBQ({ url: '/api/live-sessions', method: 'GET', params: { page: 1, limit: 1 } }),
+          ...(role === 'SUPERADMIN'
+            ? [fetchWithBQ({ url: '/admin', method: 'GET', params: { page: 1, limit: 1 } })]
+            : []),
+        ]);
+
+        stats.totalModules = parseModulesListTotal(results[0]!);
+        stats.totalMentors = parsePaginationTotal(results[1]!);
+        stats.totalMentees = parsePaginationTotal(results[2]!);
+        stats.totalCalls = parsePaginationTotal(results[3]!);
+        const mentorPending = parsePaginationTotal(results[4]!);
+        const menteePending = parsePaginationTotal(results[5]!);
+        stats.pendingRequests = mentorPending + menteePending;
+        stats.totalLiveSessions = parseLiveSessionsListTotal(results[6]!);
+        if (role === 'SUPERADMIN' && results[7]) {
+          stats.totalAdmins = parsePaginationTotal(results[7]!);
+        }
+
+        return { data: stats };
+      },
+      providesTags: ['AdminDashboardStats'],
     }),
 
     /** Mentor dashboard: rating (average) and total calls. Backend: GET /mentor/me/stats or derive from calls. */
@@ -442,6 +592,7 @@ export const {
   useSetTeenagerModuleCompletionMutation,
   useDeleteModuleMutation,
   useUploadFileMutation,
+  useGetAdminDashboardStatsQuery,
   useGetMentorDashboardStatsQuery,
   useGetProgramConfigQuery,
   useUpdateProgramConfigMutation,
