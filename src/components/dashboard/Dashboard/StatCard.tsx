@@ -4,7 +4,7 @@ import React from 'react';
 
 type StatCardProps = {
   label: string;
-  value: string | number;
+  value: React.ReactNode;
   icon?: React.ReactNode;
   className?: string;
 };

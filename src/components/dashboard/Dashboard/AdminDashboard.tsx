@@ -14,6 +14,7 @@ import { RootState } from '@/store';
 import WelcomeSection from './WelcomeSection';
 import ReminderCard from './ReminderCard';
 import StatCard from './StatCard';
+import LoadingEllipsis from '@/components/ui/LoadingEllipsis';
 import Link from 'next/link';
 import React from 'react';
 import { useGetAdminDashboardStatsQuery } from '@/store/dashboard/dashboard.api';
@@ -29,7 +30,6 @@ export default function AdminDashboard() {
     (user as { fullName?: string })?.fullName ??
     '';
   const firstName = displayName.split(' ')[0] || 'there';
-  const isSuperAdmin = user?.role === 'SUPERADMIN';
   const isAdminRole = user?.role === 'SUPERADMIN' || user?.role === 'ADMIN';
 
   const { data: stats, isLoading: statsLoading } = useGetAdminDashboardStatsQuery(
@@ -40,8 +40,6 @@ export default function AdminDashboard() {
   );
 
   const pending = stats?.pendingRequests ?? 0;
-  const upcomingCalls = stats?.upcomingCalls;
-  const upcomingSessions = stats?.upcomingLiveSessions;
 
   return (
     <div className="space-y-6 sm:space-y-8 w-full min-w-0">
@@ -52,64 +50,29 @@ export default function AdminDashboard() {
 
       <section>
         <h2 className="text-lg font-semibold text-[#101828] mb-4">At a glance</h2>
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {isSuperAdmin && (
-            <StatCard
-              label="Admins"
-              value={statsLoading ? '…' : formatCount(stats?.totalAdmins ?? 0)}
-              icon={<UserManagementIcon className="w-6 h-6" />}
-            />
-          )}
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            label="Pending requests"
+            value={statsLoading ? <LoadingEllipsis /> : formatCount(pending)}
+            icon={<PendingRequestIcon />}
+            className={pending > 0 ? 'ring-1 ring-amber-200/90 bg-amber-50/40' : ''}
+          />
+          <StatCard
+            label="Mentorship calls"
+            value={statsLoading ? <LoadingEllipsis /> : formatCount(stats?.totalCalls ?? 0)}
+            icon={<CallIcon />}
+          />
           <StatCard
             label="Mentors"
-            value={statsLoading ? '…' : formatCount(stats?.totalMentors ?? 0)}
+            value={statsLoading ? <LoadingEllipsis /> : formatCount(stats?.totalMentors ?? 0)}
             icon={<UserManagementIcon className="w-6 h-6" />}
           />
           <StatCard
             label="Mentees"
-            value={statsLoading ? '…' : formatCount(stats?.totalMentees ?? 0)}
+            value={statsLoading ? <LoadingEllipsis /> : formatCount(stats?.totalMentees ?? 0)}
             icon={<UserManagementIcon className="w-6 h-6" />}
           />
-          <StatCard
-            label="Modules"
-            value={statsLoading ? '…' : formatCount(stats?.totalModules ?? 0)}
-            icon={<ContentManagementIcon className="w-6 h-6" />}
-          />
-          <StatCard
-            label="Mentorship calls"
-            value={statsLoading ? '…' : formatCount(stats?.totalCalls ?? 0)}
-            icon={<CallIcon />}
-          />
-          <StatCard
-            label="Live sessions"
-            value={statsLoading ? '…' : formatCount(stats?.totalLiveSessions ?? 0)}
-            icon={<LiveSessionIcon />}
-          />
-          <StatCard
-            label="Pending requests"
-            value={statsLoading ? '…' : formatCount(pending)}
-            icon={<PendingRequestIcon />}
-            className={pending > 0 ? 'ring-1 ring-amber-200/90 bg-amber-50/40' : ''}
-          />
         </div>
-        {!statsLoading &&
-        ((upcomingCalls != null && upcomingCalls > 0) ||
-          (upcomingSessions != null && upcomingSessions > 0)) ? (
-          <ul className="mt-3 text-sm text-gray-500 space-y-1 list-disc list-inside">
-            {upcomingCalls != null && upcomingCalls > 0 && (
-              <li>
-                {formatCount(upcomingCalls)} upcoming mentorship call
-                {upcomingCalls === 1 ? '' : 's'} (scheduled).
-              </li>
-            )}
-            {upcomingSessions != null && upcomingSessions > 0 && (
-              <li>
-                {formatCount(upcomingSessions)} upcoming live session
-                {upcomingSessions === 1 ? '' : 's'}.
-              </li>
-            )}
-          </ul>
-        ) : null}
       </section>
 
       <section>
@@ -180,10 +143,7 @@ export default function AdminDashboard() {
 
       <section>
         <h2 className="text-lg font-semibold text-[#101828] mb-4">Stay on top of</h2>
-        <p className="text-sm text-gray-500 mb-4 max-w-2xl">
-          Program timing and inbox—without repeating the same destinations as the quick links (calls,
-          modules, live sessions).
-        </p>
+
         <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
           <ReminderCard
             title="Program schedule"
@@ -198,18 +158,6 @@ export default function AdminDashboard() {
             href="/dashboard/notifications"
             linkLabel="View notifications"
             icon={<NotificationIcon width={20} height={20} />}
-          />
-          <ReminderCard
-            title="Pending requests"
-            description={
-              pending > 0
-                ? `${formatCount(pending)} item(s) waiting for review across mentor and mentee applications.`
-                : 'No pending applications right now. Check back when new mentor or mentee requests arrive.'
-            }
-            href="/dashboard/pending-requests"
-            linkLabel={pending > 0 ? 'Review now' : 'View queue'}
-            icon={<PendingRequestIcon />}
-            variant={pending > 0 ? 'highlight' : 'default'}
           />
         </div>
       </section>
