@@ -2,7 +2,10 @@
 import { useRouter } from 'next/navigation';
 import type { Module } from '@/components/types';
 import useToastify from '@/hooks/useToastify';
-import { useDeleteModuleMutation } from '@/store/dashboard/dashboard.api';
+import {
+  useDeleteModuleMutation,
+  useSetTeenagerModuleCompletionMutation,
+} from '@/store/dashboard/dashboard.api';
 import { useState, useEffect } from 'react';
 import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 import { useSelector } from 'react-redux';
@@ -30,9 +33,11 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
   const router = useRouter();
   const { showToast } = useToastify();
   const [deleteModule, { isLoading }] = useDeleteModuleMutation();
+  const [setCompletion] = useSetTeenagerModuleCompletionMutation();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [markedModuleIds, setMarkedModuleIds] = useState<Set<string>>(new Set());
+  const [pendingModuleId, setPendingModuleId] = useState<string | null>(null);
   const user = useSelector((state: RootState) => state.profile.user);
   const isMentee = user?.role === 'TEENAGER';
 
@@ -90,23 +95,38 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
                     <input
                       type="checkbox"
                       checked={markedModuleIds.has(module.id)}
+                      disabled={pendingModuleId === module.id}
                       onChange={(e) => {
                         e.stopPropagation();
-                        setMarkedModuleIds((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(module.id)) next.delete(module.id);
-                          else next.add(module.id);
-                          return next;
-                        });
-                        showToast(
-                          markedModuleIds.has(module.id)
-                            ? 'Module unmarked'
-                            : 'Module marked as completed',
-                          'success'
-                        );
+                        const nextChecked = e.target.checked;
+                        void (async () => {
+                          setPendingModuleId(module.id);
+                          try {
+                            await setCompletion({
+                              moduleId: module.id,
+                              completed: nextChecked,
+                            }).unwrap();
+                            setMarkedModuleIds((prev) => {
+                              const next = new Set(prev);
+                              if (nextChecked) next.add(module.id);
+                              else next.delete(module.id);
+                              return next;
+                            });
+                            showToast(
+                              nextChecked
+                                ? 'Module marked as completed'
+                                : 'Module marked as incomplete',
+                              'success'
+                            );
+                          } catch {
+                            showToast('Could not update completion. Please try again.', 'error');
+                          } finally {
+                            setPendingModuleId(null);
+                          }
+                        })();
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      className="h-4 w-4 rounded border-gray-300 text-green-200 focus:ring-green-200"
+                      className="h-4 w-4 rounded border-gray-300 text-green-200 focus:ring-green-200 disabled:opacity-50"
                     />
                   </label>
                 )}

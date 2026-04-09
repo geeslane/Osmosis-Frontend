@@ -131,11 +131,19 @@ export const DashboardApi = createApi({
       invalidatesTags: ['Modules', 'TeenagerModuleProgress'],
     }),
 
-    /** Teenager marks module complete. PATCH /teenager/me/modules/:moduleId/complete */
-    markTeenagerModuleComplete: builder.mutation<unknown, string>({
-      query: (moduleId) => ({
+    /**
+     * Teenager sets module completion (list checkbox + detail button).
+     * PATCH /teenager/me/modules/:moduleId/complete — body `{ completed: boolean }`.
+     * If your API only supports marking complete (no body), add `completed: false` support or a dedicated uncomplete route (see team prompt).
+     */
+    setTeenagerModuleCompletion: builder.mutation<
+      unknown,
+      { moduleId: string; completed: boolean }
+    >({
+      query: ({ moduleId, completed }) => ({
         url: `/teenager/me/modules/${moduleId}/complete`,
         method: 'PATCH',
+        data: { completed },
       }),
       invalidatesTags: ['Modules', 'TeenagerModuleProgress'],
     }),
@@ -431,7 +439,7 @@ export const {
   useGetTeenagerModulesProgressQuery,
   useGetTeenagerMeModuleDeliverableQuery,
   useSubmitTeenagerModuleDeliverableMutation,
-  useMarkTeenagerModuleCompleteMutation,
+  useSetTeenagerModuleCompletionMutation,
   useDeleteModuleMutation,
   useUploadFileMutation,
   useGetMentorDashboardStatsQuery,

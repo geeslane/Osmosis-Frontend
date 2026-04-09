@@ -56,6 +56,9 @@ const ROLE_ACCESS: Record<string, string[]> = {
 
 const authPages = ['/signin', '/signup'];
 
+/** Public under /mentor — must not require a session (e.g. application signup). */
+const PUBLIC_MENTOR_PREFIXES = ['/mentor/signup'];
+
 export async function middleware(request: NextRequest) {
   const session = await getSessionCookie();
 
@@ -73,7 +76,14 @@ export async function middleware(request: NextRequest) {
   }
 
   /* ---------------- Protect Dashboard & mentor OAuth return paths ---------------- */
-  if (!token && (pathname.startsWith('/dashboard') || pathname.startsWith('/mentor'))) {
+  const isPublicMentorRoute = PUBLIC_MENTOR_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+  if (
+    !token &&
+    (pathname.startsWith('/dashboard') ||
+      (pathname.startsWith('/mentor') && !isPublicMentorRoute))
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = '/signin';
     url.searchParams.set('redirect', pathname);

@@ -17,7 +17,7 @@ import Link from 'next/link';
 import PageTitle from '@/components/PageTitle';
 import {
   useGetModuleByIdQuery,
-  useMarkTeenagerModuleCompleteMutation,
+  useSetTeenagerModuleCompletionMutation,
 } from '@/store/dashboard/dashboard.api';
 import Button from '@/components/ui/button/Button';
 import { useSelector } from 'react-redux';
@@ -35,8 +35,8 @@ export default function ModuleDetails() {
   const [markedCompleted, setMarkedCompleted] = useState(false);
   const id = typeof params.id === 'string' ? params.id : (params.id?.[0] ?? '');
   const { data, isLoading } = useGetModuleByIdQuery(id, { skip: !id });
-  const [markComplete, { isLoading: completing }] =
-    useMarkTeenagerModuleCompleteMutation();
+  const [setCompletion, { isLoading: completing }] =
+    useSetTeenagerModuleCompletionMutation();
   const backPath =
     user?.role === 'TEENAGER'
       ? '/dashboard/modules/mentee'
@@ -46,17 +46,28 @@ export default function ModuleDetails() {
   const isMentee = user?.role === 'TEENAGER';
 
   useEffect(() => {
-    if (moduleData?.markedCompleted) setMarkedCompleted(true);
+    setMarkedCompleted(!!moduleData?.markedCompleted);
   }, [moduleData?.markedCompleted]);
 
   const handleMarkCompleted = async () => {
     if (!id) return;
     try {
-      await markComplete(id).unwrap();
+      await setCompletion({ moduleId: id, completed: true }).unwrap();
       setMarkedCompleted(true);
       showToast('Module marked as completed', 'success');
     } catch {
       showToast('Could not mark this module complete. Please try again.', 'error');
+    }
+  };
+
+  const handleMarkIncomplete = async () => {
+    if (!id) return;
+    try {
+      await setCompletion({ moduleId: id, completed: false }).unwrap();
+      setMarkedCompleted(false);
+      showToast('Module marked as incomplete.', 'success');
+    } catch {
+      showToast('Could not update completion status. Please try again.', 'error');
     }
   };
 
@@ -88,10 +99,22 @@ export default function ModuleDetails() {
               When you&apos;re done, mark as completed.
             </p>
             {markedCompleted ? (
-              <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-xs font-bold">✓</span>
-                Completed
-              </span>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-xs font-bold">
+                    ✓
+                  </span>
+                  Completed
+                </span>
+                <button
+                  type="button"
+                  onClick={() => void handleMarkIncomplete()}
+                  disabled={completing}
+                  className="text-sm font-medium text-gray-600 underline underline-offset-2 hover:text-gray-800 disabled:opacity-50"
+                >
+                  {completing ? 'Saving…' : 'Mark as incomplete'}
+                </button>
+              </div>
             ) : (
               <Button
                 onClick={() => void handleMarkCompleted()}

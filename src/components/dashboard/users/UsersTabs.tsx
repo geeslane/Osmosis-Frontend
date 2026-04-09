@@ -1,12 +1,14 @@
 'use client';
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import Tabs from '@/components/ui/Tabs';
 import { AdminsIcon, MentorIcon, MentteeIcon } from '@/assets/icons';
 
 export default function UsersTabs() {
+  const pathname = usePathname();
   const user = useSelector((state: RootState) => state.profile.user);
   const userRole = user?.role;
 
@@ -30,6 +32,13 @@ export default function UsersTabs() {
 
   const defaultValue = tabs[0].value;
 
+  /** Nested routes omit `?role=`; infer from path so Mentees stays selected on module views. */
+  const roleFromPath =
+    pathname.startsWith('/dashboard/users/mentee') ? 'mentee' : pathname.startsWith('/dashboard/users/admin') ? 'admins' : undefined;
+
+  const activeTabFromPath =
+    roleFromPath && allowedTabs.includes(roleFromPath) ? roleFromPath : undefined;
+
   return (
     <Tabs
       paramKey="role"
@@ -37,6 +46,7 @@ export default function UsersTabs() {
       tabs={tabs}
       basePath="/dashboard/users"
       preserveSearchParams={false}
+      activeTabFromPath={activeTabFromPath}
     />
   );
 }
