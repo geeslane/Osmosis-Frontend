@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { CalendarIcon, GoogleIcon, LoadingIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
@@ -78,84 +78,16 @@ function formatTimeForDisplay(time: string): string {
   return `${hour}:${m.toString().padStart(2, '0')} ${period}`;
 }
 
-const STEP2_DRAFT_PREFIX = 'mentor-availability-step2-draft:';
-const STEP2_DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-
-type Step2DraftPayload = {
-  meetingLink: string;
-  mentorshipTopics: string[];
-  savedAt: number;
-  /** Wizard step to reopen after OAuth return (step 3 = calendar). */
-  resumeStep?: 2 | 3;
-};
-
-function step2DraftKey(mentorId: string) {
-  return `${STEP2_DRAFT_PREFIX}${mentorId}`;
-}
-
-function saveStep2Draft(
-  mentorId: string,
-  data: Pick<Step2DraftPayload, 'meetingLink' | 'mentorshipTopics'> & {
-    resumeStep?: 2 | 3;
-  }
-) {
-  if (!mentorId || typeof window === 'undefined') return;
-  const payload: Step2DraftPayload = {
-    meetingLink: data.meetingLink,
-    mentorshipTopics: data.mentorshipTopics,
-    resumeStep: data.resumeStep,
-    savedAt: Date.now(),
-  };
-  try {
-    sessionStorage.setItem(step2DraftKey(mentorId), JSON.stringify(payload));
-  } catch {
-    // ignore quota / private mode
-  }
-}
-
-function loadStep2Draft(mentorId: string): Step2DraftPayload | null {
-  if (!mentorId || typeof window === 'undefined') return null;
-  try {
-    const raw = sessionStorage.getItem(step2DraftKey(mentorId));
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<Step2DraftPayload>;
-    if (typeof parsed.meetingLink !== 'string' || !Array.isArray(parsed.mentorshipTopics)) {
-      return null;
-    }
-    const savedAt = typeof parsed.savedAt === 'number' ? parsed.savedAt : 0;
-    if (Date.now() - savedAt > STEP2_DRAFT_MAX_AGE_MS) {
-      sessionStorage.removeItem(step2DraftKey(mentorId));
-      return null;
-    }
-    const resumeStep =
-      parsed.resumeStep === 3 || parsed.resumeStep === 2 ? parsed.resumeStep : undefined;
-    return {
-      meetingLink: parsed.meetingLink,
-      mentorshipTopics: parsed.mentorshipTopics.map(String),
-      savedAt,
-      resumeStep,
-    };
-  } catch {
-    return null;
-  }
-}
-
-function clearStep2Draft(mentorId: string) {
-  if (!mentorId || typeof window === 'undefined') return;
-  try {
-    sessionStorage.removeItem(step2DraftKey(mentorId));
-  } catch {
-    // ignore
-  }
-}
-
 export default function MentorAvailabilitySchedule() {
   const { showToast } = useToastify();
   const user = useSelector((state: RootState) => state.profile.user);
   const isMentor = user?.role === 'MENTOR';
   const mentorId = String(user?.id ?? '');
 
-  const { data: availability, isLoading } = useGetMentorAvailabilityQuery();
+  const { data: availability, isLoading } = useGetMentorAvailabilityQuery(
+    undefined,
+    { refetchOnMountOrArgChange: true }
+  );
   const [saveAvailability, { isLoading: isSaving }] =
     useSaveMentorAvailabilityMutation();
   const [fetchGoogleCalendarAuthUrl, { isFetching: isAuthUrlLoading }] =
@@ -167,8 +99,7 @@ export default function MentorAvailabilitySchedule() {
     Boolean(availability?.googleCalendarConnected) ||
     Boolean(availability?.googleCalendarSynced);
 
-  const { data: mentorData, isLoading: isMentorProfileLoading } =
-    useGetMentorByIdQuery(mentorId, {
+  const { data: mentorData } = useGetMentorByIdQuery(mentorId, {
       skip: !isMentor || !mentorId,
     });
   const [updateMentorProfile, { isLoading: isUpdatingProfile }] =
@@ -188,8 +119,6 @@ export default function MentorAvailabilitySchedule() {
   const [topicToAdd, setTopicToAdd] = useState('');
   /** Summary view after the full wizard is done (or server already has link/sync). */
   const [hasFinishedStep2, setHasFinishedStep2] = useState(false);
-
-  const step2DraftRestoredRef = useRef(false);
 
   useEffect(() => {
     if (availability) {
@@ -211,8 +140,14 @@ export default function MentorAvailabilitySchedule() {
           setHasFinishedStep2(true);
         }
       }
+    } else if (!isLoading) {
+      // Row removed in DB or no record — reset wizard (fixes stale RTK cache → step 2 jump)
+      setWeeklySchedule(createEmptySchedule());
+      setMeetingLink('');
+      setHasFinishedStep2(false);
+      setStep(1);
     }
-  }, [availability, step]);
+  }, [availability, step, isLoading, mentorId]);
 
   useEffect(() => {
     const mentor = extractMentorRecord(mentorData);
@@ -222,20 +157,6 @@ export default function MentorAvailabilitySchedule() {
       setMentorshipTopics(Array.isArray(raw) ? raw.map(String) : [String(raw)]);
     }
   }, [mentorData]);
-
-  /** Restore meeting link + topics after Google OAuth redirect (same tab, sessionStorage). */
-  useEffect(() => {
-    if (isLoading || !mentorId || step2DraftRestoredRef.current) return;
-    if (isMentor && isMentorProfileLoading) return;
-
-    const draft = loadStep2Draft(mentorId);
-    if (!draft) return;
-
-    step2DraftRestoredRef.current = true;
-    setMeetingLink(draft.meetingLink);
-    setMentorshipTopics(draft.mentorshipTopics);
-    setStep(draft.resumeStep ?? 2);
-  }, [isLoading, mentorId, isMentor, isMentorProfileLoading]);
 
   const hasAnyBlocks = weeklySchedule.some((d) => d.blocks.length > 0);
 
@@ -329,18 +250,10 @@ export default function MentorAvailabilitySchedule() {
     showToast('Availability setup complete.', 'success');
     setHasFinishedStep2(true);
     setIsEditing(false);
-    clearStep2Draft(mentorId);
   };
 
   const handleConnectGoogleCalendar = async () => {
     try {
-      if (mentorId) {
-        saveStep2Draft(mentorId, {
-          meetingLink,
-          mentorshipTopics,
-          resumeStep: 3,
-        });
-      }
       const { url } = await fetchGoogleCalendarAuthUrl().unwrap();
       if (url) {
         window.location.href = url;
