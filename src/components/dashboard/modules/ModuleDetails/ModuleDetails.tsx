@@ -115,8 +115,8 @@ export default function ModuleDetails() {
             )}
             {markedCompleted ? (
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
-                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-violet-600 text-white text-sm font-bold shadow-sm ring-2 ring-violet-500/40">
+                <span className="flex items-center gap-1.5 text-green-200 text-sm font-medium">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-green-200 text-white text-sm font-bold shadow-sm ring-2 ring-[#DCFFAD]/80">
                     ✓
                   </span>
                   Completed

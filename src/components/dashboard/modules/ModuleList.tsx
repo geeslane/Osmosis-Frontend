@@ -92,7 +92,7 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
                     }
                   >
                     {module.markedCompleted ? (
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-violet-600 text-white text-[11px] font-bold leading-none shadow-sm ring-2 ring-violet-500/40">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-green-200 text-white text-[11px] font-bold leading-none shadow-sm ring-2 ring-[#DCFFAD]/80">
                         ✓
                       </span>
                     ) : (

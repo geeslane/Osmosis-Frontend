@@ -394,7 +394,9 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
             )}
             {isPast && !isCancelled && (
               <p className="mt-2 text-sm text-sky-600 font-medium">
-                This session has ended. Add notes and a recording link below.
+                {isAdminRole
+                  ? 'This session has ended. Add notes and a recording link below.'
+                  : 'This session has ended.'}
               </p>
             )}
           </div>
