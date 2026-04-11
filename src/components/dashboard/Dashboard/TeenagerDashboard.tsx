@@ -214,7 +214,7 @@ export default function TeenagerDashboard() {
                 </>
               )}
             </div>
-            <span className="inline-flex items-center justify-center rounded-xl bg-green-200 text-white font-bold text-xl sm:text-2xl min-w-[3.5rem] sm:min-w-[4rem] h-12 sm:h-14">
+            <span className="inline-flex shrink-0 items-center justify-center rounded-xl bg-green-200 text-white font-bold tabular-nums text-xl sm:text-2xl h-12 sm:h-14 min-w-[5.25rem] sm:min-w-[6rem] px-4 sm:px-6">
               {statsLoading ? '—' : `${progressPercent}%`}
             </span>
           </div>
