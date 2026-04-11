@@ -207,15 +207,16 @@ export default function MentorAvailabilitySchedule() {
         setHasFinishedStep2(true);
       }
 
-      // Resume at step 2 only when still on weekly step — do not pull users back from step 3
+      // Resume at step 2 when opening with saved blocks — not while editing from summary (step 1)
       if (
         hasWeeklyScheduleBlocks(availability.weeklySchedule) &&
-        step === 1
+        step === 1 &&
+        !isEditing
       ) {
         setStep(2);
       }
     }
-  }, [availability, step]);
+  }, [availability, step, isEditing]);
 
   useEffect(() => {
     const mentor = extractMentorRecord(mentorData);
