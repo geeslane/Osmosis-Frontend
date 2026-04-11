@@ -256,7 +256,7 @@ export const UsersApi = createApi({
         if (data.linkedinUrl) formData.append('linkedinUrl', data.linkedinUrl);
         if (data.mentorshipTopics) {
           data.mentorshipTopics.forEach((topic) => {
-            formData.append('mentorshipTopics', topic);
+            formData.append('mentorshipTopics[]', topic);
           });
         }
         if (data.inspiration) formData.append('inspiration', data.inspiration);
