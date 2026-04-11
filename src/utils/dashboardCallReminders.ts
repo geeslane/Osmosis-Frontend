@@ -44,11 +44,27 @@ export function isWithinLastSevenDays(dateStr: string): boolean {
   return date >= sevenDaysAgo && date <= now;
 }
 
-function hasMenteeFeedback(call: CallRecord): boolean {
-  if (typeof call.feedbackPending === 'boolean') return !call.feedbackPending;
-  const hasRating = call.rating != null;
-  const hasComment = call.menteeComment != null;
-  return hasRating && hasComment;
+/**
+ * True when we should NOT show the “give feedback” dashboard card for this call.
+ * Post-call mentee feedback only applies after the call is completed; until then, suppress.
+ * When the API sends `feedbackPending`, we still cross-check fields: some payloads mark
+ * `feedbackPending: false` for non-completed calls or omit data — don’t hide the nudge then.
+ */
+function shouldSuppressTeenagerFeedbackReminderForCall(call: CallRecord): boolean {
+  const st = call.status?.toUpperCase() ?? '';
+  if (!st.includes('COMPLETE')) return true;
+
+  const needsRating = call.rating == null;
+  const needsComment = call.menteeComment == null;
+  const needsByFields = needsRating || needsComment;
+
+  if (typeof call.feedbackPending === 'boolean') {
+    if (call.feedbackPending) return false;
+    if (needsByFields) return false;
+    return true;
+  }
+
+  return !needsByFields;
 }
 
 function hasMentorFeedback(call: CallRecord): boolean {
@@ -67,7 +83,7 @@ function hasMentorFeedback(call: CallRecord): boolean {
 export function shouldShowTeenagerFeedbackReminder(previous: CallRecord[]): boolean {
   const last = getMostRecentPreviousCall(previous);
   if (!last) return false;
-  if (hasMenteeFeedback(last)) return false;
+  if (shouldSuppressTeenagerFeedbackReminderForCall(last)) return false;
   return isWithinLastSevenDays(last.date);
 }
 
