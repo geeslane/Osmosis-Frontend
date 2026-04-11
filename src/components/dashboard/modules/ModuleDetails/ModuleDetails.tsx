@@ -11,12 +11,13 @@ import {
 } from '@/assets/icons';
 import Tabs from '@/components/ui/Tabs';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import ModuleContent from './ModuleContent';
 import Link from 'next/link';
 import PageTitle from '@/components/PageTitle';
 import {
   useGetModuleByIdQuery,
+  useGetTeenagerModulesProgressQuery,
   useSetTeenagerModuleCompletionMutation,
 } from '@/store/dashboard/dashboard.api';
 import Button from '@/components/ui/button/Button';
@@ -34,7 +35,12 @@ export default function ModuleDetails() {
   const [deliverableSubmitted, setDeliverableSubmitted] = useState(false);
   const [markedCompleted, setMarkedCompleted] = useState(false);
   const id = typeof params.id === 'string' ? params.id : (params.id?.[0] ?? '');
+  const teenId = user?.id != null ? String(user.id) : '';
   const { data, isLoading } = useGetModuleByIdQuery(id, { skip: !id });
+  const { data: progressRows = [], isLoading: loadingProgress } =
+    useGetTeenagerModulesProgressQuery(teenId, {
+      skip: !teenId || user?.role !== 'TEENAGER',
+    });
   const [setCompletion, { isLoading: completing }] =
     useSetTeenagerModuleCompletionMutation();
   const backPath =
@@ -45,9 +51,16 @@ export default function ModuleDetails() {
   const currentTab = searchParams.get('content') || 'Note';
   const isMentee = user?.role === 'TEENAGER';
 
+  const completedFromProgress = useMemo(() => {
+    const row = progressRows.find((p) => p.moduleId === id);
+    return row?.completed === true;
+  }, [progressRows, id]);
+
   useEffect(() => {
-    setMarkedCompleted(!!moduleData?.markedCompleted);
-  }, [moduleData?.markedCompleted]);
+    setMarkedCompleted(
+      Boolean(moduleData?.markedCompleted) || completedFromProgress
+    );
+  }, [moduleData?.markedCompleted, moduleData?.id, completedFromProgress, id]);
 
   const handleMarkCompleted = async () => {
     if (!id) return;
@@ -71,7 +84,7 @@ export default function ModuleDetails() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || (isMentee && loadingProgress)) {
     return (
       <div className="flex justify-center items-center py-20">
         <LoadingIcon

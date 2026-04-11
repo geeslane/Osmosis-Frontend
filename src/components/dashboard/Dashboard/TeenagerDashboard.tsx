@@ -145,12 +145,23 @@ export default function TeenagerDashboard() {
       {/* Program dates (when admin has set program schedule) */}
       {programStart && programEnd && (
         <section className="rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
-          <p className="text-sm font-medium text-gray-700">
-            Program: {formatProgramDate(programStart)} – {formatProgramDate(programEnd)}
-            {programDaysLeft !== null && (
-              <span className="text-green-600 font-semibold ml-2">
-                · {programDaysLeft} day{programDaysLeft !== 1 ? 's' : ''} left
+          <p className="text-sm font-medium">
+            <span className="text-gray-700">
+              Program: {formatProgramDate(programStart)}
+              <span className="text-gray-700 font-medium" aria-hidden>
+                {' \u2013 '}
               </span>
+              {formatProgramDate(programEnd)}
+            </span>
+            {programDaysLeft !== null && (
+              <>
+                <span className="text-gray-700 mx-1.5 font-medium" aria-hidden>
+                  {'\u00B7'}
+                </span>
+                <span className="text-green-600 font-semibold">
+                  {programDaysLeft} day{programDaysLeft !== 1 ? 's' : ''} left
+                </span>
+              </>
             )}
           </p>
         </section>

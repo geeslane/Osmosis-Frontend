@@ -2,11 +2,8 @@
 import { useRouter } from 'next/navigation';
 import type { Module } from '@/components/types';
 import useToastify from '@/hooks/useToastify';
-import {
-  useDeleteModuleMutation,
-  useSetTeenagerModuleCompletionMutation,
-} from '@/store/dashboard/dashboard.api';
-import { useState, useEffect } from 'react';
+import { useDeleteModuleMutation } from '@/store/dashboard/dashboard.api';
+import { useState } from 'react';
 import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -33,18 +30,10 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
   const router = useRouter();
   const { showToast } = useToastify();
   const [deleteModule, { isLoading }] = useDeleteModuleMutation();
-  const [setCompletion] = useSetTeenagerModuleCompletionMutation();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
-  const [markedModuleIds, setMarkedModuleIds] = useState<Set<string>>(new Set());
-  const [pendingModuleId, setPendingModuleId] = useState<string | null>(null);
   const user = useSelector((state: RootState) => state.profile.user);
   const isMentee = user?.role === 'TEENAGER';
-
-  useEffect(() => {
-    const completed = modules.filter((m) => m.markedCompleted).map((m) => m.id);
-    setMarkedModuleIds(new Set(completed));
-  }, [modules]);
 
   const openDeleteModal = (id: string) => {
     setSelectedModuleId(id);
@@ -87,48 +76,29 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
             <div className="flex flex-col gap-3 md:flex-row justify-between md:items-center w-full">
               <div className="flex items-center gap-3 min-w-0">
                 {isMentee && (
-                  <label
-                    className="flex shrink-0 items-center cursor-pointer"
+                  <span
+                    className="flex shrink-0 items-center"
                     onClick={(e) => e.stopPropagation()}
-                    title="Mark as completed when done with this module"
+                    title={
+                      module.markedCompleted
+                        ? 'Marked as Completed'
+                        : 'Mark as completed when done with this module'
+                    }
                   >
                     <input
                       type="checkbox"
-                      checked={markedModuleIds.has(module.id)}
-                      disabled={pendingModuleId === module.id}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        const nextChecked = e.target.checked;
-                        void (async () => {
-                          setPendingModuleId(module.id);
-                          try {
-                            await setCompletion({
-                              moduleId: module.id,
-                              completed: nextChecked,
-                            }).unwrap();
-                            setMarkedModuleIds((prev) => {
-                              const next = new Set(prev);
-                              if (nextChecked) next.add(module.id);
-                              else next.delete(module.id);
-                              return next;
-                            });
-                            showToast(
-                              nextChecked
-                                ? 'Module marked as completed'
-                                : 'Module marked as incomplete',
-                              'success'
-                            );
-                          } catch {
-                            showToast('Could not update completion. Please try again.', 'error');
-                          } finally {
-                            setPendingModuleId(null);
-                          }
-                        })();
-                      }}
+                      checked={Boolean(module.markedCompleted)}
+                      disabled
+                      tabIndex={-1}
+                      aria-label={
+                        module.markedCompleted
+                          ? 'Module completed'
+                          : 'Module not completed'
+                      }
                       onClick={(e) => e.stopPropagation()}
-                      className="h-4 w-4 rounded border-gray-300 text-green-200 focus:ring-green-200 disabled:opacity-50"
+                      className="h-4 w-4 rounded border-gray-300 text-green-200 accent-green-200 disabled:opacity-100 disabled:cursor-default"
                     />
-                  </label>
+                  </span>
                 )}
                 <div>
                   <h2 className="font-bold  text-green-300">
@@ -136,13 +106,30 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
                     <span className="font-medium"> {module.title}</span>
                   </h2>
                   {(module.startDate || module.endDate) && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      {module.startDate && formatDate(module.startDate)}
-                      {module.startDate && module.endDate && ' – '}
-                      {module.endDate && formatDate(module.endDate)}
+                    <p className="text-xs text-gray-500 font-medium mt-1">
+                      {module.startDate && (
+                        <span className="text-gray-500">{formatDate(module.startDate)}</span>
+                      )}
+                      {module.startDate && module.endDate && (
+                        <span className="text-gray-500" aria-hidden>
+                          {' \u2013 '}
+                        </span>
+                      )}
+                      {module.endDate && (
+                        <span className="text-gray-500">{formatDate(module.endDate)}</span>
+                      )}
                       {typeof module.endDate === 'string' && (() => {
                         const d = daysToGo(module.endDate);
-                        return d !== null ? ` · ${d} day${d !== 1 ? 's' : ''} to go` : null;
+                        return d !== null ? (
+                          <>
+                            <span className="text-gray-500 mx-0.5" aria-hidden>
+                              {'\u00B7'}
+                            </span>
+                            <span className="text-gray-500">
+                              {d} day{d !== 1 ? 's' : ''} to go
+                            </span>
+                          </>
+                        ) : null;
                       })()}
                     </p>
                   )}

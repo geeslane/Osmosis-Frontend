@@ -1,4 +1,4 @@
-import type { TeenagerModuleProgressItem } from '@/components/types';
+import type { Module, TeenagerModuleProgressItem } from '@/components/types';
 
 /** Normalize one progress row from GET /teenager/.../modules/progress (flexible field names). */
 export function normalizeProgressItem(raw: unknown): TeenagerModuleProgressItem {
@@ -60,6 +60,23 @@ export function progressByModuleId(
     if (it.moduleId) m.set(it.moduleId, it);
   }
   return m;
+}
+
+/**
+ * Merge `GET /teenager/:id/modules/progress` into module rows so `markedCompleted`
+ * reflects the server when the catalog `GET /module` list omits per-teen completion.
+ */
+export function mergeModulesWithTeenagerProgress(
+  modules: Module[],
+  progressRows: TeenagerModuleProgressItem[]
+): Module[] {
+  if (!progressRows.length) return modules;
+  const map = progressByModuleId(progressRows);
+  return modules.map((m) => {
+    const p = map.get(m.id);
+    const completed = Boolean(p?.completed) || Boolean(m.markedCompleted);
+    return { ...m, markedCompleted: completed };
+  });
 }
 
 /** Unwrap deliverable GET body: `{ answer }` or nested `data.answer`. */

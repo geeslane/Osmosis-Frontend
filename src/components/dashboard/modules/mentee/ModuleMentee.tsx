@@ -1,34 +1,58 @@
 'use client';
 import { LoadingIcon, SearchIcon } from '@/assets/icons';
 import Empty from '@/components/ui/NotFound/Empty';
-import React from 'react';
+import React, { useMemo } from 'react';
 
-import { useModulesQuery } from '@/store/dashboard/dashboard.api';
+import {
+  useModulesQuery,
+  useGetTeenagerModulesProgressQuery,
+} from '@/store/dashboard/dashboard.api';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { NoResult } from '@/components/ui/NotFound/NoResult';
 import { useModuleList } from '@/hooks/useModuleList';
 import ModuleList from '../ModuleList';
 import Animated from '@/components/common/Animation';
 import { usePathname } from 'next/navigation';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import { mergeModulesWithTeenagerProgress } from '@/utils/teenagerModuleProgress';
 
 export default function ModuleMentee() {
   const moduleList = useModuleList({ defaultLimit: 10 });
   const pathname = usePathname();
+  const user = useSelector((state: RootState) => state.profile.user);
+  const teenId = user?.id != null ? String(user.id) : '';
 
-  const { data, isError, isLoading } = useModulesQuery(moduleList.queryParams);
+  const { data, isError, isLoading: loadingModules } = useModulesQuery(
+    moduleList.queryParams
+  );
+  const { data: progressRows = [], isLoading: loadingProgress } =
+    useGetTeenagerModulesProgressQuery(teenId, {
+      skip: !teenId || user?.role !== 'TEENAGER',
+    });
+
   const modules = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
   const totalPages = data?.data?.totalPages ?? 1;
 
+  const mergedModules = useMemo(
+    () => mergeModulesWithTeenagerProgress(modules, progressRows),
+    [modules, progressRows]
+  );
+
   const q = moduleList.search.trim().toLowerCase();
 
-  const filteredModules = q
-    ? modules.filter((m) => (m.title ?? '').toLowerCase().includes(q))
-    : modules;
+  const filteredModules = useMemo(() => {
+    if (!q) return mergedModules;
+    return mergedModules.filter((m) =>
+      (m.title ?? '').toLowerCase().includes(q)
+    );
+  }, [mergedModules, q]);
 
   const hasModules = filteredModules.length > 0;
+  const statsLoading = loadingModules || loadingProgress;
 
-  if (isLoading) {
+  if (statsLoading) {
     return (
       <div className="flex justify-center items-center py-20">
         <LoadingIcon
