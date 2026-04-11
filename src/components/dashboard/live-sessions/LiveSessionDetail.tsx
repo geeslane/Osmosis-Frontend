@@ -25,7 +25,6 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import Image from 'next/image';
 import AddLive from './AddLive';
-import { ChevronDownIcon } from 'lucide-react';
 import { normalizeImageUrl } from '@/utils/helper';
 
 type LiveSessionDetailProps = {
@@ -95,7 +94,7 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
     recordingUrl: '',
   });
   const [comments, setComments] = useState<ApiComment[]>([]);
-  const [commentsOpen, setCommentsOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState<'details' | 'comments'>('details');
   const [commentsPage, setCommentsPage] = useState(1);
   const [commentsTotalPages, setCommentsTotalPages] = useState(1);
   const [newCommentText, setNewCommentText] = useState('');
@@ -283,9 +282,62 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
 
   return (
     <div className="w-full">
-      <div className="flex flex-col md:flex-row gap-6 w-full">
-        {/* Left: Details, Speaker, Notes */}
-        <div className="flex-1 md:flex-[2] min-w-0 flex flex-col gap-6">
+      <div className="w-full md:w-[65%] md:max-w-5xl mx-auto flex flex-col gap-6 px-1 sm:px-0">
+        <div
+          className="flex flex-wrap gap-1 rounded-2xl border border-green-200/55 bg-gradient-to-br from-[#F8FDF5] via-white to-[#F0FCE8] p-1.5 shadow-[0_1px_2px_rgba(40,47,46,0.05)]"
+          role="tablist"
+          aria-label="Session and comments"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'details'}
+            id="tab-session-details"
+            aria-controls="panel-session-details"
+            onClick={() => setActiveTab('details')}
+            className={`inline-flex flex-1 sm:flex-none sm:min-w-[10rem] items-center justify-center px-5 py-2.5 text-sm font-semibold tracking-tight rounded-xl transition-colors duration-200 ${
+              activeTab === 'details'
+                ? 'text-green-200'
+                : 'text-gray-500 hover:text-gray-600'
+            }`}
+          >
+            Session Details
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'comments'}
+            id="tab-comments"
+            aria-controls="panel-comments"
+            onClick={() => setActiveTab('comments')}
+            className={`flex-1 sm:flex-none sm:min-w-[10rem] justify-center px-5 py-2.5 text-sm font-semibold tracking-tight rounded-xl transition-colors duration-200 inline-flex items-center gap-2 ${
+              activeTab === 'comments'
+                ? 'text-green-200'
+                : 'text-gray-500 hover:text-gray-600'
+            }`}
+          >
+            Comments
+            {comments.length > 0 && (
+              <span
+                className={`inline-flex items-center rounded-full text-xs font-semibold px-2 py-0.5 leading-none min-w-[1.25rem] justify-center tabular-nums transition-colors ${
+                  activeTab === 'comments'
+                    ? 'bg-[#6CBB01] text-white'
+                    : 'bg-gray-200/90 text-gray-600'
+                }`}
+              >
+                {comments.length}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {activeTab === 'details' && (
+          <div
+            id="panel-session-details"
+            role="tabpanel"
+            aria-labelledby="tab-session-details"
+            className="min-w-0 flex flex-col gap-6"
+          >
           {/* Header with status + edit */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h3 className="text-green-200 text-2xl font-bold">
@@ -461,27 +513,14 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
             </div>
           )}
         </div>
+        )}
 
-        {/* Right: Comments (Collapsible) */}
-        <div className="w-full md:w-1/3 md:flex-[1] min-w-0 flex flex-col gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            className="font-medium flex items-center gap-1.5 text-sm md:mt-0 mt-4"
-            onClick={() => setCommentsOpen(!commentsOpen)}
-            aria-expanded={commentsOpen}
-            aria-controls="comments-panel"
-          >
-            <span>Comments ({comments.length})</span>
-            <span
-              className={`inline-flex transition-transform duration-200 ${commentsOpen ? 'rotate-180' : ''}`}
-            >
-              <ChevronDownIcon />
-            </span>
-          </Button>
+        {activeTab === 'comments' && (
           <div
-            id="comments-panel"
-            className={`overflow-hidden transition-all duration-300 ${commentsOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}
+            id="panel-comments"
+            role="tabpanel"
+            aria-labelledby="tab-comments"
+            className="min-w-0"
           >
             <div className="rounded-xl border border-green-200/70 bg-white shadow-sm px-4 py-5 md:px-6 md:py-6">
               <div className="flex items-center justify-between gap-2 mb-4">
@@ -710,7 +749,7 @@ export default function LiveSessionDetail({ id }: LiveSessionDetailProps) {
                   )}
             </div>
           </div>
-        </div>
+        )}
       </div>
       <ActionModal
         isOpen={notesModalOpen}
