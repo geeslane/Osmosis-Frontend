@@ -203,7 +203,15 @@ export const ScheduleApi = createApi({
 
     createCallRequest: builder.mutation<
       { success: boolean; message?: string; data?: unknown },
-      { mentorId: string; date: string; time: string; message?: string }
+      {
+        mentorId: string;
+        date: string;
+        time: string;
+        /** Free-text for mentor — backend `CallRequest.message` */
+        message?: string;
+        topicLabel?: string | null;
+        topicValue?: string | null;
+      }
     >({
       query: (body) => ({
         url: '/call-requests',

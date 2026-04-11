@@ -111,10 +111,9 @@ function str(v: unknown, fallback = '—'): string {
 
 function firstNonEmptyString(...values: unknown[]): string | undefined {
   for (const v of values) {
-    if (typeof v === 'string') {
-      const t = v.trim();
-      if (t.length > 0) return t;
-    }
+    if (v === null || v === undefined) continue;
+    const t = String(v).trim();
+    if (t.length > 0) return t;
   }
   return undefined;
 }
@@ -193,6 +192,25 @@ export function rawToCallRecord(raw: unknown): CallRecord {
       ? String(mentorIdRaw).trim()
       : undefined;
 
+  const cr =
+    r.callRequest && typeof r.callRequest === 'object'
+      ? (r.callRequest as Record<string, unknown>)
+      : undefined;
+  const crLabel = cr?.topicLabel ?? r.topicLabel;
+  const crValue = cr?.topicValue ?? r.topicValue;
+  const topicFromRequestParts =
+    crLabel != null || crValue != null
+      ? [String(crLabel ?? '').trim(), String(crValue ?? '').trim()]
+          .filter(Boolean)
+          .join(' · ')
+      : '';
+  const topicResolved = firstNonEmptyString(
+    r.topic,
+    r.sessionTopic,
+    r.subject,
+    topicFromRequestParts || undefined
+  );
+
   return {
     id: str(r.id ?? r._id ?? r.callId, ''),
     mentorName,
@@ -205,16 +223,17 @@ export function rawToCallRecord(raw: unknown): CallRecord {
     mentorId,
     date,
     time: time && time !== '—' ? time : undefined,
-    topic: str(r.topic ?? r.sessionTopic ?? r.subject),
+    topic: str(topicResolved, '—'),
     callLength: r.callLength != null ? str(r.callLength) : r.durationMinutes != null ? `${r.durationMinutes}m` : undefined,
     status: str(r.status ?? r.state, '—'),
     comment: r.comment != null ? str(r.comment, '') : r.mentorComment != null ? str(r.mentorComment, '') : undefined,
-    menteeComment:
-      r.menteeComment != null
-        ? str(r.menteeComment, '')
-        : r.teenagerComment != null
-          ? str(r.teenagerComment, '')
-          : undefined,
+    menteeComment: firstNonEmptyString(
+      r.menteeComment,
+      r.teenagerComment,
+      r.menteeNotes,
+      r.message,
+      cr?.message
+    ),
     rating: typeof r.rating === 'number' ? r.rating : r.menteeRating != null ? Number(r.menteeRating) : undefined,
     meetingUrl,
   };
@@ -312,12 +331,16 @@ export function rawToMentorCallRequestRow(raw: unknown): MentorCallRequestRow {
         ? teen.avatar
         : undefined;
 
-  const topicLabel = r.topicLabel != null ? String(r.topicLabel) : '';
-  const topicValue = r.topicValue != null ? String(r.topicValue) : '';
+  const topicLabel = r.topicLabel != null ? String(r.topicLabel).trim() : '';
+  const topicValue = r.topicValue != null ? String(r.topicValue).trim() : '';
+  const topicFromParts =
+    topicLabel && topicValue
+      ? `${topicLabel} · ${topicValue}`
+      : topicLabel || topicValue;
   const topicDisplay =
-    topicLabel.trim() || topicValue.trim()
-      ? topicLabel.trim() || topicValue.trim()
-      : '—';
+    typeof r.topic === 'string' && r.topic.trim()
+      ? String(r.topic).trim()
+      : topicFromParts || '—';
 
   return {
     id: String(r.id ?? r._id ?? ''),
@@ -325,11 +348,13 @@ export function rawToMentorCallRequestRow(raw: unknown): MentorCallRequestRow {
     name,
     pictureUrl,
     note:
-      r.message != null
-        ? String(r.message)
-        : r.note != null
-          ? String(r.note)
-          : undefined,
+      r.menteeNotes != null
+        ? String(r.menteeNotes)
+        : r.message != null
+          ? String(r.message)
+          : r.note != null
+            ? String(r.note)
+            : undefined,
     requestedAtLabel: buildRequestedAtLabel(
       r.requestedDate,
       r.requestedTime,
@@ -357,36 +382,61 @@ export function rawToTeenagerCallRequestRow(raw: unknown): TeenagerCallRequestRo
   const mentor = r.mentor as Record<string, unknown> | undefined;
   let date = '—';
   let time = '';
-  const scheduledAt = r.scheduledAt ?? r.startTime ?? r.createdAt ?? r.requestedAt;
-  if (typeof scheduledAt === 'string') {
-    const d = new Date(scheduledAt);
-    if (!Number.isNaN(d.getTime())) {
-      date = d.toLocaleDateString(undefined, {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      });
-      time = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+
+  if (r.requestedDate != null || r.requestedTime != null) {
+    const dStr = r.requestedDate != null ? String(r.requestedDate) : '';
+    const tStr = r.requestedTime != null ? String(r.requestedTime) : '';
+    if (dStr) date = formatRequestDateLabel(dStr);
+    if (tStr) time = formatRequestTimeLabel(tStr);
+  } else {
+    const scheduledAt = r.scheduledAt ?? r.startTime ?? r.createdAt ?? r.requestedAt;
+    if (typeof scheduledAt === 'string') {
+      const d = new Date(scheduledAt);
+      if (!Number.isNaN(d.getTime())) {
+        date = d.toLocaleDateString(undefined, {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        });
+        time = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+      }
     }
   }
+
   const st = String(r.status ?? 'PENDING').toUpperCase();
   let status: TeenagerCallRequestRow['status'] = 'Pending';
   if (st.includes('ACCEPT') || st.includes('APPROV') || st.includes('ACTIVE')) status = 'Active';
   else if (st.includes('REJECT') || st.includes('DECLIN') || st.includes('CANCEL'))
     status = 'Inactive';
+
+  const topicLabel = r.topicLabel != null ? String(r.topicLabel).trim() : '';
+  const topicValue = r.topicValue != null ? String(r.topicValue).trim() : '';
+  const topicFromParts =
+    topicLabel && topicValue
+      ? `${topicLabel} · ${topicValue}`
+      : topicLabel || topicValue;
+  const topicDisplay =
+    typeof r.topic === 'string' && r.topic.trim()
+      ? String(r.topic).trim()
+      : topicFromParts || str(r.sessionTopic, '—');
+
+  const noteFromApi =
+    r.menteeNotes != null
+      ? String(r.menteeNotes)
+      : r.message != null
+        ? String(r.message)
+        : r.note != null
+          ? String(r.note)
+          : undefined;
+
   return {
     id: String(r.id ?? r._id ?? ''),
     name: String(mentor?.fullName ?? mentor?.full_name ?? r.mentorName ?? '—'),
     date,
     time,
-    topic: String(r.topic ?? r.sessionTopic ?? '—'),
+    topic: topicDisplay,
     phone: String(mentor?.phone ?? r.phone ?? '—'),
-    note:
-      r.message != null
-        ? String(r.message)
-        : r.note != null
-          ? String(r.note)
-          : undefined,
+    note: noteFromApi,
     status,
   };
 }

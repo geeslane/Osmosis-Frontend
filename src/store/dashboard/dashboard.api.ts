@@ -559,7 +559,14 @@ export const DashboardApi = createApi({
     }),
     createCallRequest: builder.mutation<
       any,
-      { mentorId: string; topic: string; date: string; slot: any }
+      {
+        mentorId: string;
+        date: string;
+        time: string;
+        message?: string;
+        topicLabel?: string | null;
+        topicValue?: string | null;
+      }
     >({
       query: (data) => ({
         url: '/call-requests',

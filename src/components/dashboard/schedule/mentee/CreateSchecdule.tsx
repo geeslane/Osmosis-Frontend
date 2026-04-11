@@ -411,6 +411,8 @@ export default function CreateSchedule() {
         date: selectedDate,
         time: selectedTime,
         message: message.trim() || undefined,
+        topicLabel: selectedTopicLabel?.trim() || undefined,
+        topicValue: selectedTopic.trim() || undefined,
       }).unwrap();
       showToast('Call request sent successfully', 'success');
       router.push('/dashboard/calls/mentee?role=upcoming');
