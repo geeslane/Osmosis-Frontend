@@ -113,7 +113,7 @@ const AppSidebar: React.FC = () => {
     },
     {
       icon: ScheduleIcon,
-      name: 'Program schedule',
+      name: 'Program Schedule',
       path: '/dashboard/program-schedule',
       roles: ['SUPERADMIN', 'ADMIN'],
     },

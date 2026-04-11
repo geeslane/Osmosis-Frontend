@@ -3,6 +3,7 @@
 import {
   CallIcon,
   LiveSessionIcon,
+  LoadingIcon,
   NotificationIcon,
   Star,
 } from '@/assets/icons';
@@ -10,10 +11,16 @@ import {
   useGetMenteePreviousCallsQuery,
   useGetMenteeUpcomingCallsQuery,
 } from '@/store/calls/calls.api';
-import { useModulesQuery, useGetProgramConfigQuery } from '@/store/dashboard/dashboard.api';
+import {
+  useModulesQuery,
+  useGetProgramConfigQuery,
+  useGetTeenagerModulesProgressQuery,
+} from '@/store/dashboard/dashboard.api';
+import type { Module } from '@/components/types';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { normalizeImageUrl } from '@/utils/helper';
+import { progressByModuleId } from '@/utils/teenagerModuleProgress';
 import { shouldShowTeenagerFeedbackReminder } from '@/utils/dashboardCallReminders';
 import ReminderCard from './ReminderCard';
 import Link from 'next/link';
@@ -27,17 +34,47 @@ export default function TeenagerDashboard() {
   const avatar = (user as { avatar?: string })?.avatar ?? (user as { pictureUrl?: string })?.pictureUrl;
   const { data: upcomingData } = useGetMenteeUpcomingCallsQuery();
   const { data: previousData } = useGetMenteePreviousCallsQuery();
-  const { data: modulesData } = useModulesQuery(undefined);
+  const teenId = user?.id != null ? String(user.id) : '';
+  const { data: modulesData, isLoading: loadingModules } = useModulesQuery(undefined);
+  const { data: progressRows = [], isLoading: loadingProgress } =
+    useGetTeenagerModulesProgressQuery(teenId, {
+      skip: !teenId || user?.role !== 'TEENAGER',
+    });
   const { data: programConfig } = useGetProgramConfigQuery();
   const upcoming = upcomingData?.data ?? [];
   const previousRaw = previousData?.data ?? [];
   const previous = previousRaw;
   const showFeedbackReminder = shouldShowTeenagerFeedbackReminder(previous);
-  const modulesRaw = modulesData?.data?.data ?? [];
-  const modules = modulesRaw;
-  const completedCount = modules.filter((m) => m.markedCompleted).length;
+  const modules: Module[] = modulesData?.data?.data ?? [];
   const totalModules = modules.length;
-  const progressPercent = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0;
+  const progressMap = progressByModuleId(progressRows);
+
+  /** Same merge as admin mentee “Module Progress” view: list + GET /teenager/:id/modules/progress */
+  const moduleProgressValues = modules.map((m) => {
+    const p = progressMap.get(m.id);
+    if (p) {
+      return typeof p.progress === 'number'
+        ? Math.min(100, Math.max(0, p.progress))
+        : p.completed
+          ? 100
+          : 0;
+    }
+    return m.markedCompleted ? 100 : 0;
+  });
+
+  const progressPercent =
+    moduleProgressValues.length > 0
+      ? Math.round(
+          moduleProgressValues.reduce((a, b) => a + b, 0) / moduleProgressValues.length
+        )
+      : 0;
+
+  const completedCount = modules.filter((m) => {
+    const p = progressMap.get(m.id);
+    return Boolean(p?.completed) || Boolean(m.markedCompleted);
+  }).length;
+
+  const statsLoading = loadingModules || loadingProgress;
 
   const programStart = programConfig?.startDate;
   const programEnd = programConfig?.endDate;
@@ -125,38 +162,58 @@ export default function TeenagerDashboard() {
           Your progress 🚀
         </h2>
         <Link
-          href="/dashboard/modules"
+          href="/dashboard/modules/mentee"
           className="block rounded-2xl border-2 border-green-200/50 bg-gradient-to-br from-green-50 to-emerald-50/80 p-4 sm:p-6 shadow-sm hover:shadow-md hover:border-green-200 transition-all"
         >
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
             <div className="flex-1">
-              <p className="text-sm font-semibold text-green-800/90">
-                {completedCount === totalModules && totalModules > 0
-                  ? "You've completed all modules."
-                  : totalModules === 0
-                    ? 'Modules will show here once your program is set up.'
-                    : completedCount === 0
-                      ? `${totalModules} module${totalModules !== 1 ? 's' : ''} in your program — open Modules to get started.`
-                      : `${completedCount} of ${totalModules} modules completed.`}
-              </p>
-              {completedCount === totalModules && totalModules > 0 && (
-                <p className="text-xs text-green-700/80 mt-1">
-                  Keep exploring, book a call with a mentor, or join a live session.
-                </p>
+              {statsLoading ? (
+                <div className="flex items-center gap-3 text-green-800/90">
+                  <LoadingIcon width="28" height="28" className="animate-spin text-green-200 shrink-0" />
+                  <p className="text-sm font-semibold">Loading your module progress…</p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm font-semibold text-green-800/90">
+                    {(completedCount === totalModules && totalModules > 0) ||
+                    (progressPercent >= 100 && totalModules > 0)
+                      ? "You've completed all modules."
+                      : totalModules === 0
+                        ? 'Modules will show here once your program is set up.'
+                        : progressPercent === 0 && completedCount === 0
+                          ? `${totalModules} module${totalModules !== 1 ? 's' : ''} in your program — open Modules to get started.`
+                          : `${progressPercent}% overall across ${totalModules} module${totalModules !== 1 ? 's' : ''}${
+                              completedCount > 0
+                                ? ` · ${completedCount} marked complete`
+                                : ''
+                            }.`}
+                  </p>
+                  {(completedCount === totalModules && totalModules > 0) ||
+                    (progressPercent >= 100 && totalModules > 0) ? (
+                    <p className="text-xs text-green-700/80 mt-1">
+                      Keep exploring, book a call with a mentor, or join a live session.
+                    </p>
+                  ) : null}
+                  <div className="mt-3 h-3 rounded-full bg-white/80 overflow-hidden shadow-inner">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500"
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+                </>
               )}
-              <div className="mt-3 h-3 rounded-full bg-white/80 overflow-hidden shadow-inner">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
             </div>
             <span className="inline-flex items-center justify-center rounded-xl bg-green-200 text-white font-bold text-xl sm:text-2xl min-w-[3.5rem] sm:min-w-[4rem] h-12 sm:h-14">
-              {progressPercent}%
+              {statsLoading ? '—' : `${progressPercent}%`}
             </span>
           </div>
           <p className="mt-3 text-sm font-medium text-green-700">
-            {completedCount === totalModules && totalModules > 0 ? 'View modules' : 'Continue learning'} →
+            {statsLoading
+              ? 'Syncing progress…'
+              : (completedCount === totalModules && totalModules > 0) ||
+                  (progressPercent >= 100 && totalModules > 0)
+                ? 'View modules →'
+                : 'Continue learning →'}
           </p>
         </Link>
       </section>

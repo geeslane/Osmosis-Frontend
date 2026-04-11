@@ -58,9 +58,9 @@ export default function ProgramScheduleContent() {
         endDate: endDate.slice(0, 10),
         numberOfModules,
       }).unwrap();
-      showToast('Program schedule saved.', 'success');
+      showToast('Program Schedule saved.', 'success');
     } catch (err: unknown) {
-      const msg = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to save program schedule.';
+      const msg = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to save Program Schedule.';
       showToast(msg, 'error');
     }
   };
@@ -68,7 +68,7 @@ export default function ProgramScheduleContent() {
   if (isLoading) {
     return (
       <div>
-        <PageTitle title="Program schedule" />
+        <PageTitle title="Program Schedule" />
         <div className="mt-6 flex items-center justify-center py-12 text-gray-500">Loading…</div>
       </div>
     );
@@ -76,7 +76,7 @@ export default function ProgramScheduleContent() {
 
   return (
     <div>
-      <PageTitle title="Program schedule" />
+      <PageTitle title="Program Schedule" />
       <p className="mt-2 text-sm text-gray-600">
         Set the program start and end dates and number of modules. Each module’s period is calculated as program duration ÷ number of modules.
       </p>
@@ -131,7 +131,7 @@ export default function ProgramScheduleContent() {
               disabled={!isValid || isSaving}
               className="rounded-xl bg-green-200 text-white px-6 py-2.5 text-sm font-medium disabled:opacity-50 hover:opacity-95"
             >
-              {isSaving ? 'Saving…' : 'Save program schedule'}
+              {isSaving ? 'Saving…' : 'Save Program Schedule'}
             </button>
           </div>
         </div>

@@ -3,7 +3,7 @@ import { generateMetadata } from '@/utils/metadata';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = generateMetadata({
-  title: 'Osmosis | Program schedule',
+  title: 'Osmosis | Program Schedule',
   description: 'Set program start and end dates and number of modules.',
 });
 

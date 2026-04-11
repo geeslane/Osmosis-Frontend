@@ -54,7 +54,7 @@ export function resolveNotificationHref(
     if (isMentor) return '/dashboard/availabilty-schedule/mentor';
     if (isTeen) return '/dashboard/book-a-call';
   }
-  if (/(program schedule|program config)/.test(text) && isAdmin) {
+  if (/(program schedule|program config)/i.test(text) && isAdmin) {
     return '/dashboard/program-schedule';
   }
   if (/(pending request|approval|teenager request|mentor request)/.test(text) && isAdmin) {

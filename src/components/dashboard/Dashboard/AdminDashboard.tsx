@@ -146,10 +146,10 @@ export default function AdminDashboard() {
 
         <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
           <ReminderCard
-            title="Program schedule"
+            title="Program Schedule"
             description="Set or adjust cohort dates and how modules map to the program calendar."
             href="/dashboard/program-schedule"
-            linkLabel="Open program schedule"
+            linkLabel="Open Program Schedule"
             icon={<ScheduleIcon className="w-5 h-5" />}
           />
           <ReminderCard
