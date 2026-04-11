@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { CalendarIcon, GoogleIcon, LoadingIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
@@ -78,6 +78,68 @@ function formatTimeForDisplay(time: string): string {
   return `${hour}:${m.toString().padStart(2, '0')} ${period}`;
 }
 
+const STEP2_DRAFT_PREFIX = 'mentor-availability-step2-draft:';
+const STEP2_DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+type Step2DraftPayload = {
+  meetingLink: string;
+  mentorshipTopics: string[];
+  savedAt: number;
+};
+
+function step2DraftKey(mentorId: string) {
+  return `${STEP2_DRAFT_PREFIX}${mentorId}`;
+}
+
+function saveStep2Draft(
+  mentorId: string,
+  data: Pick<Step2DraftPayload, 'meetingLink' | 'mentorshipTopics'>
+) {
+  if (!mentorId || typeof window === 'undefined') return;
+  const payload: Step2DraftPayload = {
+    ...data,
+    savedAt: Date.now(),
+  };
+  try {
+    sessionStorage.setItem(step2DraftKey(mentorId), JSON.stringify(payload));
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
+function loadStep2Draft(mentorId: string): Step2DraftPayload | null {
+  if (!mentorId || typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(step2DraftKey(mentorId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<Step2DraftPayload>;
+    if (typeof parsed.meetingLink !== 'string' || !Array.isArray(parsed.mentorshipTopics)) {
+      return null;
+    }
+    const savedAt = typeof parsed.savedAt === 'number' ? parsed.savedAt : 0;
+    if (Date.now() - savedAt > STEP2_DRAFT_MAX_AGE_MS) {
+      sessionStorage.removeItem(step2DraftKey(mentorId));
+      return null;
+    }
+    return {
+      meetingLink: parsed.meetingLink,
+      mentorshipTopics: parsed.mentorshipTopics.map(String),
+      savedAt,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function clearStep2Draft(mentorId: string) {
+  if (!mentorId || typeof window === 'undefined') return;
+  try {
+    sessionStorage.removeItem(step2DraftKey(mentorId));
+  } catch {
+    // ignore
+  }
+}
+
 export default function MentorAvailabilitySchedule() {
   const { showToast } = useToastify();
   const user = useSelector((state: RootState) => state.profile.user);
@@ -96,9 +158,10 @@ export default function MentorAvailabilitySchedule() {
     Boolean(availability?.googleCalendarConnected) ||
     Boolean(availability?.googleCalendarSynced);
 
-  const { data: mentorData } = useGetMentorByIdQuery(mentorId, {
-    skip: !isMentor || !mentorId,
-  });
+  const { data: mentorData, isLoading: isMentorProfileLoading } =
+    useGetMentorByIdQuery(mentorId, {
+      skip: !isMentor || !mentorId,
+    });
   const [updateMentorProfile, { isLoading: isUpdatingProfile }] =
     useUpdateMentorProfileMutation();
   const { data: topicsDropdown } = useGetDropdownByTypeQuery({
@@ -116,6 +179,8 @@ export default function MentorAvailabilitySchedule() {
   const [topicToAdd, setTopicToAdd] = useState('');
   /** Summary view only after step 2 was saved (or server already has link/sync). */
   const [hasFinishedStep2, setHasFinishedStep2] = useState(false);
+
+  const step2DraftRestoredRef = useRef(false);
 
   useEffect(() => {
     if (availability) {
@@ -147,6 +212,20 @@ export default function MentorAvailabilitySchedule() {
       setMentorshipTopics(Array.isArray(raw) ? raw.map(String) : [String(raw)]);
     }
   }, [mentorData]);
+
+  /** Restore meeting link + topics after Google OAuth redirect (same tab, sessionStorage). */
+  useEffect(() => {
+    if (isLoading || !mentorId || step2DraftRestoredRef.current) return;
+    if (isMentor && isMentorProfileLoading) return;
+
+    const draft = loadStep2Draft(mentorId);
+    if (!draft) return;
+
+    step2DraftRestoredRef.current = true;
+    setMeetingLink(draft.meetingLink);
+    setMentorshipTopics(draft.mentorshipTopics);
+    setStep(2);
+  }, [isLoading, mentorId, isMentor, isMentorProfileLoading]);
 
   const hasAnyBlocks = weeklySchedule.some((d) => d.blocks.length > 0);
 
@@ -232,6 +311,7 @@ export default function MentorAvailabilitySchedule() {
       showToast('Schedule saved successfully', 'success');
       setHasFinishedStep2(true);
       setIsEditing(false);
+      clearStep2Draft(mentorId);
     } catch (err: any) {
       showToast(err?.data?.message || 'Failed to save schedule', 'error');
     }
@@ -239,6 +319,12 @@ export default function MentorAvailabilitySchedule() {
 
   const handleConnectGoogleCalendar = async () => {
     try {
+      if (mentorId) {
+        saveStep2Draft(mentorId, {
+          meetingLink,
+          mentorshipTopics,
+        });
+      }
       const { url } = await fetchGoogleCalendarAuthUrl().unwrap();
       if (url) {
         window.location.href = url;
