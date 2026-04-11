@@ -204,19 +204,15 @@ export default function MentorAvailabilitySchedule() {
         availability.googleCalendarSynced ||
         availability.googleCalendarConnected
       ) {
-        setHasFinishedStep2(true);
-      }
-
-      // Resume at step 2 when opening with saved blocks — not while editing from summary (step 1)
-      if (
-        hasWeeklyScheduleBlocks(availability.weeklySchedule) &&
-        step === 1 &&
-        !isEditing
-      ) {
-        setStep(2);
+        // Saving step 2 refetches availability with meetingLink set. If we mark "finished"
+        // here while still on steps 2–3, the summary view replaces the wizard before step 3.
+        // Only sync this flag from the server when not mid–setup wizard (steps 2–3).
+        if (step !== 2 && step !== 3) {
+          setHasFinishedStep2(true);
+        }
       }
     }
-  }, [availability, step, isEditing]);
+  }, [availability, step]);
 
   useEffect(() => {
     const mentor = extractMentorRecord(mentorData);
@@ -676,6 +672,7 @@ export default function MentorAvailabilitySchedule() {
 
             <div className="flex justify-center gap-4 pt-2">
               <Button
+                type="button"
                 variant="outline"
                 onClick={() => setStep(1)}
                 className="min-w-[120px] border-green-300 px-6 py-3"
@@ -683,6 +680,7 @@ export default function MentorAvailabilitySchedule() {
                 Back
               </Button>
               <Button
+                type="button"
                 variant="primary"
                 onClick={handleSaveStep2}
                 isLoading={isSaving || isUpdatingProfile}
