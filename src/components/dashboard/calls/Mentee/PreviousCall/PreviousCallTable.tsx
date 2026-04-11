@@ -34,16 +34,16 @@ export default function PreviousCallTable({ onView }: { onView?: () => void }) {
 
   const handleSubmitFeedback = async () => {
     if (!selectedRow) return;
-    if (feedbackRating < 1) {
-      showToast('Please choose a rating.', 'error');
-      return;
-    }
     try {
-      await submitFeedback({
-        callId: selectedRow.id,
-        rating: feedbackRating,
-        comment: feedbackComment.trim() || undefined,
-      }).unwrap();
+      const payload: {
+        callId: string;
+        rating?: number;
+        comment?: string;
+      } = { callId: selectedRow.id };
+      if (feedbackRating >= 1 && feedbackRating <= 5) payload.rating = feedbackRating;
+      const trimmed = feedbackComment.trim();
+      if (trimmed) payload.comment = trimmed;
+      await submitFeedback(payload).unwrap();
       showToast('Feedback submitted. Thank you!', 'success');
       setOpenModal(false);
       setSelectedRow(null);
@@ -108,17 +108,24 @@ export default function PreviousCallTable({ onView }: { onView?: () => void }) {
       key: 'status',
       label: '',
       render: (row) => {
-        const done = !!(row.menteeComment?.trim() || (row.rating != null && row.rating > 0));
+        const completed = row.status === 'Completed';
+        const feedbackDone =
+          typeof row.feedbackPending === 'boolean'
+            ? row.feedbackPending === false
+            : row.rating != null && row.menteeComment != null;
+        const done = completed && feedbackDone;
         return (
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Button
               onClick={() => {
                 setSelectedRow(row);
-                setFeedbackRating(row.rating ?? 0);
+                setFeedbackRating(
+                  row.rating != null && row.rating >= 1 ? row.rating : 0
+                );
                 setFeedbackComment(row.menteeComment ?? '');
                 setOpenModal(true);
               }}
-              disabled={isSubmitting || done}
+              disabled={isSubmitting || !completed || done}
               className="bg-green-200 text-white px-6 py-2 rounded-xl"
             >
               {done ? 'Feedback sent' : 'Give feedback'}

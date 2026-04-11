@@ -35,21 +35,22 @@ export default function PreviousCallTable({ onView }: { onView?: () => void }) {
   const openFeedbackModal = (row: PreviousCall, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedRow(row);
-    setFeedbackNotes(row.mentorNotes ?? '');
+    const publicComment = row.mentorComment?.trim();
+    setFeedbackNotes(
+      publicComment
+        ? row.mentorComment ?? ''
+        : row.mentorPrivateNotes ?? ''
+    );
     setOpenModal(true);
   };
 
   const handleSaveFeedback = async () => {
     if (!selectedRow) return;
-    const notes = feedbackNotes.trim();
-    if (notes.length < 2) {
-      showToast('Please add a short note (at least 2 characters).', 'error');
-      return;
-    }
+    const comment = feedbackNotes.trim();
     try {
       await submitFeedback({
         callId: selectedRow.id,
-        notes,
+        comment: comment || undefined,
       }).unwrap();
       showToast('Feedback saved.', 'success');
       setOpenModal(false);
@@ -108,7 +109,11 @@ export default function PreviousCallTable({ onView }: { onView?: () => void }) {
       label: '',
       render: (row) => {
         const isProcessing = isSubmitting && selectedRow?.id === row.id;
-        const hasFeedback = !!(row.mentorNotes != null && String(row.mentorNotes).trim() !== '');
+        const hasFeedback = !!(
+          (row.mentorComment != null && String(row.mentorComment).trim() !== '') ||
+          (row.mentorPrivateNotes != null &&
+            String(row.mentorPrivateNotes).trim() !== '')
+        );
         return (
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Button

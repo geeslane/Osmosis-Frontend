@@ -45,15 +45,19 @@ export function isWithinLastSevenDays(dateStr: string): boolean {
 }
 
 function hasMenteeFeedback(call: CallRecord): boolean {
-  const hasRating = call.rating != null && call.rating !== undefined;
-  const hasComment = !!(
-    call.menteeComment != null && String(call.menteeComment).trim() !== ''
-  );
-  return hasRating || hasComment;
+  if (typeof call.feedbackPending === 'boolean') return !call.feedbackPending;
+  const hasRating = call.rating != null;
+  const hasComment = call.menteeComment != null;
+  return hasRating && hasComment;
 }
 
 function hasMentorFeedback(call: CallRecord): boolean {
-  return !!(call.comment != null && String(call.comment).trim() !== '');
+  const hasComment =
+    call.comment != null && String(call.comment).trim() !== '';
+  const hasPrivate =
+    call.mentorSessionNotes != null &&
+    String(call.mentorSessionNotes).trim() !== '';
+  return hasComment || hasPrivate;
 }
 
 /**

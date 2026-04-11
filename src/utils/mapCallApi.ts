@@ -35,7 +35,10 @@ export function callRecordToUpcomingRow(
     time: c.time ?? '',
     topic: c.topic,
     phone: '—',
-    notes: c.comment ?? c.menteeComment ?? undefined,
+    notes:
+      perspective === 'mentee'
+        ? firstNonEmptyString(c.menteeNotes, c.menteeComment)
+        : firstNonEmptyString(c.menteeNotes, c.menteeComment, c.comment),
     status: mapApiStatusToUpcoming(c.status),
     callUrl: c.meetingUrl,
     mentorId: c.mentorId,
@@ -53,8 +56,16 @@ export type PreviousCallRow = {
   image?: string;
   rating?: number;
   menteeComment?: string;
-  /** Existing mentor notes on the call (mentor perspective). */
-  mentorNotes?: string;
+  /** Booking-time message (mentee GET); not post-call feedback. */
+  menteeNotes?: string;
+  /** Mentee GET: false when both menteeComment and rating are present (per API). */
+  feedbackPending?: boolean;
+  /** Mentee GET: true when call should be marked complete before feedback. */
+  markCompletePending?: boolean;
+  /** Mentor-facing post-call comment (team/parents). */
+  mentorComment?: string;
+  /** Mentor-only private session notes (`Call.notes`). */
+  mentorPrivateNotes?: string;
 };
 
 export function callRecordToPreviousRow(
@@ -70,7 +81,7 @@ export function callRecordToPreviousRow(
       : st.includes('PENDING')
         ? 'Pending'
         : 'Active';
-  return {
+  const row: PreviousCallRow = {
     id: c.id,
     name,
     date: c.date,
@@ -80,8 +91,16 @@ export function callRecordToPreviousRow(
     status,
     rating: c.rating,
     menteeComment: c.menteeComment,
-    mentorNotes: perspective === 'mentor' ? c.comment : undefined,
   };
+  if (perspective === 'mentee') {
+    row.menteeNotes = c.menteeNotes;
+    row.feedbackPending = c.feedbackPending;
+    row.markCompletePending = c.markCompletePending;
+  } else {
+    row.mentorComment = c.comment;
+    row.mentorPrivateNotes = c.mentorSessionNotes;
+  }
+  return row;
 }
 
 /** Extract an array of call-like objects from various API envelope shapes */
@@ -211,6 +230,36 @@ export function rawToCallRecord(raw: unknown): CallRecord {
     topicFromRequestParts || undefined
   );
 
+  let menteePostCall: string | undefined;
+  if ('menteeComment' in r && r.menteeComment != null) {
+    menteePostCall = String(r.menteeComment);
+  } else if ('teenagerComment' in r && r.teenagerComment != null) {
+    menteePostCall = String(r.teenagerComment);
+  }
+
+  const bookingMessage = firstNonEmptyString(
+    r.menteeNotes,
+    cr?.message != null ? String(cr.message) : undefined,
+    r.message != null ? String(r.message) : undefined
+  );
+
+  const ratingRaw = r.rating ?? r.menteeRating;
+  const ratingParsed =
+    typeof ratingRaw === 'number' && !Number.isNaN(ratingRaw)
+      ? ratingRaw
+      : ratingRaw != null && ratingRaw !== ''
+        ? Number(ratingRaw)
+        : undefined;
+  const rating =
+    ratingParsed != null && !Number.isNaN(ratingParsed) ? ratingParsed : undefined;
+
+  const mentorComment =
+    r.mentorComment != null
+      ? String(r.mentorComment)
+      : r.comment != null
+        ? String(r.comment)
+        : undefined;
+
   return {
     id: str(r.id ?? r._id ?? r.callId, ''),
     mentorName,
@@ -226,15 +275,15 @@ export function rawToCallRecord(raw: unknown): CallRecord {
     topic: str(topicResolved, '—'),
     callLength: r.callLength != null ? str(r.callLength) : r.durationMinutes != null ? `${r.durationMinutes}m` : undefined,
     status: str(r.status ?? r.state, '—'),
-    comment: r.comment != null ? str(r.comment, '') : r.mentorComment != null ? str(r.mentorComment, '') : undefined,
-    menteeComment: firstNonEmptyString(
-      r.menteeComment,
-      r.teenagerComment,
-      r.menteeNotes,
-      r.message,
-      cr?.message
-    ),
-    rating: typeof r.rating === 'number' ? r.rating : r.menteeRating != null ? Number(r.menteeRating) : undefined,
+    comment: mentorComment,
+    menteeComment: menteePostCall,
+    menteeNotes: bookingMessage,
+    mentorSessionNotes: r.notes != null ? String(r.notes) : undefined,
+    rating,
+    feedbackPending:
+      typeof r.feedbackPending === 'boolean' ? r.feedbackPending : undefined,
+    markCompletePending:
+      typeof r.markCompletePending === 'boolean' ? r.markCompletePending : undefined,
     meetingUrl,
   };
 }

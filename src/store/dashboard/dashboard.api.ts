@@ -449,7 +449,7 @@ export const DashboardApi = createApi({
     }),
     teenagerCallFeedback: builder.mutation<
       any,
-      { callId: string; rating?: number; comment?: string }
+      { callId: string; rating?: number; comment?: string; menteeComment?: string }
     >({
       query: ({ callId, ...data }) => ({
         url: `/teenager/me/calls/${callId}/feedback`,

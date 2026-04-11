@@ -16,8 +16,17 @@ export interface CallRecord {
   callLength?: string;
   status: string;
   comment?: string;
+  /** Post-call mentee feedback text only (not booking message). */
   menteeComment?: string;
+  /** Booking-time “message to mentor” (GET mentee: callRequest.message). */
+  menteeNotes?: string;
+  /** Mentor-only private session notes (`Call.notes`); omitted on mentee serializers. */
+  mentorSessionNotes?: string;
   rating?: number;
+  /** Mentee GET: false when both rating and menteeComment are set (serializeCallForTeenager). */
+  feedbackPending?: boolean;
+  /** Mentee GET: true when call time passed, not cancelled, status !== COMPLETED. */
+  markCompletePending?: boolean;
   /** Join URL — same field as mentor availability: prefer API `meetingLink` on call or `mentor.meetingLink` */
   meetingUrl?: string;
 }
