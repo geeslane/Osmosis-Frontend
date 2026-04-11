@@ -82,22 +82,25 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
                     title={
                       module.markedCompleted
                         ? 'Marked as Completed'
-                        : 'Mark as completed when done with this module'
+                        : 'Not completed yet'
+                    }
+                    role="img"
+                    aria-label={
+                      module.markedCompleted
+                        ? 'Module completed'
+                        : 'Module not completed'
                     }
                   >
-                    <input
-                      type="checkbox"
-                      checked={Boolean(module.markedCompleted)}
-                      disabled
-                      tabIndex={-1}
-                      aria-label={
-                        module.markedCompleted
-                          ? 'Module completed'
-                          : 'Module not completed'
-                      }
-                      onClick={(e) => e.stopPropagation()}
-                      className="h-4 w-4 rounded border-gray-300 text-green-200 accent-green-200 disabled:opacity-100 disabled:cursor-default"
-                    />
+                    {module.markedCompleted ? (
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-violet-600 text-white text-[11px] font-bold leading-none shadow-sm ring-2 ring-violet-500/40">
+                        ✓
+                      </span>
+                    ) : (
+                      <span
+                        className="inline-block h-5 w-5 rounded-md border-2 border-gray-300 bg-white shrink-0"
+                        aria-hidden
+                      />
+                    )}
                   </span>
                 )}
                 <div>

@@ -108,13 +108,15 @@ export default function ModuleDetails() {
         </Link>
         {isMentee ? (
           <div className="flex items-center gap-3 shrink-0">
-            <p className="text-sm text-gray-700 hidden sm:inline">
-              When you&apos;re done, mark as completed.
-            </p>
+            {!markedCompleted && (
+              <p className="text-sm text-gray-700 hidden sm:inline">
+                When you&apos;re done, mark as completed.
+              </p>
+            )}
             {markedCompleted ? (
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
-                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-xs font-bold">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-violet-600 text-white text-sm font-bold shadow-sm ring-2 ring-violet-500/40">
                     ✓
                   </span>
                   Completed
