@@ -205,9 +205,9 @@ export default function TeenagerDashboard() {
                       Keep exploring, book a call with a mentor, or join a live session.
                     </p>
                   ) : null}
-                  <div className="mt-3 h-3 rounded-full bg-white/80 overflow-hidden shadow-inner">
+                  <div className="mt-3 h-3.5 rounded-full bg-gray-200 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500"
+                      className="h-full rounded-full bg-[#6CBB01] transition-all duration-500"
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>
