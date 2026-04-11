@@ -85,6 +85,8 @@ type Step2DraftPayload = {
   meetingLink: string;
   mentorshipTopics: string[];
   savedAt: number;
+  /** Wizard step to reopen after OAuth return (step 3 = calendar). */
+  resumeStep?: 2 | 3;
 };
 
 function step2DraftKey(mentorId: string) {
@@ -93,11 +95,15 @@ function step2DraftKey(mentorId: string) {
 
 function saveStep2Draft(
   mentorId: string,
-  data: Pick<Step2DraftPayload, 'meetingLink' | 'mentorshipTopics'>
+  data: Pick<Step2DraftPayload, 'meetingLink' | 'mentorshipTopics'> & {
+    resumeStep?: 2 | 3;
+  }
 ) {
   if (!mentorId || typeof window === 'undefined') return;
   const payload: Step2DraftPayload = {
-    ...data,
+    meetingLink: data.meetingLink,
+    mentorshipTopics: data.mentorshipTopics,
+    resumeStep: data.resumeStep,
     savedAt: Date.now(),
   };
   try {
@@ -121,10 +127,13 @@ function loadStep2Draft(mentorId: string): Step2DraftPayload | null {
       sessionStorage.removeItem(step2DraftKey(mentorId));
       return null;
     }
+    const resumeStep =
+      parsed.resumeStep === 3 || parsed.resumeStep === 2 ? parsed.resumeStep : undefined;
     return {
       meetingLink: parsed.meetingLink,
       mentorshipTopics: parsed.mentorshipTopics.map(String),
       savedAt,
+      resumeStep,
     };
   } catch {
     return null;
@@ -169,7 +178,7 @@ export default function MentorAvailabilitySchedule() {
   });
   const topicOptions = topicsDropdown?.data ?? [];
 
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isEditing, setIsEditing] = useState(false);
   const [weeklySchedule, setWeeklySchedule] = useState<DaySchedule[]>(
     createEmptySchedule()
@@ -177,7 +186,7 @@ export default function MentorAvailabilitySchedule() {
   const [meetingLink, setMeetingLink] = useState('');
   const [mentorshipTopics, setMentorshipTopics] = useState<string[]>([]);
   const [topicToAdd, setTopicToAdd] = useState('');
-  /** Summary view only after step 2 was saved (or server already has link/sync). */
+  /** Summary view after the full wizard is done (or server already has link/sync). */
   const [hasFinishedStep2, setHasFinishedStep2] = useState(false);
 
   const step2DraftRestoredRef = useRef(false);
@@ -198,11 +207,15 @@ export default function MentorAvailabilitySchedule() {
         setHasFinishedStep2(true);
       }
 
-      if (hasWeeklyScheduleBlocks(availability.weeklySchedule)) {
+      // Resume at step 2 only when still on weekly step — do not pull users back from step 3
+      if (
+        hasWeeklyScheduleBlocks(availability.weeklySchedule) &&
+        step === 1
+      ) {
         setStep(2);
       }
     }
-  }, [availability]);
+  }, [availability, step]);
 
   useEffect(() => {
     const mentor = extractMentorRecord(mentorData);
@@ -224,7 +237,7 @@ export default function MentorAvailabilitySchedule() {
     step2DraftRestoredRef.current = true;
     setMeetingLink(draft.meetingLink);
     setMentorshipTopics(draft.mentorshipTopics);
-    setStep(2);
+    setStep(draft.resumeStep ?? 2);
   }, [isLoading, mentorId, isMentor, isMentorProfileLoading]);
 
   const hasAnyBlocks = weeklySchedule.some((d) => d.blocks.length > 0);
@@ -308,13 +321,18 @@ export default function MentorAvailabilitySchedule() {
           data: { mentorshipTopics },
         }).unwrap();
       }
-      showToast('Schedule saved successfully', 'success');
-      setHasFinishedStep2(true);
-      setIsEditing(false);
-      clearStep2Draft(mentorId);
+      showToast('Saved. Next: connect Google Calendar (optional).', 'success');
+      setStep(3);
     } catch (err: any) {
       showToast(err?.data?.message || 'Failed to save schedule', 'error');
     }
+  };
+
+  const handleFinishWizard = () => {
+    showToast('Availability setup complete.', 'success');
+    setHasFinishedStep2(true);
+    setIsEditing(false);
+    clearStep2Draft(mentorId);
   };
 
   const handleConnectGoogleCalendar = async () => {
@@ -323,6 +341,7 @@ export default function MentorAvailabilitySchedule() {
         saveStep2Draft(mentorId, {
           meetingLink,
           mentorshipTopics,
+          resumeStep: 3,
         });
       }
       const { url } = await fetchGoogleCalendarAuthUrl().unwrap();
@@ -365,17 +384,23 @@ export default function MentorAvailabilitySchedule() {
     );
   }
 
-  // View mode: show configured schedule, allow Edit (only after step 2 completed)
+  // View mode: show configured schedule, allow Edit (wizard completed or server has data)
   const isConfigured =
     hasAnyBlocks && availability && hasWeeklyScheduleBlocks(availability.weeklySchedule);
-  if (isConfigured && !isEditing && step === 2 && hasFinishedStep2) {
+  if (isConfigured && !isEditing && hasFinishedStep2) {
     return (
       <div className="mt-10 max-w-2xl space-y-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-2xl font-bold text-green-200 md:text-[28px]">
             Your Availability Schedule
           </h2>
-          <Button variant="primary" onClick={() => setIsEditing(true)}>
+          <Button
+            variant="primary"
+            onClick={() => {
+              setIsEditing(true);
+              setStep(1);
+            }}
+          >
             Edit Schedule
           </Button>
         </div>
@@ -444,7 +469,7 @@ export default function MentorAvailabilitySchedule() {
               </div>
             ) : (
               <p className="text-sm text-gray-600">
-                No topics loaded from your profile yet. Open <strong>Edit Schedule</strong>, go to step 2, and add topics — they are saved with your mentor profile.
+                No topics loaded from your profile yet. Open <strong>Edit Schedule</strong>, add topics in step 2 — they are saved with your mentor profile.
               </p>
             )}
           </div>
@@ -468,25 +493,27 @@ export default function MentorAvailabilitySchedule() {
   // Step 1: Weekly time blocks
   return (
     <div className="mt-10 max-w-2xl space-y-8">
-      <div className="flex items-center gap-2">
-        <span
-          className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
-            step === 1 ? 'bg-green-100 text-white' : 'bg-green-100/30 text-green-200'
-          }`}
-        >
-          1
-        </span>
-        <span
-          className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
-            step === 2 ? 'bg-green-100 text-white' : 'bg-gray-200 text-gray-500'
-          }`}
-        >
-          2
-        </span>
+      <div className="flex flex-wrap items-center gap-2">
+        {([1, 2, 3] as const).map((n) => (
+          <span
+            key={n}
+            className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
+              step === n
+                ? 'bg-green-100 text-white'
+                : step > n
+                  ? 'bg-green-100/30 text-green-200'
+                  : 'bg-gray-200 text-gray-500'
+            }`}
+          >
+            {n}
+          </span>
+        ))}
       </div>
 
       <h2 className="text-2xl font-bold text-green-200 md:text-[28px]">
-        {step === 1 ? 'Set Your Weekly Availability' : 'Meeting Link & Calendar Sync'}
+        {step === 1 && 'Set Your Weekly Availability'}
+        {step === 2 && 'Meeting Link & Topics'}
+        {step === 3 && 'Google Calendar'}
       </h2>
 
       {step === 1 && (
@@ -578,8 +605,8 @@ export default function MentorAvailabilitySchedule() {
       {step === 2 && (
         <>
           <p className="text-green-300">
-            Add your meeting link (used for all sessions) and optionally sync with
-            Google Calendar so mentees can&apos;t book when you have other meetings.
+            Add your meeting link (used for all sessions) and your mentorship topics so mentees
+            know what you focus on.
           </p>
 
           <div className="space-y-6 rounded-xl border border-green-200/60 bg-white p-6 shadow-sm">
@@ -646,6 +673,36 @@ export default function MentorAvailabilitySchedule() {
               />
             </div>
 
+            <div className="flex justify-center gap-4 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setStep(1)}
+                className="min-w-[120px] border-green-300 px-6 py-3"
+              >
+                Back
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSaveStep2}
+                isLoading={isSaving || isUpdatingProfile}
+                className="min-w-[180px] px-8 py-3"
+              >
+                Continue
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {step === 3 && (
+        <>
+          <p className="text-green-300">
+            Optionally connect Google Calendar so mentees can&apos;t book sessions when you&apos;re
+            already busy. You can skip this and finish — you can connect later from{' '}
+            <strong>Edit Schedule</strong>.
+          </p>
+
+          <div className="space-y-6 rounded-xl border border-green-200/60 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
               {!isGoogleCalendarConnected ? (
                 <Button
@@ -679,21 +736,27 @@ export default function MentorAvailabilitySchedule() {
               )}
             </div>
 
-            <div className="flex justify-center gap-4 pt-2">
+            <div className="flex flex-col items-center justify-center gap-3 pt-2 sm:flex-row sm:flex-wrap">
               <Button
                 variant="outline"
-                onClick={() => setStep(1)}
+                onClick={() => setStep(2)}
                 className="min-w-[120px] border-green-300 px-6 py-3"
               >
                 Back
               </Button>
               <Button
+                variant="outline"
+                onClick={handleFinishWizard}
+                className="min-w-[140px] px-6 py-3"
+              >
+                Skip for now
+              </Button>
+              <Button
                 variant="primary"
-                onClick={handleSaveStep2}
-                isLoading={isSaving || isUpdatingProfile}
+                onClick={handleFinishWizard}
                 className="min-w-[160px] px-8 py-3"
               >
-                Save
+                Finish
               </Button>
             </div>
           </div>
