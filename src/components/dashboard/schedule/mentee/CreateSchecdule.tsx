@@ -446,7 +446,7 @@ export default function CreateSchedule() {
           {step === 2 && 'Choose a mentor, then continue to pick a date and time.'}
           {step === 3 && selectedMentor && (
             <>
-              Pick a day, then a start time. Slots are {SLOT_DURATION_MINUTES} minutes. Gray days have no openings — try another day.
+              Pick a day, then a start time. Slots are {SLOT_DURATION_MINUTES} minutes.
             </>
           )}
         </p>
