@@ -33,10 +33,13 @@ export default function MentorDetail({
       <div className="rounded-lg flex flex-col md:flex-row gap-6 md:gap-8 border border-[#6CBB0180] px-6 md:px-10 lg:px-16 py-6">
         <div className="shrink-0 flex justify-center md:justify-start">
           <div className="relative w-[120px] h-[120px] rounded-full overflow-hidden bg-green-100/30 shrink-0">
-            {selectedDetails.image && !imageError ? (
+            {(selectedDetails?.image || selectedDetails?.pictureUrl) &&
+            !imageError ? (
               <Image
                 src={
-                  normalizeImageUrl(selectedDetails.image) || '/image/Avatar.png'
+                  normalizeImageUrl(
+                    selectedDetails?.image || selectedDetails?.pictureUrl
+                  ) || '/image/Avatar.png'
                 }
                 alt="Mentor"
                 fill
@@ -47,7 +50,7 @@ export default function MentorDetail({
             ) : (
               <div className="absolute inset-0 rounded-full bg-green-100 flex items-center justify-center">
                 <span className="text-green-200 text-2xl font-semibold">
-                  {(selectedDetails.name || selectedDetails.email || 'U')
+                  {(selectedDetails?.name || selectedDetails?.email || 'U')
                     .split(' ')
                     .map((word: string) => word[0])
                     .join('')
@@ -64,10 +67,11 @@ export default function MentorDetail({
             <p className="text-green-300 text-sm font-medium">Status</p>
             <span
               className={`rounded-full px-3 py-1 text-xs font-medium ${
-                statusStyles[selectedDetails.status] || 'bg-[#F2F4F7] text-[#282F2E]'
+                statusStyles[selectedDetails?.status] ||
+                'bg-[#F2F4F7] text-[#282F2E]'
               }`}
             >
-              {selectedDetails.status}
+              {selectedDetails?.status}
             </span>
           </div>
 
@@ -75,22 +79,22 @@ export default function MentorDetail({
             <Info
               icon={<UserAddIcon />}
               label="Full Name"
-              value={selectedDetails.name}
+              value={selectedDetails?.name || selectedDetails?.fullName}
             />
             <Info
               icon={<EmailIcon color="#6CBB01" />}
               label="Email"
-              value={selectedDetails.email}
+              value={selectedDetails?.email}
             />
             <Info
               icon={<PhoneIcon color="#6CBB01" />}
               label="Phone Number"
-              value={selectedDetails.phone}
+              value={selectedDetails?.phone || selectedDetails?.phoneNumber}
             />
             <Info
               icon={<LocationIcon color="#6CBB01" />}
               label="Address / Location"
-              value={selectedDetails.address}
+              value={selectedDetails?.address}
               wrapValue
             />
           </div>
@@ -99,17 +103,17 @@ export default function MentorDetail({
             <Info
               icon={<CalendarIcon />}
               label="Date of Birth"
-              value={formatDate(selectedDetails.dateOfBirth) || undefined}
+              value={formatDate(selectedDetails?.dateOfBirth) || undefined}
             />
             <Info
               icon={<UserIcon width={20} height={20} />}
               label="Gender"
-              value={selectedDetails.gender}
+              value={selectedDetails?.gender}
             />
             <Info
               icon={<CourseIcon width={20} height={20} />}
               label="Occupation"
-              value={selectedDetails.occupation}
+              value={selectedDetails?.occupation}
             />
           </div>
 
@@ -118,9 +122,12 @@ export default function MentorDetail({
               icon={<CourseIcon width={20} height={20} />}
               label="Mentorship Topics of Interest"
               value={
-                selectedDetails.topics || selectedDetails.topicsOfInterest
+                selectedDetails?.topics ||
+                selectedDetails?.topicsOfInterest ||
+                (Array.isArray(selectedDetails?.mentorshipTopics)
+                  ? selectedDetails.mentorshipTopics.join(', ')
+                  : selectedDetails?.mentorshipTopics)
               }
-              wrapValue
             />
             <div className="flex items-start gap-3 min-w-0">
               <span className="shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-[#DCFFAD91] text-[#6CBB01] [&_svg]:w-5 [&_svg]:h-5">
@@ -130,14 +137,14 @@ export default function MentorDetail({
                 <p className="text-green-300 text-sm font-medium">
                   LinkedIn URL
                 </p>
-                {selectedDetails.linkedinUrl ? (
+                {selectedDetails?.linkedinUrl ? (
                   <a
-                    href={selectedDetails.linkedinUrl}
+                    href={selectedDetails?.linkedinUrl}
                     className="text-green-200 font-medium break-all hover:underline"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    {selectedDetails.linkedinUrl}
+                    {selectedDetails?.linkedinUrl}
                   </a>
                 ) : (
                   <p className="text-green-200 font-medium">—</p>
@@ -150,13 +157,13 @@ export default function MentorDetail({
             <Info
               icon={<HeartIcon />}
               label="What inspires you to be a teens mentor?"
-              value={selectedDetails.inspiration}
+              value={selectedDetails?.inspiration}
               wrapValue
             />
             <Info
               icon={<NoteIcon />}
               label="Mentor's Bio"
-              value={selectedDetails.bio}
+              value={selectedDetails?.bio}
               wrapValue
             />
           </div>
