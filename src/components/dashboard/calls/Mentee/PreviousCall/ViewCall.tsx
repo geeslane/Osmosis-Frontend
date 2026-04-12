@@ -1,13 +1,22 @@
 ﻿'use client';
 
 import { GoBackIcon, UserAddIcon } from '@/assets/icons';
+import type { PreviousCallRow } from '@/utils/mapCallApi';
 import React from 'react';
 
+function show(s: string | undefined | null) {
+  const t = s?.trim();
+  return t ? t : '—';
+}
+
 type ViewCallProps = {
+  call: PreviousCallRow;
   onBack: () => void;
 };
 
-export default function ViewCall({ onBack }: ViewCallProps) {
+export default function ViewCall({ call, onBack }: ViewCallProps) {
+  const dateTime = call.time ? `${call.date}, ${call.time}` : call.date;
+
   return (
     <div className="mt-10 max-w-[520px]">
       <button
@@ -32,9 +41,7 @@ export default function ViewCall({ onBack }: ViewCallProps) {
             <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">
               Mentor&apos;s name
             </p>
-            <p className="text-base font-semibold text-[#101828]">
-              Emmanuel Adegbola
-            </p>
+            <p className="text-base font-semibold text-[#101828]">{show(call.name)}</p>
           </div>
         </div>
 
@@ -43,15 +50,39 @@ export default function ViewCall({ onBack }: ViewCallProps) {
             <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">
               Date
             </p>
-            <p className="text-sm font-medium text-[#101828]">12-10-2023</p>
+            <p className="text-sm font-medium text-[#101828]">{show(dateTime)}</p>
           </div>
           <div>
             <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">
               Topic
             </p>
-            <p className="text-sm font-medium text-[#101828]">Joy in Chaos</p>
+            <p className="text-sm font-medium text-[#101828]">{show(call.topic)}</p>
           </div>
         </div>
+
+        <div className="pt-2 border-t border-gray-100">
+          <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider mb-1">
+            Your feedback
+          </p>
+          <p className="text-sm font-medium text-[#101828]">
+            Rating:{' '}
+            {call.rating != null && call.rating >= 1 && call.rating <= 5
+              ? `${call.rating}/5`
+              : '—'}
+          </p>
+          <p className="text-sm font-medium text-[#101828] mt-2">
+            {show(call.menteeComment)}
+          </p>
+        </div>
+
+        {call.menteeNotes ? (
+          <div className="pt-2 border-t border-gray-100">
+            <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider mb-1">
+              Message to mentor (booking)
+            </p>
+            <p className="text-sm font-medium text-[#101828]">{show(call.menteeNotes)}</p>
+          </div>
+        ) : null}
       </div>
     </div>
   );

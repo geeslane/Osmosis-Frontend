@@ -2,15 +2,16 @@
 import React, { useState } from 'react';
 import PreviousCallTable from './PreviousCallTable';
 import ViewCall from './ViewCall';
+import type { PreviousCallRow } from '@/utils/mapCallApi';
 
 export default function PreviousCall() {
-  const [view, setView] = useState(false);
+  const [selectedCall, setSelectedCall] = useState<PreviousCallRow | null>(null);
   return (
     <div>
-      {view ? (
-        <ViewCall onBack={() => setView(false)} />
+      {selectedCall ? (
+        <ViewCall call={selectedCall} onBack={() => setSelectedCall(null)} />
       ) : (
-        <PreviousCallTable onView={() => setView(true)} />
+        <PreviousCallTable onView={(row) => setSelectedCall(row)} />
       )}
     </div>
   );

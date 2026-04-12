@@ -103,7 +103,7 @@ export default function Detail() {
       <PageTitle title={displayName} />
 
       {viewCallHistory ? (
-        <CallHistoryTable />
+        <CallHistoryTable teenagerId={typeof id === 'string' ? id : undefined} />
       ) : (
         <div className="flex flex-col gap-6 md:gap-8">
           {/* Back + Header row */}

@@ -10,7 +10,6 @@ export interface CallRecord {
   menteeId?: string;
   /** Mentor user ID – used by mentees to load `meetingLink` when not on the call row */
   mentorId?: string;
-  /** ISO instant from API (`scheduledAt` / `startTime`); preferred for schedule-based logic */
   scheduledAt?: string;
   date: string;
   time?: string;

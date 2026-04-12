@@ -4,10 +4,13 @@ import { DownloadIcon, SearchIcon, StarIcon } from '@/assets/icons';
 import { Column, DataTable } from '@/components/ui/table';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import Button from '@/components/ui/button/Button';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 import CallDetail from './CallDetail';
 import { downloadCallReport } from '@/utils/downloadCallReport';
+import { useGetCallsQuery } from '@/store/calls/calls.api';
+import type { CallRecord } from '@/store/calls/calls.api';
+import { callRecordToPreviousRow } from '@/utils/mapCallApi';
 
 type CallHistoryRow = {
   id: string;
@@ -20,48 +23,13 @@ type CallHistoryRow = {
   rating: number;
 };
 
-const callHistoryData: CallHistoryRow[] = [
-  {
-    id: '1',
-    menteeName: 'Olivia Rhye',
-    date: '12 Dec, 2025',
-    time: '10:00 AM',
-    topic: 'Hope',
-    callLength: '55m 34s',
-    comment: 'Good',
-    rating: 3,
-  },
-  {
-    id: '2',
-    menteeName: 'Phoenix Baker',
-    date: '12 Dec, 2025',
-    time: '2:30 PM',
-    topic: 'Joy in Chaos',
-    callLength: '1h 23m 5s',
-    comment: 'Rescheduled',
-    rating: 2,
-  },
-  {
-    id: '3',
-    menteeName: 'Lana Steiner',
-    date: '12 Dec, 2025',
-    time: '4:15 PM',
-    topic: 'Shame',
-    callLength: '1h 23m 5s',
-    comment: 'Completed',
-    rating: 4,
-  },
-  {
-    id: '4',
-    menteeName: 'Demi Wilkinson',
-    date: '12 Dec, 2025',
-    time: '11:00 AM',
-    topic: 'Overcoming Fear',
-    callLength: '1h 23m 5s',
-    comment: 'Good',
-    rating: 4,
-  },
-];
+function commentCell(c: CallRecord) {
+  const p = callRecordToPreviousRow(c, 'mentor');
+  const parts = [p.menteeComment, p.mentorComment].filter(
+    (x) => x != null && String(x).trim() !== ''
+  ) as string[];
+  return parts.length ? parts.join(' · ') : '—';
+}
 
 interface CallHistoryTableProps {
   mentorId?: string;
@@ -74,6 +42,31 @@ export default function CallHistoryTable({ mentorId, mentorName }: CallHistoryTa
   const [open, setOpen] = useState(false);
   const [viewCallDetails, setViewCallDetails] = useState(false);
   const [selectedCall, setSelectedCall] = useState<CallHistoryRow | null>(null);
+
+  const { data, isLoading, isError } = useGetCallsQuery(
+    { page: 1, limit: 500 },
+    { skip: !mentorId }
+  );
+
+  const rows = useMemo((): CallHistoryRow[] => {
+    const raw = data?.data ?? [];
+    if (!mentorId) return [];
+    return raw
+      .filter((c) => c.mentorId === mentorId)
+      .map((c) => {
+        const p = callRecordToPreviousRow(c, 'mentor');
+        return {
+          id: p.id,
+          menteeName: p.name,
+          date: p.date,
+          time: p.time,
+          topic: p.topic,
+          callLength: c.callLength ?? '—',
+          comment: commentCell(c),
+          rating: p.rating != null && p.rating >= 0 ? p.rating : 0,
+        };
+      });
+  }, [data?.data, mentorId]);
 
   const handleDelete = async () => {
     try {
@@ -159,7 +152,7 @@ export default function CallHistoryTable({ mentorId, mentorName }: CallHistoryTa
     },
   ];
 
-  const filtered = callHistoryData.filter((row) => {
+  const filtered = rows.filter((row) => {
     const q = search.toLowerCase();
     if (!q) return true;
     return (
@@ -182,6 +175,7 @@ export default function CallHistoryTable({ mentorId, mentorName }: CallHistoryTa
       {viewCallDetails ? (
         <CallDetail
           call={selectedCall}
+          counterpartyLabel="Mentee name"
           onBack={() => {
             setViewCallDetails(false);
             setSelectedCall(null);
@@ -224,15 +218,32 @@ export default function CallHistoryTable({ mentorId, mentorName }: CallHistoryTa
               description="This call record will be permanently removed. This action cannot be undone."
             />
 
-            <DataTable columns={columns} data={paginated} compact />
+            {isLoading && (
+              <p className="px-6 py-4 text-sm text-gray-500">Loading call history…</p>
+            )}
+            {isError && !isLoading && (
+              <p className="px-6 py-4 text-sm text-red-600">Could not load call history.</p>
+            )}
+            {!isLoading && !isError && mentorId && filtered.length === 0 && (
+              <p className="px-6 py-4 text-sm text-gray-500">No calls found for this mentor.</p>
+            )}
+            {!isLoading && !isError && !mentorId && (
+              <p className="px-6 py-4 text-sm text-gray-500">Missing mentor id.</p>
+            )}
 
-            <div className="px-6 py-4 border-t border-gray-100">
-              <Pagination
-                page={page}
-                totalPages={totalPages}
-                onPageChange={setPage}
-              />
-            </div>
+            {!isLoading && !isError && filtered.length > 0 && (
+              <DataTable columns={columns} data={paginated} compact />
+            )}
+
+            {filtered.length > 0 ? (
+              <div className="px-6 py-4 border-t border-gray-100">
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  onPageChange={setPage}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
       )}

@@ -14,7 +14,6 @@ function parseCallDateMs(dateStr: string | undefined): number {
   return 0;
 }
 
-/** Prefer API `scheduledAt` for ordering and “past” checks; fall back to parsed `date`. */
 export function getScheduledAtMs(call: CallRecord): number {
   if (call.scheduledAt) {
     const t = Date.parse(call.scheduledAt);
@@ -28,7 +27,6 @@ function isPastBySchedule(call: CallRecord, nowMs = Date.now()): boolean {
   return ms > 0 && ms < nowMs;
 }
 
-/** True if instant falls within the last 7 calendar days (inclusive of today), same rules as legacy date-string helper. */
 function isWithinLastSevenDaysFromMs(scheduledMs: number): boolean {
   if (!scheduledMs || Number.isNaN(scheduledMs)) return false;
   const date = new Date(scheduledMs);
@@ -41,7 +39,6 @@ function isWithinLastSevenDaysFromMs(scheduledMs: number): boolean {
   return date >= sevenDaysAgo && date <= now;
 }
 
-/** Most recent call that is already past by `scheduledAt` (newest first). Ignores stale `status`. */
 export function getMostRecentPreviousCall(calls: CallRecord[]): CallRecord | null {
   if (!calls?.length) return null;
   const past = calls.filter((c) => isPastBySchedule(c));
@@ -66,12 +63,6 @@ export function isWithinLastSevenDays(dateStr: string): boolean {
   return isWithinLastSevenDaysFromMs(date.getTime());
 }
 
-/**
- * True when we should NOT show the “give feedback” dashboard card for this call.
- * Past vs upcoming is determined by `scheduledAt` elsewhere — do not use `status` / `markCompletePending`.
- * When the API sends `feedbackPending`, we still cross-check fields: some payloads mark
- * `feedbackPending: false` without mentee input — don’t hide the nudge then.
- */
 function shouldSuppressTeenagerFeedbackReminderForCall(call: CallRecord): boolean {
   const needsRating = call.rating == null;
   const needsComment = call.menteeComment == null;
@@ -95,10 +86,6 @@ function hasMentorFeedback(call: CallRecord): boolean {
   return hasComment || hasPrivate;
 }
 
-/**
- * Show "give feedback" reminder only when there is a previous call, the most
- * recent one is recent enough, and it does not already have mentee feedback.
- */
 export function shouldShowTeenagerFeedbackReminder(previous: CallRecord[]): boolean {
   const last = getMostRecentPreviousCall(previous);
   if (!last) return false;
@@ -106,10 +93,6 @@ export function shouldShowTeenagerFeedbackReminder(previous: CallRecord[]): bool
   return isWithinLastSevenDaysFromMs(getScheduledAtMs(last));
 }
 
-/**
- * Show "add feedback" reminder only when there is a previous call, the most
- * recent one is recent enough, and mentor notes are not already saved.
- */
 export function shouldShowMentorFeedbackReminder(previous: CallRecord[]): boolean {
   const last = getMostRecentPreviousCall(previous);
   if (!last) return false;

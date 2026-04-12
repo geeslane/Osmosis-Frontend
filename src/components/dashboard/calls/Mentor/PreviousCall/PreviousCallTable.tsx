@@ -13,7 +13,11 @@ import ActionModal from '@/components/ui/modal/ActionModal';
 
 type PreviousCall = PreviousCallRow;
 
-export default function PreviousCallTable({ onView }: { onView?: () => void }) {
+export default function PreviousCallTable({
+  onView,
+}: {
+  onView?: (row: PreviousCall) => void;
+}) {
   const { showToast } = useToastify();
   const { data, isLoading, isError } = useGetMentorPreviousCallsQuery();
   const [submitFeedback, { isLoading: isSubmitting }] = useMentorCallFeedbackMutation();
@@ -73,7 +77,10 @@ export default function PreviousCallTable({ onView }: { onView?: () => void }) {
         return (
           <button
             type="button"
-            onClick={onView}
+            onClick={(e) => {
+              e.stopPropagation();
+              onView?.(row);
+            }}
             className="flex cursor-pointer items-center gap-2 w-[200px] text-left font-medium text-sm text-[#101828] hover:text-green-600"
           >
             {row.name}
@@ -229,7 +236,7 @@ export default function PreviousCallTable({ onView }: { onView?: () => void }) {
       <DataTable
         columns={columns}
         data={paginated}
-        onRowClick={() => onView?.()}
+        onRowClick={(row) => onView?.(row)}
         compact
       />
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />

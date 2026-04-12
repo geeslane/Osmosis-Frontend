@@ -183,22 +183,22 @@ export function rawToCallRecord(raw: unknown): CallRecord {
       teen?.name
   );
 
-  let date = str(r.date, '');
-  let time = str(r.time, '');
+  let date = firstNonEmptyString(r.date, r.dateFormatted) ?? '';
+  let time = firstNonEmptyString(r.time, r.timeFormatted) ?? '';
   const scheduledAtRaw = r.scheduledAt ?? r.startTime ?? r.datetime ?? r.scheduled_at;
   let scheduledAt: string | undefined;
   if (typeof scheduledAtRaw === 'string' && scheduledAtRaw.trim().length > 0) {
     const d = new Date(scheduledAtRaw);
     if (!Number.isNaN(d.getTime())) {
       scheduledAt = scheduledAtRaw.trim();
-      if (!date || date === '—') {
+      if (!date) {
         date = d.toLocaleDateString(undefined, {
           day: 'numeric',
           month: 'short',
           year: 'numeric',
         });
       }
-      if (!time || time === '—') {
+      if (!time) {
         time = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
       }
     }

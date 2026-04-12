@@ -15,9 +15,11 @@ type CallHistoryRow = {
 export default function CallDetail({
   call,
   onBack,
+  counterpartyLabel = 'Mentee name',
 }: {
   call: CallHistoryRow | null;
   onBack: () => void;
+  counterpartyLabel?: string;
 }) {
   if (!call) {
     return (
@@ -66,7 +68,7 @@ export default function CallDetail({
           </div>
           <div>
             <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">
-              Mentee Name
+              {counterpartyLabel}
             </p>
             <p className="text-sm font-semibold text-[#101828]">{call.menteeName}</p>
           </div>
@@ -84,6 +86,12 @@ export default function CallDetail({
               Topic
             </p>
             <p className="text-sm font-medium text-[#101828]">{call.topic}</p>
+          </div>
+          <div>
+            <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">
+              Duration
+            </p>
+            <p className="text-sm font-medium text-[#101828]">{call.callLength}</p>
           </div>
         </div>
 
