@@ -24,7 +24,7 @@ export type GetModulesParams = {
 /** Default list ordering: newest modules first (server-side). */
 export const DEFAULT_MODULE_LIST_SORT: Pick<GetModulesParams, 'sortBy' | 'order'> = {
   sortBy: 'createdAt',
-  order: 'desc',
+  order: 'asc',
 };
 
 export type GetMentorsParams = {
