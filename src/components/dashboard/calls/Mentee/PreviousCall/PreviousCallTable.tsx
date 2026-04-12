@@ -121,10 +121,12 @@ export default function PreviousCallTable({
         const canGiveFeedback =
           row.status !== 'Inactive' &&
           (pastBySchedule || completedByStatus);
-        const feedbackDone =
-          typeof row.feedbackPending === 'boolean'
-            ? row.feedbackPending === false
-            : row.rating != null && row.menteeComment != null;
+        const hasRating =
+          row.rating != null && row.rating >= 1 && row.rating <= 5;
+        const hasMenteeComment =
+          row.menteeComment != null &&
+          String(row.menteeComment).trim() !== '';
+        const feedbackDone = hasRating || hasMenteeComment;
         return (
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Button
