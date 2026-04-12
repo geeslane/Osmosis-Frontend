@@ -74,15 +74,6 @@ export default function ViewCall({ call, onBack }: ViewCallProps) {
             {show(call.menteeComment)}
           </p>
         </div>
-
-        {call.menteeNotes ? (
-          <div className="pt-2 border-t border-gray-100">
-            <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider mb-1">
-              Message to mentor (booking)
-            </p>
-            <p className="text-sm font-medium text-[#101828]">{show(call.menteeNotes)}</p>
-          </div>
-        ) : null}
       </div>
     </div>
   );
