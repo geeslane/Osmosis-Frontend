@@ -140,17 +140,20 @@ export const AddModuleSchema = yup.object({
   title: yup.string().required('Module title is required'),
   ModuleNumber: yup.number().required('Module number is required').positive(),
   notes: yup.string().required('Content is required'),
-  additionalResources: yup.string().required('Resources is required'),
-  deliverables: yup.string().required('Deliverables is required'),
+  additionalResources: yup.string().notRequired().nullable(),
+  deliverables: yup.string().notRequired().nullable(),
   workbookFile: yup
     .mixed()
-    .required('Workbook file is required')
-    .test('fileRequired', 'Workbook file is required', (value) => {
-      return value && value.length > 0;
-    })
-    .test('fileType', 'Only PDF files are allowed', (value) => {
+    .notRequired()
+    .test('fileType', 'Only PDF or Word files are allowed', (value) => {
       if (!value || value.length === 0) return true;
-      return value[0]?.type === 'application/pdf';
+      const type = value[0]?.type;
+      return (
+        type === 'application/pdf' ||
+        type === 'application/msword' ||
+        type ===
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      );
     })
     .test('fileSize', 'File size must be less than 10MB', (value) => {
       if (!value || value.length === 0) return true;
@@ -162,14 +165,20 @@ export const EditModuleSchema = yup.object({
   title: yup.string().required('Module title is required'),
   ModuleNumber: yup.number().required('Module number is required').positive(),
   notes: yup.string().required('Content is required'),
-  additionalResources: yup.string().required('Resources is required'),
-  deliverables: yup.string().required('Deliverables is required'),
+  additionalResources: yup.string().notRequired().nullable(),
+  deliverables: yup.string().notRequired().nullable(),
   workbookFile: yup
     .mixed()
     .notRequired()
-    .test('fileType', 'Only PDF files are allowed', (value) => {
+    .test('fileType', 'Only PDF or Word files are allowed', (value) => {
       if (!value || value.length === 0) return true;
-      return value[0]?.type === 'application/pdf';
+      const type = value[0]?.type;
+      return (
+        type === 'application/pdf' ||
+        type === 'application/msword' ||
+        type ===
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      );
     })
     .test('fileSize', 'File size must be less than 10MB', (value) => {
       if (!value || value.length === 0) return true;

@@ -1,23 +1,61 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Dropdown } from '../ui/dropdown/Dropdown';
 import { RefreshIcon, NotificationsIcon } from '../../assets/icons';
+import {
+  useGetNotificationsQuery,
+  useMarkAllNotificationsReadMutation,
+  useMarkNotificationReadMutation,
+  useMarkNotificationUnreadMutation,
+} from '@/store/notifications/notifications.api';
+import { resolveNotificationHref } from '@/utils/notificationLinks';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+
+function formatTime(createdAt: string): string {
+  try {
+    const date = new Date(createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  } catch {
+    return createdAt;
+  }
+}
 
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifying, setNotifying] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
-  const [notifications] = useState<any[]>([]); // TODO: Integrate with notifications API when available
+  const user = useSelector((state: RootState) => state.profile.user);
+
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetNotificationsQuery({ limit: 50 });
+  const [markAllRead, { isLoading: isMarkingAll }] =
+    useMarkAllNotificationsReadMutation();
+  const [markRead] = useMarkNotificationReadMutation();
+  const [markUnread] = useMarkNotificationUnreadMutation();
+
+  const notifications = data?.data ?? [];
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const filteredNotifications = notifications.filter((n) =>
     activeTab === 'all' ? true : activeTab === 'read' ? n.read : !n.read
   );
 
-  const handleClick = () => {
-    setIsOpen(!isOpen);
-    setNotifying(false);
-  };
+  const handleClick = () => setIsOpen(!isOpen);
 
   return (
     <div className="relative">
@@ -27,7 +65,7 @@ export default function NotificationDropdown() {
       >
         <span
           className={`absolute right-3 top-3 z-10 h-2 w-2 rounded-full bg-[linear-gradient(90deg,#3CF239_0%,#DDF239_100%)] ${
-            !notifying ? 'hidden' : 'flex'
+            unreadCount === 0 ? 'hidden' : 'flex'
           }`}
         >
           <span className="absolute inline-flex w-full h-full gradient rounded-full opacity-75 animate-ping"></span>
@@ -45,9 +83,28 @@ export default function NotificationDropdown() {
           <h2 className="text-md font-open-sans font-semibold text-black uppercase">
             Notifications
           </h2>
-          <button className="flex items-center text-sm text-gray-500 hover:text-black">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="flex items-center text-sm text-gray-500 hover:text-black"
+          >
             <RefreshIcon width={24} height={24} />
             Refresh
+          </button>
+        </div>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <p className="text-xs text-gray-500">
+            {unreadCount} unread
+          </p>
+          <button
+            type="button"
+            disabled={isMarkingAll || unreadCount === 0}
+            onClick={async () => {
+              await markAllRead().unwrap();
+            }}
+            className="text-xs font-semibold text-gray-700 hover:text-black disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Mark all as read
           </button>
         </div>
 
@@ -67,35 +124,93 @@ export default function NotificationDropdown() {
           ))}
         </div>
         <ul className="flex flex-col gap-3">
-          {filteredNotifications.length === 0 ? (
+          {isError ? (
+            <li className="text-center text-red-600 text-sm py-4">
+              Failed to load notifications
+            </li>
+          ) : isLoading ? (
+            <li className="text-center text-gray-500 text-sm py-4">
+              Loading…
+            </li>
+          ) : filteredNotifications.length === 0 ? (
             <li className="text-center text-gray-500 text-sm py-4">
               No notifications
             </li>
           ) : (
-            filteredNotifications.map((notification, index) => (
+            filteredNotifications.map((notification) => {
+              const href = resolveNotificationHref(notification, user?.role);
+              const rowInner = (
+                <>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900">
+                      {notification.title}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {notification.description}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {formatTime(notification.createdAt)}
+                    </p>
+                  </div>
+                  {!notification.read && (
+                    <span className="h-2 w-2 rounded-full bg-green-100 mt-1 flex-shrink-0" />
+                  )}
+                </>
+              );
+              return (
               <li
-                key={index}
-                className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
+                key={notification.id}
+                className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50"
               >
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">
-                    {notification.title}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {notification.description}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">{notification.time}</p>
-                </div>
-                {!notification.read && (
-                  <span className="h-2 w-2 rounded-full bg-green-100 mt-1"></span>
+                {href == null ? (
+                  <div
+                    className="flex flex-1 items-start gap-3 min-w-0 cursor-default"
+                    onClick={() => {
+                      setIsOpen(false);
+                      if (!notification.read) void markRead(notification.id);
+                    }}
+                  >
+                    {rowInner}
+                  </div>
+                ) : (
+                <Link
+                  href={href}
+                  className="flex flex-1 items-start gap-3 min-w-0 cursor-pointer"
+                  onClick={() => {
+                    setIsOpen(false);
+                    if (!notification.read) void markRead(notification.id);
+                  }}
+                >
+                  {rowInner}
+                </Link>
                 )}
+                <button
+                  type="button"
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (notification.read) {
+                      await markUnread(notification.id).unwrap();
+                    } else {
+                      await markRead(notification.id).unwrap();
+                    }
+                  }}
+                  className="text-[11px] font-semibold text-gray-600 hover:text-black shrink-0"
+                >
+                  {notification.read ? 'Unread' : 'Read'}
+                </button>
               </li>
-            ))
+            );
+            })
           )}
         </ul>
-        <button className="mt-4 w-full text-center text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg py-2 hover:bg-gray-100">
+        <Link
+          href="/dashboard/notifications"
+          onClick={() => setIsOpen(false)}
+          className="mt-4 w-full block text-center text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg py-2 hover:bg-gray-100"
+        >
           View All Notifications
-        </button>
+        </Link>
       </Dropdown>
     </div>
   );

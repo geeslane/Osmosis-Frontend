@@ -4,7 +4,8 @@ import Button from '@/components/ui/button/Button';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { normalizeImageUrl } from '@/utils/helper';
 import { NoResult } from '@/components/ui/NotFound/NoResult';
 import { useRouter } from 'next/navigation';
@@ -56,9 +57,17 @@ export default function AdminListPage({
   const [state, setState] = useState({
     selectedAdmin: null as Admin | null,
     openDropdownId: null as string | null,
+    dropdownRect: null as DOMRect | null,
     pendingStatus: 'Active' as 'Active' | 'Inactive',
     open: false,
   });
+
+  useEffect(() => {
+    if (!state.openDropdownId) return;
+    const close = () => setState((prev) => ({ ...prev, openDropdownId: null }));
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [state.openDropdownId]);
 
   const handleUpdateStatus = async () => {
     if (!state.selectedAdmin) return;
@@ -177,67 +186,83 @@ export default function AdminListPage({
       label: 'Action',
       render: (row) => (
         <div
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            const next = state.openDropdownId === row.id ? null : row.id;
+            setState((prev) => ({
+              ...prev,
+              openDropdownId: next,
+              dropdownRect: next ? (e.currentTarget as HTMLElement).getBoundingClientRect() : null,
+            }));
+          }}
           className="relative flex items-center space-x-2"
         >
-          <div
-            onClick={() =>
-              setState((prev) => ({
-                ...prev,
-                openDropdownId: prev.openDropdownId === row.id ? null : row.id,
-              }))
-            }
-            className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer"
-          >
+          <div className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer">
             <MoreIcon />
           </div>
-
-          {state.openDropdownId === row.id && (
-            <div className="absolute top-8 right-0 z-50 flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg text-sm text-green-300 py-2">
-              <button
-                type="button"
-                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                onClick={() => {
-                  router.push(`/dashboard/users/admin/${row.id}?role=admins`);
-                  setState((prev) => ({ ...prev, openDropdownId: null }));
-                }}
-              >
-                View
-              </button>
-              {row.status === 'Active' ? (
-                <button
-                  type="button"
-                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md text-[#B42318]"
-                  onClick={() => {
-                    openDeactivateModal(row);
-                    setState((prev) => ({ ...prev, openDropdownId: null }));
-                  }}
-                >
-                  Deactivate
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                  onClick={() => {
-                    openActivateModal(row);
-                    setState((prev) => ({ ...prev, openDropdownId: null }));
-                  }}
-                >
-                  Activate
-                </button>
-              )}
-            </div>
-          )}
         </div>
       ),
     },
   ];
+
+  const openRow = state.openDropdownId ? data.find((r) => r.id === state.openDropdownId) : null;
+  const dropdownMenu =
+    typeof document !== 'undefined' &&
+    openRow &&
+    state.dropdownRect
+      ? createPortal(
+          <div
+            className="fixed z-[9999] flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg border border-gray-100 text-sm text-green-300 py-2"
+            style={{
+              top: state.dropdownRect.bottom + 4,
+              left: Math.min(state.dropdownRect.right - 180, window.innerWidth - 196),
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
+              onClick={() => {
+                router.push(`/dashboard/users/admin/${openRow.id}?role=admins`);
+                setState((prev) => ({ ...prev, openDropdownId: null, dropdownRect: null }));
+              }}
+            >
+              View
+            </button>
+            {openRow.status === 'Active' ? (
+              <button
+                type="button"
+                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md text-[#B42318]"
+                onClick={() => {
+                  openDeactivateModal(openRow);
+                  setState((prev) => ({ ...prev, openDropdownId: null, dropdownRect: null }));
+                }}
+              >
+                Deactivate
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
+                onClick={() => {
+                  openActivateModal(openRow);
+                  setState((prev) => ({ ...prev, openDropdownId: null, dropdownRect: null }));
+                }}
+              >
+                Activate
+              </button>
+            )}
+          </div>,
+          document.body
+        )
+      : null;
+
   return (
     <div
       className="space-y-3 mt-2"
       onClick={() => setState((prev) => ({ ...prev, openDropdownId: null }))}
     >
+      {dropdownMenu}
       <div className="flex flex-col mx-4 md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex items-center gap-2 w-full">
           <div className=" w-full flex flex-col md:flex-row gap-2 justify-between md:items-center ">

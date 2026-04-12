@@ -5,46 +5,59 @@ import { getSessionCookie } from '@/lib/session';
 const ROLE_ACCESS: Record<string, string[]> = {
   SUPERADMIN: [
     '/dashboard',
+    '/dashboard/notifications',
     '/dashboard/admin',
     '/dashboard/mentor',
     '/dashboard/mentee',
+    '/dashboard/calls/admin',
     '/dashboard/account-settings',
     '/dashboard/user',
     '/dashboard/modules',
+    '/dashboard/program-schedule',
     '/dashboard/pending-requests',
     '/dashboard/live-sessions',
-    '/dashboard/account-settings',
+    '/dashboard/calls',
   ],
   ADMIN: [
     '/dashboard',
     '/dashboard/users',
-    '/dashboard/pending-requests',
+    '/dashboard/calls/admin',
     '/dashboard/pending-requests',
     '/dashboard/live-sessions',
     '/dashboard/account-settings',
     '/dashboard/modules',
+    '/dashboard/program-schedule',
+    '/dashboard/calls',
+    '/dashboard/notifications',
   ],
   MENTOR: [
     '/dashboard',
+    '/dashboard/notifications',
     '/dashboard/mentee',
     '/dashboard/modules',
     '/dashboard/users/mentee',
-    '/dashboard/calls/mentee',
+    '/dashboard/calls/mentor',
     '/dashboard/availabilty-schedule',
     '/dashboard/live-sessions',
     '/dashboard/account-settings',
+    '/mentor',
   ],
   TEENAGER: [
     '/dashboard',
-    '/dashboard/availabilty-schedule/mentee',
+    '/dashboard/notifications',
+    '/dashboard/book-a-call',
     '/dashboard/modules/mentee',
     '/dashboard/modules',
-    '/dashboard/calls/mentor',
+    '/dashboard/calls/mentee',
+    '/dashboard/live-sessions',
     '/dashboard/account-settings',
   ],
 };
 
 const authPages = ['/signin', '/signup'];
+
+/** Public under /mentor — must not require a session (e.g. application signup). */
+const PUBLIC_MENTOR_PREFIXES = ['/mentor/signup'];
 
 export async function middleware(request: NextRequest) {
   const session = await getSessionCookie();
@@ -62,8 +75,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(redirectPath, request.url));
   }
 
-  /* ---------------- Protect Dashboard ---------------- */
-  if (!token && pathname.startsWith('/dashboard')) {
+  /* ---------------- Protect Dashboard & mentor OAuth return paths ---------------- */
+  const isPublicMentorRoute = PUBLIC_MENTOR_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+  if (
+    !token &&
+    (pathname.startsWith('/dashboard') ||
+      (pathname.startsWith('/mentor') && !isPublicMentorRoute))
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = '/signin';
     url.searchParams.set('redirect', pathname);
@@ -94,5 +114,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/signin', '/signup'],
+  matcher: ['/dashboard/:path*', '/mentor/:path*', '/signin', '/signup'],
 };

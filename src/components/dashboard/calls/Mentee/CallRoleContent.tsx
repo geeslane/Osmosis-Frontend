@@ -4,7 +4,6 @@ import React from 'react';
 import { useSearchParams } from 'next/navigation';
 import PreviousCall from './PreviousCall/PreviousCall';
 import UpcomingCall from './UpComingCall/UpcomingCall';
-import CallRequest from './CallRequest/CallRequest';
 
 const PreviousView: React.FC = () => (
   <div className="mt-6">
@@ -18,24 +17,16 @@ const UpcomingView: React.FC = () => (
   </div>
 );
 
-const RequestsView: React.FC = () => (
-  <div className="mt-6">
-    <CallRequest />
-  </div>
-);
-
 export default function CallRoleContent() {
   const searchParams = useSearchParams();
 
-  const role = searchParams.get('role') || 'admins';
+  const role = searchParams.get('role') || 'previous';
 
   switch (role) {
     case 'previous':
       return <PreviousView />;
     case 'upcoming':
       return <UpcomingView />;
-    case 'requests':
-      return <RequestsView />;
     default:
       return <PreviousView />;
   }

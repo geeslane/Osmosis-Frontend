@@ -8,6 +8,24 @@ import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 
+function daysToGo(endDateStr: string | undefined): number | null {
+  if (!endDateStr || endDateStr.length < 10) return null;
+  const end = new Date(endDateStr.slice(0, 10));
+  if (Number.isNaN(end.getTime())) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+  const diff = Math.ceil((end.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+  return diff < 0 ? 0 : diff;
+}
+
+function formatDate(s: string | undefined): string {
+  if (!s || s.length < 10) return '';
+  const d = new Date(s.slice(0, 10));
+  if (Number.isNaN(d.getTime())) return s;
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 export default function ModuleList({ modules }: { modules: Module[] }) {
   const router = useRouter();
   const { showToast } = useToastify();
@@ -15,6 +33,7 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const user = useSelector((state: RootState) => state.profile.user);
+  const isMentee = user?.role === 'TEENAGER';
 
   const openDeleteModal = (id: string) => {
     setSelectedModuleId(id);
@@ -55,11 +74,69 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
         >
           <div className="flex flex-col gap-3 ">
             <div className="flex flex-col gap-3 md:flex-row justify-between md:items-center w-full">
-              <div>
-                <h2 className="font-bold  text-green-300">
-                  Module {module.moduleNumber}:
-                  <span className="font-medium"> {module.title}</span>
-                </h2>
+              <div className="flex items-center gap-3 min-w-0">
+                {isMentee && (
+                  <span
+                    className="flex shrink-0 items-center"
+                    onClick={(e) => e.stopPropagation()}
+                    title={
+                      module.markedCompleted
+                        ? 'Marked as Completed'
+                        : 'Not completed yet'
+                    }
+                    role="img"
+                    aria-label={
+                      module.markedCompleted
+                        ? 'Module completed'
+                        : 'Module not completed'
+                    }
+                  >
+                    {module.markedCompleted ? (
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-green-200 text-white text-[11px] font-bold leading-none shadow-sm ring-2 ring-[#DCFFAD]/80">
+                        ✓
+                      </span>
+                    ) : (
+                      <span
+                        className="inline-block h-5 w-5 rounded-md border-2 border-gray-300 bg-white shrink-0"
+                        aria-hidden
+                      />
+                    )}
+                  </span>
+                )}
+                <div>
+                  <h2 className="font-bold  text-green-300">
+                    Module {module.moduleNumber}:
+                    <span className="font-medium"> {module.title}</span>
+                  </h2>
+                  {(module.startDate || module.endDate) && (
+                    <p className="text-xs text-gray-500 font-medium mt-1">
+                      {module.startDate && (
+                        <span className="text-gray-500">{formatDate(module.startDate)}</span>
+                      )}
+                      {module.startDate && module.endDate && (
+                        <span className="text-gray-500" aria-hidden>
+                          {' \u2013 '}
+                        </span>
+                      )}
+                      {module.endDate && (
+                        <span className="text-gray-500">{formatDate(module.endDate)}</span>
+                      )}
+                      {typeof module.endDate === 'string' && (() => {
+                        const d = daysToGo(module.endDate);
+                        return d !== null ? (
+                          <>
+                            <span className="text-gray-500 mx-0.5" aria-hidden>
+                              {'\u00B7'}
+                            </span>
+                            <span className="text-gray-500">
+                              {d} day{d !== 1 ? 's' : ''} to go
+                            </span>
+                          </>
+                        ) : null;
+                      })()}
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
                 <button

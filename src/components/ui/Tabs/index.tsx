@@ -16,6 +16,11 @@ type TabsProps = {
   preserveSearchParams?: boolean;
   containerClassName?: string;
   basePath?: string;
+  /**
+   * When the URL has no `paramKey` (e.g. `/dashboard/users/mentee/:id/modules`),
+   * use this to keep the correct tab highlighted instead of falling back to the first tab.
+   */
+  activeTabFromPath?: string;
 };
 const Tabs: React.FC<TabsProps> = ({
   tabs,
@@ -24,11 +29,16 @@ const Tabs: React.FC<TabsProps> = ({
   preserveSearchParams = false,
   containerClassName = 'max-w-[350px]',
   basePath,
+  activeTabFromPath,
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const activeTab = searchParams.get(paramKey) || defaultValue || tabs[0].value;
+  const activeTab =
+    activeTabFromPath ??
+    searchParams.get(paramKey) ??
+    defaultValue ??
+    tabs[0].value;
 
   const handleChange = (value: string) => {
     const params = preserveSearchParams

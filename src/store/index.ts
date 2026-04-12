@@ -14,6 +14,9 @@ import { AuthApi } from './auth/auth.api';
 import { ProfileApi } from './profile/profile.api';
 import { DashboardApi } from './dashboard/dashboard.api';
 import { UsersApi } from './users/users.api';
+import { ScheduleApi } from './schedule/schedule.api';
+import { CallsApi } from './calls/calls.api';
+import { NotificationsApi } from './notifications/notifications.api';
 import profileReducer from './profile/profile.slice';
 
 const profilePersistConfig = {
@@ -34,6 +37,9 @@ export const store = configureStore({
     [AuthApi.reducerPath]: AuthApi.reducer,
     [ProfileApi.reducerPath]: ProfileApi.reducer,
     [UsersApi.reducerPath]: UsersApi.reducer,
+    [ScheduleApi.reducerPath]: ScheduleApi.reducer,
+    [CallsApi.reducerPath]: CallsApi.reducer,
+    [NotificationsApi.reducerPath]: NotificationsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -44,7 +50,10 @@ export const store = configureStore({
       AuthApi.middleware,
       ProfileApi.middleware,
       DashboardApi.middleware,
-      UsersApi.middleware
+      UsersApi.middleware,
+      ScheduleApi.middleware,
+      CallsApi.middleware,
+      NotificationsApi.middleware
     ),
 });
 export const persistor = persistStore(store);

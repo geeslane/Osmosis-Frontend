@@ -2,8 +2,10 @@
 
 import { GoBackIcon, LoadingIcon } from '@/assets/icons';
 import Empty from '@/components/ui/NotFound/Empty';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import MenteeTable from './MenteeTable';
 import { useGetTeenagersQuery } from '@/store/users/users.api';
 import { useUserList } from '@/hooks/useUserList';
@@ -40,17 +42,27 @@ function mapMenteeFromApi(apiMentee: any): Mentee {
 export default function Mentee() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const user = useSelector((state: RootState) => state.profile.user);
   const view = searchParams.get('viewmentee') || 'listmentee';
+  const canManageStatus = user?.role !== 'MENTOR';
+  const isMentor = user?.role === 'MENTOR';
 
   const userList = useUserList({ defaultLimit: 10 });
   const { queryParams, search, statusFilter } = userList;
 
-  const { data: menteesResponse, isLoading: isLoadingMentees } =
+  const { data: menteesRes, isLoading: loadingMentees } =
     useGetTeenagersQuery(queryParams);
 
-  const menteeData = menteesResponse?.data?.map(mapMenteeFromApi) || [];
-  const total = menteesResponse?.pagination?.total ?? 0;
-  const totalPages = menteesResponse?.pagination?.totalPages ?? 1;
+  const { menteeData, total, totalPages, isLoadingMentees: loadingList } =
+    useMemo(() => {
+      const list = menteesRes?.data?.map(mapMenteeFromApi) || [];
+      return {
+        menteeData: list,
+        total: menteesRes?.pagination?.total ?? 0,
+        totalPages: menteesRes?.pagination?.totalPages ?? 1,
+        isLoadingMentees: loadingMentees,
+      };
+    }, [menteesRes, loadingMentees]);
 
   const setParam = (newView: string, id?: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -62,7 +74,7 @@ export default function Mentee() {
 
   const handleBack = () => setParam('listmentee');
 
-  if (isLoadingMentees && view === 'listmentee') {
+  if (loadingList && view === 'listmentee') {
     return (
       <div className="flex justify-center items-center py-20">
         <LoadingIcon
@@ -105,7 +117,7 @@ export default function Mentee() {
             </div>
           </div>
 
-          {!isLoadingMentees &&
+          {!loadingList &&
           total === 0 &&
           search.trim() === '' &&
           statusFilter === 'All' ? (
@@ -126,6 +138,8 @@ export default function Mentee() {
               onSearchChange={userList.setSearch}
               statusFilter={userList.statusFilter}
               onStatusFilterChange={userList.setStatusFilter}
+              canManageStatus={canManageStatus}
+              hideAddress={isMentor}
             />
           )}
         </div>

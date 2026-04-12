@@ -8,7 +8,24 @@ export interface Module {
   workbookFile: string;
   createdAt: string;
   updatedAt: string;
+  assignmentSubmitted?: boolean;
+  markedCompleted?: boolean;
+  /** When program config is set: module period start (YYYY-MM-DD). */
+  startDate?: string;
+  /** When program config is set: module period end (YYYY-MM-DD). */
+  endDate?: string;
 }
+
+/** Per-module progress for a teenager (GET /teenager/:id/modules/progress or similar). */
+export interface TeenagerModuleProgressItem {
+  moduleId: string;
+  /** 0–100 */
+  progress: number;
+  completed?: boolean;
+  deliverableSubmitted?: boolean;
+  submissionAnswer?: string | null;
+}
+
 export interface AnimatedProps {
   activeKey: string;
   children: React.ReactNode;
@@ -163,6 +180,8 @@ export interface GetUserListParams {
   limit?: number;
   status?: 'ACTIVE' | 'INACTIVE';
   name?: string;
+  /** Filter mentors by mentorship topic (same as dropdown value). Used when mentees book a call. */
+  topic?: string;
 }
 
 interface PaginationInfo {

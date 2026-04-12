@@ -83,7 +83,7 @@ export const UsersApi = createApi({
         method: 'GET',
         params,
       }),
-      providesTags: ['Admin'],
+      providesTags: [{ type: 'Admin', id: 'LIST' }],
     }),
     createAdmin: builder.mutation<AdminResponse, FormData>({
       query: (formData) => {
@@ -93,14 +93,14 @@ export const UsersApi = createApi({
           data: formData,
         };
       },
-      invalidatesTags: ['Admin'],
+      invalidatesTags: [{ type: 'Admin', id: 'LIST' }],
     }),
     getAdminById: builder.query<AdminResponse, string>({
       query: (id) => ({
         url: `/admin/${id}`,
         method: 'GET',
       }),
-      providesTags: ['Admin'],
+      providesTags: (result, error, id) => [{ type: 'Admin', id }],
     }),
     getMentors: builder.query<AdminResponse, GetUserListParams>({
       query: (params) => ({
@@ -148,6 +148,10 @@ export const UsersApi = createApi({
       }),
       providesTags: ['Teenager'],
     }),
+    /**
+     * Paginated mentee (teenager) list — admins and mentors.
+     * UI: Dashboard → Users → Mentees tab (`/dashboard/users?role=mentee`) via `Mentee.tsx` + `useGetTeenagersQuery`.
+     */
     getTeenagers: builder.query<AdminResponse, GetUserListParams>({
       query: (params) => ({
         url: '/teenager',
@@ -197,7 +201,10 @@ export const UsersApi = createApi({
         method: 'PATCH',
         data: body,
       }),
-      invalidatesTags: ['Admin'],
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Admin', id },
+        { type: 'Admin', id: 'LIST' },
+      ],
     }),
 
     updateAdminProfile: builder.mutation<
@@ -218,7 +225,10 @@ export const UsersApi = createApi({
           data: formData,
         };
       },
-      invalidatesTags: (result, error, { id }) => [{ type: 'Admin', id }],
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Admin', id },
+        { type: 'Admin', id: 'LIST' },
+      ],
     }),
 
     // Mentor endpoints
@@ -246,7 +256,7 @@ export const UsersApi = createApi({
         if (data.linkedinUrl) formData.append('linkedinUrl', data.linkedinUrl);
         if (data.mentorshipTopics) {
           data.mentorshipTopics.forEach((topic) => {
-            formData.append('mentorshipTopics', topic);
+            formData.append('mentorshipTopics[]', topic);
           });
         }
         if (data.inspiration) formData.append('inspiration', data.inspiration);
@@ -310,6 +320,7 @@ export const {
   useGetMentorsQuery,
   useUpdateMentorStatusMutation,
   useGetMentorByIdQuery,
+  useLazyGetMentorByIdQuery,
   useUpdateMentorProfileMutation,
   useGetTeenagerRequestsQuery,
   useUpdateTeenagerRequestStatusMutation,

@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import type { GetModulesParams } from '@/store/dashboard/dashboard.api';
+import { DEFAULT_MODULE_LIST_SORT } from '@/store/dashboard/dashboard.api';
 
 export interface UseModuleListOptions {
   defaultLimit?: number;
@@ -10,11 +12,7 @@ export interface UseModuleListReturn {
   search: string;
   setPage: (page: number) => void;
   setSearch: (value: string) => void;
-  queryParams: {
-    page: number;
-    limit: number;
-    title?: string;
-  };
+  queryParams: GetModulesParams;
   resetPage: () => void;
 }
 
@@ -26,10 +24,11 @@ export function useModuleList(
   const [limit] = useState(defaultLimit);
   const [search, setSearch] = useState('');
 
-  const queryParams = useMemo(() => {
-    const params: { page: number; limit: number; title?: string } = {
+  const queryParams = useMemo((): GetModulesParams => {
+    const params: GetModulesParams = {
       page,
       limit,
+      ...DEFAULT_MODULE_LIST_SORT,
     };
     if (search.trim().length >= 2) {
       params.title = search.trim();

@@ -1,145 +1,53 @@
-'use client';
-import { MoreIcon, SearchIcon } from '@/assets/icons';
-import Button from '@/components/ui/button/Button';
+﻿'use client';
+import { SearchIcon } from '@/assets/icons';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { Column, DataTable } from '@/components/ui/table';
-import { useEffect, useState } from 'react';
-import useToastify from '@/hooks/useToastify';
-import DeclineModal from '@/components/ui/modal/DeclineModal/DeclineModal';
-import ActionModal from '@/components/ui/modal/ActionModal';
+import { useTeenagerCallRequestsQuery } from '@/store/dashboard/dashboard.api';
+import {
+  pickCallsArray,
+  rawToTeenagerCallRequestRow,
+  type TeenagerCallRequestRow,
+} from '@/utils/mapCallApi';
+import { useEffect, useMemo, useState } from 'react';
 
-type RequestCall = {
-  id: string;
-  name: string;
-  date: string;
-  time: string;
-  topic: string;
-  phone: string;
-  status: 'Active' | 'Inactive' | 'Pending';
-  image?: string;
-};
+export type RequestCall = TeenagerCallRequestRow;
 
-export default function CallRequestTable({ onView }: any) {
-  const { showToast } = useToastify();
-  const [data, setData] = useState<RequestCall[]>([
-    {
-      id: '1',
-      name: 'John Doe',
-      date: '12 Dec., 2025',
-      time: '10am',
-      topic: 'Hope',
-      phone: '08012345678',
-      status: 'Pending',
-    },
-    {
-      id: '2',
-      name: 'Mary Johnson',
-      date: '12 Dec., 2025',
-      time: '10am',
+export default function CallRequestTable({ onRowClick }: { onRowClick?: (row: RequestCall) => void }) {
+  const { data: raw, isLoading, isError } = useTeenagerCallRequestsQuery();
 
-      topic: 'Hope',
-      phone: '08087654321',
-      status: 'Active',
-    },
-    {
-      id: '3',
-      name: 'David Smith',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      time: '10am',
-
-      phone: '08123456789',
-      status: 'Inactive',
-    },
-    {
-      id: '4',
-      name: 'Sarah Wilson',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      time: '10am',
-
-      phone: '08099887766',
-      status: 'Pending',
-    },
-    {
-      id: '5',
-      name: 'Daniel Adams',
-      date: '12 Dec., 2025',
-      topic: 'Hope',
-      time: '10am',
-
-      phone: '08111112222',
-      status: 'Pending',
-    },
-  ]);
+  const data = useMemo(
+    () => pickCallsArray(raw).map(rawToTeenagerCallRequestRow),
+    [raw]
+  );
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [openModal, setOpenModal] = useState(false);
   const [statusFilter] = useState<'All' | RequestCall['status']>('All');
 
   const [perPage] = useState(5);
-  const [processingId, setProcessingId] = useState<string | null>(null);
-  const [declineModalOpen, setDeclineModalOpen] = useState(false);
-  const [declineId, setDeclineId] = useState<string | null>(null);
 
-  const handleUpdateStatus = async () => {
-    console.log('hellow world');
-  };
-
-  const handleDeclineConfirm = async (reason: string) => {
-    if (!declineId) return;
-
-    setProcessingId(declineId);
-    setDeclineModalOpen(false);
-
-    setTimeout(() => {
-      setData((prev) =>
-        prev.map((item) =>
-          item.id === declineId ? { ...item, status: 'Inactive' } : item
-        )
-      );
-
-      showToast(`Declined: ${reason}`, 'success');
-
-      setProcessingId(null);
-      setDeclineId(null);
-    }, 500);
+  const statusLabel: Record<RequestCall['status'], string> = {
+    Pending: 'Pending',
+    Active: 'Accepted',
+    Inactive: 'Declined',
   };
 
   const columns: Column<RequestCall>[] = [
     {
       key: 'name',
-      label: 'Mentors Name',
-      render: (row) => {
-        return (
-          <div
-            onClick={onView}
-            className="flex cursor-pointer items-center gap-2 w-[100px]"
-          >
-            <p className="font-medium text-sm text-[#667085]">{row.name}</p>
-          </div>
-        );
-      },
+      label: 'Mentor Name',
+      render: (row) => (
+        <span className="font-medium text-sm text-[#101828]">{row.name}</span>
+      ),
     },
     {
       key: 'date',
-      label: 'Date',
+      label: 'Date & Time',
       render: (row) => {
+        const dateTime = row.time ? `${row.date}, ${row.time}` : row.date;
         return (
-          <div className="flex items-center gap-2 w-[150px]">
-            <p className="font-medium text-sm text-[#667085]">{row.date}</p>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'time',
-      label: 'Time',
-      render: (row) => {
-        return (
-          <div className="flex items-center gap-2 w-[100px]">
-            <p className="font-medium text-sm text-[#667085]">{row.time}</p>
+          <div className="flex items-center gap-2 w-[200px]">
+            <p className="font-medium text-sm text-[#101828]">{dateTime}</p>
           </div>
         );
       },
@@ -150,50 +58,27 @@ export default function CallRequestTable({ onView }: any) {
       render: (row) => {
         return (
           <div className="flex items-center gap-2 w-[100px] ">
-            <p className="font-medium text-sm text-[#667085]">{row.topic}</p>
+            <p className="font-medium text-sm text-[#101828]">{row.topic}</p>
           </div>
         );
       },
     },
     {
       key: 'status',
-      label: '',
-      render: (row) => {
-        const isProcessing = processingId === row.id;
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              disabled={isProcessing}
-              className="bg-green-200 text-white px-8 py-2 rounded-xl"
-            >
-              Accept
-            </Button>
-            <Button
-              onClick={() => setOpenModal(true)}
-              disabled={isProcessing}
-              className="bg-red-100 text-white px-8 py-2 rounded-xl"
-            >
-              Reject
-            </Button>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'actions',
-      label: 'Action',
-      render: () => {
-        return (
-          <div className="flex items-center">
-            <button
-              onClick={onView}
-              className="px-3 py-3 text-green-300  text-xs underline"
-            >
-              <MoreIcon />
-            </button>
-          </div>
-        );
-      },
+      label: 'Status',
+      render: (row) => (
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-medium ${
+            row.status === 'Active'
+              ? 'bg-green-50 text-green-700'
+              : row.status === 'Inactive'
+                ? 'bg-red-50 text-red-600'
+                : 'bg-amber-50 text-amber-700'
+          }`}
+        >
+          {statusLabel[row.status]}
+        </span>
+      ),
     },
   ];
 
@@ -237,36 +122,24 @@ export default function CallRequestTable({ onView }: any) {
         </div>
       </div>
 
-      <ActionModal
-        isOpen={openModal}
-        title="Reason for rejection"
-        description="Give reason for rejection"
-        confirmText="Continue"
-        color="text-green-200"
-        //isLoading={isUpdating}
-        onCancel={() => setOpenModal(false)}
-        onConfirm={handleUpdateStatus}
-      >
-        <div className="mt-10">
-          <div>
-            <input
-              placeholder="Type your comment here."
-              className="rounded-lg border text-[#ACACAC] focus:outline-none h-[38px] px-2 border-green-200 w-full"
-            />
-          </div>
-        </div>
-      </ActionModal>
+      {isLoading && (
+        <p className="mx-6 text-sm text-gray-500">Loading your requests…</p>
+      )}
+      {isError && !isLoading && (
+        <p className="mx-6 text-sm text-red-600">Could not load call requests.</p>
+      )}
+      {!isLoading && !isError && filtered.length === 0 && (
+        <p className="mx-6 text-sm text-gray-500">
+          No call requests yet. Book a call from the dashboard to see them here.
+        </p>
+      )}
 
-      <DeclineModal
-        isOpen={declineModalOpen}
-        onConfirm={handleDeclineConfirm}
-        onCancel={() => {
-          setDeclineModalOpen(false);
-          setDeclineId(null);
-        }}
-        isLoading={processingId === declineId}
+      <DataTable
+        columns={columns}
+        data={paginated}
+        compact
+        onRowClick={onRowClick}
       />
-      <DataTable columns={columns} data={paginated} />
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );

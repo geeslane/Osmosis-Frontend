@@ -1,76 +1,75 @@
-'use client';
+﻿'use client';
 
-import { MoreIcon, SearchIcon, StarIcon } from '@/assets/icons';
+import { SearchIcon, StarIcon } from '@/assets/icons';
 import { Column, DataTable } from '@/components/ui/table';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 import CallDetail from '../mentor/CallDetail';
+import { useGetCallsQuery } from '@/store/calls/calls.api';
+import type { CallRecord } from '@/store/calls/calls.api';
+import { callRecordToPreviousRow } from '@/utils/mapCallApi';
 
 type CallHistoryRow = {
   id: string;
   menteeName: string;
   date: string;
+  time?: string;
   topic: string;
   callLength: string;
   comment: string;
   rating: number;
 };
 
-const callHistoryData: CallHistoryRow[] = [
-  {
-    id: '1',
-    menteeName: 'Olivia Rhye',
-    date: '12 Dec, 2025',
-    topic: 'Hope',
-    callLength: '55mins 34s',
-    comment: 'Good',
-    rating: 3,
-  },
-  {
-    id: '2',
-    menteeName: 'Phoenix Baker',
-    date: '12 Dec, 2025',
-    topic: 'Joy in Chaos',
-    callLength: '1hr 23mins 5s',
-    comment: 'Rescheduled',
-    rating: 2,
-  },
-  {
-    id: '3',
-    menteeName: 'Lana Steiner',
-    date: '12 Dec, 2025',
-    topic: 'Shame',
-    callLength: '1hr 23mins 5s',
-    comment: 'Completed',
-    rating: 4,
-  },
-  {
-    id: '4',
-    menteeName: 'Demi Wilkinson',
-    date: '12 Dec, 2025',
-    topic: 'Overcoming fear',
-    callLength: '1hr 23mins 5s',
-    comment: 'Good',
-    rating: 4,
-  },
-];
+function commentCell(c: CallRecord) {
+  const p = callRecordToPreviousRow(c, 'mentee');
+  const parts = [p.menteeComment, c.comment].filter(
+    (x) => x != null && String(x).trim() !== ''
+  ) as string[];
+  return parts.length ? parts.join(' · ') : '—';
+}
 
-export default function CallHistoryTable() {
+interface CallHistoryTableProps {
+  teenagerId?: string;
+}
+
+export default function CallHistoryTable({ teenagerId }: CallHistoryTableProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [openId, setOpenId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [viewCallDetails, setViewCallDetails] = useState(false);
   const [selectedCall, setSelectedCall] = useState<CallHistoryRow | null>(null);
 
+  const { data, isLoading, isError } = useGetCallsQuery(
+    { page: 1, limit: 500 },
+    { skip: !teenagerId }
+  );
+
+  const rows = useMemo((): CallHistoryRow[] => {
+    const raw = data?.data ?? [];
+    if (!teenagerId) return [];
+    return raw
+      .filter((c) => c.menteeId === teenagerId)
+      .map((c) => {
+        const p = callRecordToPreviousRow(c, 'mentee');
+        return {
+          id: p.id,
+          menteeName: p.name,
+          date: p.date,
+          time: p.time,
+          topic: p.topic,
+          callLength: c.callLength ?? '—',
+          comment: commentCell(c),
+          rating: p.rating != null && p.rating >= 0 ? p.rating : 0,
+        };
+      });
+  }, [data?.data, teenagerId]);
+
   const handleDelete = async () => {
-    // setLoading(true);
     try {
       // await deleteApiCall()
     } finally {
-      //setLoading(false);
-      //setOpen(false);
+      setOpen(false);
     }
   };
   const perPage = 5;
@@ -80,39 +79,41 @@ export default function CallHistoryTable() {
       key: 'menteeName',
       label: 'Mentor Name',
       render: (row) => (
-        <span className="font-medium text-sm text-[#667085]">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedCall(row);
+            setViewCallDetails(true);
+          }}
+          className="font-medium text-sm text-[#101828] hover:text-green-600 cursor-pointer text-left"
+        >
           {row.menteeName}
-        </span>
+        </button>
       ),
     },
     {
       key: 'date',
-      label: 'Date',
-      render: (row) => (
-        <span className="text-sm font-medium text-[#667085]">{row.date}</span>
-      ),
+      label: 'Date & Time',
+      render: (row) => {
+        const dateTime = row.time ? `${row.date}, ${row.time}` : row.date;
+        return (
+          <span className="text-sm font-medium text-[#101828]">{dateTime}</span>
+        );
+      },
     },
     {
       key: 'topic',
       label: 'Topic',
       render: (row) => (
-        <span className=" font-medium text-sm text-[#667085]">{row.topic}</span>
-      ),
-    },
-    {
-      key: 'callLength',
-      label: 'Call Length',
-      render: (row) => (
-        <span className="text-sm font-medium text-[#667085]">
-          {row.callLength}
-        </span>
+        <span className=" font-medium text-sm text-[#101828]">{row.topic}</span>
       ),
     },
     {
       key: 'comment',
       label: 'Comment',
       render: (row) => (
-        <span className="text-sm font-medium text-[#667085]">
+        <span className="text-sm font-medium text-[#101828]">
           {row.comment}
         </span>
       ),
@@ -128,53 +129,9 @@ export default function CallHistoryTable() {
         </div>
       ),
     },
-    {
-      key: 'actions',
-      label: 'Action',
-      render: (row) => (
-        <div className="relative flex items-center space-x-2">
-          <div
-            onClick={() =>
-              setOpenId((prev) => (prev === row.id ? null : row.id))
-            }
-            className="p-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer"
-          >
-            <MoreIcon />
-          </div>
-
-          {openId === row.id && (
-            <div className="absolute top-8 right-0 z-50 flex flex-col gap-2 w-[180px] bg-white rounded-lg shadow-lg text-sm text-green-300 py-2">
-              <button
-                type="button"
-                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                onClick={() => {
-                  // show details for this row
-                  setSelectedCall(row);
-                  setViewCallDetails(true);
-                  setOpenId(null);
-                }}
-              >
-                View
-              </button>
-
-              <button
-                type="button"
-                className="px-3 py-2 w-full text-left hover:bg-[#DCFFAD91] rounded-md"
-                onClick={() => {
-                  setOpen(true);
-                  setOpenId(null);
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          )}
-        </div>
-      ),
-    },
   ];
 
-  const filtered = callHistoryData.filter((row) => {
+  const filtered = rows.filter((row) => {
     const q = search.toLowerCase();
     if (!q) return true;
     return (
@@ -197,6 +154,7 @@ export default function CallHistoryTable() {
       {viewCallDetails ? (
         <CallDetail
           call={selectedCall}
+          counterpartyLabel="Mentor name"
           onBack={() => {
             setViewCallDetails(false);
             setSelectedCall(null);
@@ -230,13 +188,29 @@ export default function CallHistoryTable() {
             title="Delete Call History"
             description="Deleting this Call History will permanently Delete."
           />
-          <DataTable columns={columns} data={paginated} />
+          {isLoading && (
+            <p className="mx-6 text-sm text-gray-500">Loading call history…</p>
+          )}
+          {isError && !isLoading && (
+            <p className="mx-6 text-sm text-red-600">Could not load call history.</p>
+          )}
+          {!isLoading && !isError && teenagerId && filtered.length === 0 && (
+            <p className="mx-6 text-sm text-gray-500">No calls found for this mentee.</p>
+          )}
+          {!isLoading && !isError && !teenagerId && (
+            <p className="mx-6 text-sm text-gray-500">Missing mentee id.</p>
+          )}
+          {!isLoading && !isError && filtered.length > 0 && (
+            <DataTable columns={columns} data={paginated} compact />
+          )}
 
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
+          {filtered.length > 0 ? (
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          ) : null}
         </div>
       )}
     </>

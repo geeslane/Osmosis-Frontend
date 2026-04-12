@@ -26,7 +26,10 @@ export default function Details({
               <span className="text-sm">Back</span>
             </button>
           </div>
-          <CallHistoryTable />
+          <CallHistoryTable
+            mentorId={selectedDetails?.id}
+            mentorName={selectedDetails?.name}
+          />
         </div>
       ) : (
         <div className="flex flex-col gap-6">

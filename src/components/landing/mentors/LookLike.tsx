@@ -17,31 +17,41 @@ export default function LookLike() {
   return (
     <div className="lg:-mt-40 lg:mb-40 flex flex-col md:flex-row md:max-w-[1233px] md:mx-auto gap-8 md:gap-12 montserrat px-2 md:px-10 items-center lg:px-[90px]">
       {/* Mobile: horizontal mentor slideshow */}
-      <div className="w-full md:hidden overflow-hidden">
-        <div
-          className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 -mx-2 px-2"
-          style={{ scrollSnapType: 'x mandatory' }}
-        >
-          {mentors.map((m, i) => (
-            <div
-              key={i}
-              className="flex-shrink-0 w-[280px] snap-center bg-white flex flex-col gap-3 border-2 border-[#68624E] p-4 rounded-3xl"
-            >
-              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
-                <Image
-                  src={m.image}
-                  alt={m.name}
-                  fill
-                  sizes="280px"
-                  className="object-cover"
-                />
+      <div className="w-full md:hidden flex justify-center md:justify-start">
+        <div className="relative w-[280px] md:w-[301px] h-[330px] md:h-[550px] rounded-[28px] md:rounded-[40px] overflow-hidden border-2 border-[#68624E] bg-white">
+          {mentors.map((m, i) => {
+            const position =
+              i === index
+                ? 'translate-x-0'
+                : i < index
+                  ? '-translate-x-full'
+                  : 'translate-x-full';
+            return (
+              <div
+                key={i}
+                className={`absolute inset-0 transition-transform duration-700 ease-in-out ${position} flex flex-col md:gap-6 p-4 md:p-6 items-center justify-start`}
+                style={{ zIndex: i === index ? 20 : 10 }}
+              >
+                <div className="relative w-full md:h-[340px] h-[220px] rounded-2xl overflow-hidden">
+                  <Image
+                    src={m.image}
+                    alt={m.name}
+                    fill
+                    sizes="(max-width: 768px) 280px, 301px"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex flex-col items-center mt-3">
+                  <h3 className="text-green-200 text-lg md:text-2xl font-bold">
+                    {m.name}
+                  </h3>
+                  <p className="text-green-100 text-sm md:text-base font-medium">
+                    {m.role}
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <h3 className="text-green-200 text-lg font-bold">{m.name}</h3>
-                <p className="text-green-100 text-sm font-medium">{m.role}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

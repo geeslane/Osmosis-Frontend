@@ -167,7 +167,7 @@ export default function AddModule({ module = null }: AddModuleProps) {
         defaultValue=""
         render={({ field }) => (
           <TextEditor
-            label="Additional Resources (links to external articles, videos, etc)"
+            label="Additional Resources (optional — links to external articles, videos, etc)"
             value={field.value}
             onChange={field.onChange}
             error={errors.additionalResources?.message}
@@ -180,7 +180,7 @@ export default function AddModule({ module = null }: AddModuleProps) {
         defaultValue=""
         render={({ field }) => (
           <TextEditor
-            label="Add Deliverable"
+            label="Deliverables (optional)"
             value={field.value}
             onChange={field.onChange}
             error={errors.deliverables?.message}
@@ -233,7 +233,7 @@ export default function AddModule({ module = null }: AddModuleProps) {
               label={
                 isEdit
                   ? 'Workbook (optional – leave empty to keep current, or choose to replace)'
-                  : 'Add Workbook'
+                  : 'Workbook (optional)'
               }
               name="workbookFile"
               register={register}

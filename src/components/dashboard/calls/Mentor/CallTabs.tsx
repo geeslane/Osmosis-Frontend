@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Tabs from '@/components/ui/Tabs';
-import { PhoneIcon, UpComingCalls } from '@/assets/icons';
+import { CallRequestIcon, PhoneIcon, UpComingCalls } from '@/assets/icons';
 
 export default function CallTabs() {
   const tabs = [
@@ -12,6 +12,7 @@ export default function CallTabs() {
       icon: <PhoneIcon color="#6CBB01" />,
     },
     { title: 'Upcoming calls', value: 'upcoming', icon: <UpComingCalls /> },
+    { title: 'Call requests', value: 'requests', icon: <CallRequestIcon /> },
   ];
 
   return (
