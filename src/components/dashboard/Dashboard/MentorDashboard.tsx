@@ -3,8 +3,10 @@
 import {
   CallIcon,
   LiveSessionIcon,
+  LoadingIcon,
   NotificationIcon,
   Star,
+  StarIcon,
 } from '@/assets/icons';
 import { useGetMentorPreviousCallsQuery } from '@/store/calls/calls.api';
 import { useGetMentorDashboardStatsQuery } from '@/store/dashboard/dashboard.api';
@@ -22,12 +24,16 @@ export default function MentorDashboard() {
   const user = useSelector((state: RootState) => state.profile.user);
   const displayName = (user as { full_name?: string; fullName?: string })?.full_name ?? (user as { fullName?: string })?.fullName ?? '';
   const firstName = displayName.split(' ')[0] || 'there';
-  const { data: stats, isError: statsError } = useGetMentorDashboardStatsQuery(undefined, {
-    skip: user?.role !== 'MENTOR',
-  });
-  const { data: previousCallsData } = useGetMentorPreviousCallsQuery(undefined, {
-    skip: user?.role !== 'MENTOR',
-  });
+  const { data: stats, isError: statsError, isLoading: statsLoading } =
+    useGetMentorDashboardStatsQuery(undefined, {
+      skip: user?.role !== 'MENTOR',
+    });
+  const { data: previousCallsData, isLoading: previousCallsLoading } =
+    useGetMentorPreviousCallsQuery(undefined, {
+      skip: user?.role !== 'MENTOR',
+    });
+  const statsPending =
+    user?.role === 'MENTOR' && (statsLoading || previousCallsLoading);
   const { rating, totalCalls } = useMemo(() => {
     const apiRating = stats?.averageRating ?? 0;
     const apiTotal = stats?.totalCalls ?? 0;
@@ -46,6 +52,11 @@ export default function MentorDashboard() {
     previousCallsData?.data ?? []
   );
 
+  const ratingStarsFilled =
+    rating && rating > 0
+      ? Math.min(5, Math.max(0, Math.round(Number(rating))))
+      : 0;
+
   return (
     <div className="space-y-6 sm:space-y-8 w-full min-w-0">
       <WelcomeSection
@@ -59,12 +70,62 @@ export default function MentorDashboard() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard
             label="Rating"
-            value={rating ? `${Number(rating).toFixed(1)}` : '—'}
-            icon={<Star />}
+            value={
+              statsPending ? (
+                <div className="flex min-h-[7rem] items-center justify-start py-1">
+                  <LoadingIcon
+                    width="36"
+                    height="36"
+                    className="animate-spin text-green-200"
+                    aria-hidden
+                  />
+                  <span className="sr-only">Loading rating…</span>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div
+                    className="flex gap-1 items-center"
+                    role="img"
+                    aria-label={
+                      rating && rating > 0
+                        ? `Average rating ${Number(rating).toFixed(1)} out of 5`
+                        : 'No rating yet'
+                    }
+                  >
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <StarIcon
+                        key={i}
+                        className="w-6 h-6 sm:w-7 sm:h-7 shrink-0"
+                        fill={i <= ratingStarsFilled ? '#F59E0B' : '#E5E7EB'}
+                      />
+                    ))}
+                  </div>
+                  <span
+                    className="inline-block rounded-lg bg-amber-50 px-3 py-1.5 text-2xl sm:text-3xl font-bold text-[#101828] tabular-nums shadow-sm ring-1 ring-amber-100/80"
+                  >
+                    {rating && rating > 0 ? Number(rating).toFixed(1) : '—'}
+                  </span>
+                </div>
+              )
+            }
           />
           <StatCard
             label="Calls had"
-            value={totalCalls}
+            value={
+              statsPending ? (
+                <div className="flex min-h-[7rem] items-center justify-start py-1">
+                  <LoadingIcon
+                    width="36"
+                    height="36"
+                    className="animate-spin text-green-200"
+                    aria-hidden
+                  />
+                  <span className="sr-only">Loading call count…</span>
+                </div>
+              ) : (
+                totalCalls
+              )
+            }
             icon={<CallIcon />}
           />
         </div>
