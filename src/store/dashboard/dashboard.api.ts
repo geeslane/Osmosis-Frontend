@@ -9,6 +9,7 @@ import {
   unwrapProgressList,
   unwrapDeliverableAnswer,
 } from '@/utils/teenagerModuleProgress';
+import { parseMentorStatsApiPayload } from '@/utils/mentorDashboardStats';
 
 export type GetModulesParams = {
   page?: number;
@@ -131,6 +132,7 @@ export const DashboardApi = createApi({
     /** Per-teenager module progress (admin/mentor view + cache bust on submit/complete). */
     'TeenagerModuleProgress',
     'AdminDashboardStats',
+    'MentorDashboardStats',
   ],
   endpoints: (builder) => ({
     modules: builder.query<ModulesResponse, GetModulesParams | void>({
@@ -316,17 +318,12 @@ export const DashboardApi = createApi({
           url: '/mentor/me/stats',
           method: 'GET',
         });
-        if (!result.error && result.data) {
-          const d = result.data as { data?: { averageRating?: number; totalCalls?: number } };
-          return {
-            data: {
-              averageRating: d?.data?.averageRating ?? 0,
-              totalCalls: d?.data?.totalCalls ?? 0,
-            },
-          };
+        if (!result.error && result.data !== undefined) {
+          return { data: parseMentorStatsApiPayload(result.data) };
         }
         return { data: { averageRating: 0, totalCalls: 0 } };
       },
+      providesTags: ['MentorDashboardStats'],
     }),
 
     /** Program schedule: start/end dates and number of modules (admin). */
@@ -429,7 +426,7 @@ export const DashboardApi = createApi({
         method: 'PATCH',
         data,
       }),
-      invalidatesTags: ['Calls'],
+      invalidatesTags: ['Calls', 'MentorDashboardStats'],
     }),
 
     // Calls (Teenager / mentee)
@@ -456,14 +453,14 @@ export const DashboardApi = createApi({
         method: 'PATCH',
         data,
       }),
-      invalidatesTags: ['Calls'],
+      invalidatesTags: ['Calls', 'MentorDashboardStats'],
     }),
     completeTeenagerCall: builder.mutation<any, string>({
       query: (callId) => ({
         url: `/teenager/me/calls/${callId}/complete`,
         method: 'PATCH',
       }),
-      invalidatesTags: ['Calls'],
+      invalidatesTags: ['Calls', 'MentorDashboardStats'],
     }),
     cancelTeenagerCall: builder.mutation<any, string>({
       query: (callId) => ({

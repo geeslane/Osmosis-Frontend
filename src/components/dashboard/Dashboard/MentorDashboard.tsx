@@ -11,24 +11,37 @@ import { useGetMentorDashboardStatsQuery } from '@/store/dashboard/dashboard.api
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { shouldShowMentorFeedbackReminder } from '@/utils/dashboardCallReminders';
+import { deriveMentorStatsFromPreviousCalls } from '@/utils/mentorDashboardStats';
 import WelcomeSection from './WelcomeSection';
 import StatCard from './StatCard';
 import ReminderCard from './ReminderCard';
 import Link from 'next/link';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 export default function MentorDashboard() {
   const user = useSelector((state: RootState) => state.profile.user);
   const displayName = (user as { full_name?: string; fullName?: string })?.full_name ?? (user as { fullName?: string })?.fullName ?? '';
   const firstName = displayName.split(' ')[0] || 'there';
-  const { data: stats } = useGetMentorDashboardStatsQuery(undefined, {
+  const { data: stats, isError: statsError } = useGetMentorDashboardStatsQuery(undefined, {
     skip: user?.role !== 'MENTOR',
   });
   const { data: previousCallsData } = useGetMentorPreviousCallsQuery(undefined, {
     skip: user?.role !== 'MENTOR',
   });
-  const rating = stats?.averageRating ?? 0;
-  const totalCalls = stats?.totalCalls ?? 0;
+  const { rating, totalCalls } = useMemo(() => {
+    const apiRating = stats?.averageRating ?? 0;
+    const apiTotal = stats?.totalCalls ?? 0;
+    const calls = previousCallsData?.data ?? [];
+    const derived = deriveMentorStatsFromPreviousCalls(calls);
+    const apiEmpty = apiTotal === 0 && apiRating === 0;
+    const useDerived =
+      (statsError && calls.length > 0) ||
+      (!statsError && apiEmpty && calls.length > 0);
+    if (useDerived) {
+      return { rating: derived.averageRating, totalCalls: derived.totalCalls };
+    }
+    return { rating: apiRating, totalCalls: apiTotal };
+  }, [stats, statsError, previousCallsData]);
   const showFeedbackReminder = shouldShowMentorFeedbackReminder(
     previousCallsData?.data ?? []
   );
