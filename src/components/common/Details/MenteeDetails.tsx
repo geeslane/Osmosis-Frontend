@@ -132,7 +132,7 @@ export default function MenteeDetail({
                 <EmailIcon color={'#6CBB01'} />
                 <div className="flex flex-col gap-1">
                   <p className="text-green-300 text-sm font-medium">Email</p>
-                  <p className="text-green-300  font-medium  truncate">
+                  <p className="text-green-300 font-medium break-words whitespace-normal">
                     {selectedDetails.email}
                   </p>
                 </div>

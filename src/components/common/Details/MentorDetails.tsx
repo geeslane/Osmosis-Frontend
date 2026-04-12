@@ -95,7 +95,6 @@ export default function MentorDetail({
               icon={<LocationIcon color="#6CBB01" />}
               label="Address / Location"
               value={selectedDetails?.address}
-              wrapValue
             />
           </div>
 
@@ -158,13 +157,11 @@ export default function MentorDetail({
               icon={<HeartIcon />}
               label="What inspires you to be a teens mentor?"
               value={selectedDetails?.inspiration}
-              wrapValue
             />
             <Info
               icon={<NoteIcon />}
               label="Mentor's Bio"
               value={selectedDetails?.bio}
-              wrapValue
             />
           </div>
         </div>

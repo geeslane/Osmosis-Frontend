@@ -4,13 +4,10 @@ export const Info = ({
   icon,
   label,
   value,
-  wrapValue,
 }: {
   icon: React.ReactNode;
   label: string;
   value?: string | null;
-  /** If true, value can wrap instead of truncating (e.g. for address) */
-  wrapValue?: boolean;
 }) => {
   const display = value?.trim() ? value : emptyDisplay;
   return (
@@ -20,9 +17,7 @@ export const Info = ({
       </span>
       <div className="min-w-0 space-y-0.5 flex-1">
         <p className="text-green-300 text-sm font-medium">{label}</p>
-        <p
-          className={`text-green-200 font-medium ${wrapValue ? 'break-words' : 'truncate'}`}
-        >
+        <p className="text-green-200 font-medium break-words whitespace-normal">
           {display}
         </p>
       </div>

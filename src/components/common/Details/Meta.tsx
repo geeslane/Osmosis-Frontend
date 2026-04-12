@@ -19,7 +19,7 @@ export const Meta = ({
       )}
       <div className="min-w-0 space-y-0.5">
         <p className="text-green-300 text-sm font-medium">{label}</p>
-        <p className="text-green-200 font-medium truncate">{display}</p>
+        <p className="text-green-200 font-medium break-words whitespace-normal">{display}</p>
       </div>
     </div>
   );
