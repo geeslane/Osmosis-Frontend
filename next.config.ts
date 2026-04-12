@@ -40,6 +40,10 @@ const nextConfig: NextConfig = {
         hostname: 'res.cloudinary.com',
       },
       { protocol: 'https', hostname: 'osmosis-backend.onrender.com' },
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+      },
     ],
   },
   // Optimize dev server performance
