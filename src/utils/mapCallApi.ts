@@ -185,10 +185,12 @@ export function rawToCallRecord(raw: unknown): CallRecord {
 
   let date = str(r.date, '');
   let time = str(r.time, '');
-  const scheduledAt = r.scheduledAt ?? r.startTime ?? r.datetime ?? r.scheduled_at;
-  if (typeof scheduledAt === 'string' && scheduledAt.length > 0) {
-    const d = new Date(scheduledAt);
+  const scheduledAtRaw = r.scheduledAt ?? r.startTime ?? r.datetime ?? r.scheduled_at;
+  let scheduledAt: string | undefined;
+  if (typeof scheduledAtRaw === 'string' && scheduledAtRaw.trim().length > 0) {
+    const d = new Date(scheduledAtRaw);
     if (!Number.isNaN(d.getTime())) {
+      scheduledAt = scheduledAtRaw.trim();
       if (!date || date === '—') {
         date = d.toLocaleDateString(undefined, {
           day: 'numeric',
@@ -270,6 +272,7 @@ export function rawToCallRecord(raw: unknown): CallRecord {
         ? str(teen.id)
         : undefined,
     mentorId,
+    scheduledAt,
     date,
     time: time && time !== '—' ? time : undefined,
     topic: str(topicResolved, '—'),

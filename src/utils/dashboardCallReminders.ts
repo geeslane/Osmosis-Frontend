@@ -14,12 +14,39 @@ function parseCallDateMs(dateStr: string | undefined): number {
   return 0;
 }
 
-/** Most recent previous call (by date field). */
+/** Prefer API `scheduledAt` for ordering and “past” checks; fall back to parsed `date`. */
+export function getScheduledAtMs(call: CallRecord): number {
+  if (call.scheduledAt) {
+    const t = Date.parse(call.scheduledAt);
+    if (!Number.isNaN(t)) return t;
+  }
+  return parseCallDateMs(call.date);
+}
+
+function isPastBySchedule(call: CallRecord, nowMs = Date.now()): boolean {
+  const ms = getScheduledAtMs(call);
+  return ms > 0 && ms < nowMs;
+}
+
+/** True if instant falls within the last 7 calendar days (inclusive of today), same rules as legacy date-string helper. */
+function isWithinLastSevenDaysFromMs(scheduledMs: number): boolean {
+  if (!scheduledMs || Number.isNaN(scheduledMs)) return false;
+  const date = new Date(scheduledMs);
+  if (Number.isNaN(date.getTime())) return false;
+  const now = new Date();
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+  return date >= sevenDaysAgo && date <= now;
+}
+
+/** Most recent call that is already past by `scheduledAt` (newest first). Ignores stale `status`. */
 export function getMostRecentPreviousCall(calls: CallRecord[]): CallRecord | null {
   if (!calls?.length) return null;
-  const sorted = [...calls].sort(
-    (a, b) => parseCallDateMs(b.date) - parseCallDateMs(a.date)
-  );
+  const past = calls.filter((c) => isPastBySchedule(c));
+  if (!past.length) return null;
+  const sorted = [...past].sort((a, b) => getScheduledAtMs(b) - getScheduledAtMs(a));
   return sorted[0] ?? null;
 }
 
@@ -36,24 +63,16 @@ export function isWithinLastSevenDays(dateStr: string): boolean {
     date = new Date(parsed);
   }
   if (Number.isNaN(date.getTime())) return false;
-  const now = new Date();
-  const sevenDaysAgo = new Date(now);
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  sevenDaysAgo.setHours(0, 0, 0, 0);
-  date.setHours(0, 0, 0, 0);
-  return date >= sevenDaysAgo && date <= now;
+  return isWithinLastSevenDaysFromMs(date.getTime());
 }
 
 /**
  * True when we should NOT show the “give feedback” dashboard card for this call.
- * Post-call mentee feedback only applies after the call is completed; until then, suppress.
+ * Past vs upcoming is determined by `scheduledAt` elsewhere — do not use `status` / `markCompletePending`.
  * When the API sends `feedbackPending`, we still cross-check fields: some payloads mark
- * `feedbackPending: false` for non-completed calls or omit data — don’t hide the nudge then.
+ * `feedbackPending: false` without mentee input — don’t hide the nudge then.
  */
 function shouldSuppressTeenagerFeedbackReminderForCall(call: CallRecord): boolean {
-  const st = call.status?.toUpperCase() ?? '';
-  if (!st.includes('COMPLETE')) return true;
-
   const needsRating = call.rating == null;
   const needsComment = call.menteeComment == null;
   const needsByFields = needsRating || needsComment;
@@ -84,7 +103,7 @@ export function shouldShowTeenagerFeedbackReminder(previous: CallRecord[]): bool
   const last = getMostRecentPreviousCall(previous);
   if (!last) return false;
   if (shouldSuppressTeenagerFeedbackReminderForCall(last)) return false;
-  return isWithinLastSevenDays(last.date);
+  return isWithinLastSevenDaysFromMs(getScheduledAtMs(last));
 }
 
 /**
@@ -95,5 +114,5 @@ export function shouldShowMentorFeedbackReminder(previous: CallRecord[]): boolea
   const last = getMostRecentPreviousCall(previous);
   if (!last) return false;
   if (hasMentorFeedback(last)) return false;
-  return isWithinLastSevenDays(last.date);
+  return isWithinLastSevenDaysFromMs(getScheduledAtMs(last));
 }
