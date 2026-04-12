@@ -6,6 +6,7 @@ import { Column, DataTable } from '@/components/ui/table';
 import { useGetMenteePreviousCallsQuery } from '@/store/calls/calls.api';
 import { useTeenagerCallFeedbackMutation } from '@/store/dashboard/dashboard.api';
 import { callRecordToPreviousRow, type PreviousCallRow } from '@/utils/mapCallApi';
+import { isPreviousCallPastBySchedule } from '@/utils/dashboardCallReminders';
 import { useEffect, useMemo, useState } from 'react';
 import useToastify from '@/hooks/useToastify';
 import ActionModal from '@/components/ui/modal/ActionModal';
@@ -115,12 +116,15 @@ export default function PreviousCallTable({
       key: 'status',
       label: '',
       render: (row) => {
-        const completed = row.status === 'Completed';
+        const pastBySchedule = isPreviousCallPastBySchedule(row);
+        const completedByStatus = row.status === 'Completed';
+        const canGiveFeedback =
+          row.status !== 'Inactive' &&
+          (pastBySchedule || completedByStatus);
         const feedbackDone =
           typeof row.feedbackPending === 'boolean'
             ? row.feedbackPending === false
             : row.rating != null && row.menteeComment != null;
-        const done = completed && feedbackDone;
         return (
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Button
@@ -132,10 +136,10 @@ export default function PreviousCallTable({
                 setFeedbackComment(row.menteeComment ?? '');
                 setOpenModal(true);
               }}
-              disabled={isSubmitting || !completed || done}
+              disabled={isSubmitting || !canGiveFeedback || feedbackDone}
               className="bg-green-200 text-white px-6 py-2 rounded-xl"
             >
-              {done ? 'Feedback sent' : 'Give feedback'}
+              {feedbackDone ? 'Feedback sent' : 'Give feedback'}
             </Button>
           </div>
         );

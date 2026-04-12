@@ -14,6 +14,26 @@ function parseCallDateMs(dateStr: string | undefined): number {
   return 0;
 }
 
+/** Same instant rules as `getScheduledAtMs` for table rows that only have `scheduledAt` + display `date`. */
+export function getPreviousRowScheduledMs(row: {
+  scheduledAt?: string;
+  date: string;
+}): number {
+  if (row.scheduledAt) {
+    const t = Date.parse(row.scheduledAt);
+    if (!Number.isNaN(t)) return t;
+  }
+  return parseCallDateMs(row.date);
+}
+
+export function isPreviousCallPastBySchedule(
+  row: { scheduledAt?: string; date: string },
+  nowMs = Date.now()
+): boolean {
+  const ms = getPreviousRowScheduledMs(row);
+  return ms > 0 && ms < nowMs;
+}
+
 export function getScheduledAtMs(call: CallRecord): number {
   if (call.scheduledAt) {
     const t = Date.parse(call.scheduledAt);

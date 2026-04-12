@@ -66,6 +66,7 @@ export type PreviousCallRow = {
   mentorComment?: string;
   /** Mentor-only private session notes (`Call.notes`). */
   mentorPrivateNotes?: string;
+  scheduledAt?: string;
 };
 
 export function callRecordToPreviousRow(
@@ -91,6 +92,7 @@ export function callRecordToPreviousRow(
     status,
     rating: c.rating,
     menteeComment: c.menteeComment,
+    scheduledAt: c.scheduledAt,
   };
   if (perspective === 'mentee') {
     row.menteeNotes = c.menteeNotes;
