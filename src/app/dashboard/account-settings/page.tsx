@@ -18,6 +18,7 @@ export default function page() {
       <Tabs
         paramKey="settings"
         defaultValue="profile"
+        basePath="/dashboard/account-settings"
         tabs={[
           {
             title: 'Profile',

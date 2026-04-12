@@ -5,6 +5,10 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import Button from '@/components/ui/button/Button';
 import { changePasswordSchema } from '@/validation/schema';
 import PasswordInputForm from '@/components/form/PasswordInputForm';
+import { useChangePasswordMutation } from '@/store/auth/auth.api';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import useToastify from '@/hooks/useToastify';
 
 type ChangePasswordFormValues = {
   currentPassword: string;
@@ -13,17 +17,46 @@ type ChangePasswordFormValues = {
 };
 
 export default function Password() {
+  const { showToast } = useToastify();
+  const user = useSelector((state: RootState) => state.profile.user);
+  const [changePassword, { isLoading: isChanging }] = useChangePasswordMutation();
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    reset,
   } = useForm<ChangePasswordFormValues>({
     resolver: yupResolver(changePasswordSchema),
   });
 
   const onSubmit = async (data: ChangePasswordFormValues) => {
-    console.log('Change Password Payload:', data);
-    // call API here
+    const id = user?.id != null ? String(user.id) : '';
+    if (!id) {
+      showToast('You must be signed in to change your password.', 'error');
+      return;
+    }
+    try {
+      await changePassword({
+        id,
+        data: {
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword,
+        },
+      }).unwrap();
+      showToast('Password updated successfully.', 'success');
+      reset();
+    } catch (error: unknown) {
+      let message = 'Failed to update password';
+      if (error && typeof error === 'object' && 'data' in error) {
+        const d = (error as { data?: { message?: string } }).data?.message;
+        if (d) message = String(d);
+      }
+      if (message.toLowerCase().includes('current')) {
+        message = 'Current password is incorrect';
+      }
+      showToast(message, 'error');
+    }
   };
 
   return (
@@ -60,8 +93,9 @@ export default function Password() {
               variant="primary"
               fullWidth
               className="py-4 font-medium"
+              disabled={isSubmitting || isChanging}
             >
-              {isSubmitting ? 'Updating...' : 'Update Password'}
+              {isSubmitting || isChanging ? 'Updating…' : 'Update Password'}
             </Button>
           </div>
         </form>

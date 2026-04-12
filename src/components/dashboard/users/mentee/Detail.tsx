@@ -196,7 +196,6 @@ export default function Detail() {
                       icon={<LocationIcon color="#6CBB01" />}
                       label="Address"
                       value={mentee.address}
-                      wrapValue
                     />
                   )}
                 </div>
