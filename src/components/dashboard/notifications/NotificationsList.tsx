@@ -125,28 +125,46 @@ function NotificationRow({
   onMarkUnread: (id: string) => void;
 }) {
   const href = resolveNotificationHref(notification, role);
+  const rowBody = (
+    <>
+      {!notification.read && (
+        <span className="h-2 w-2 rounded-full bg-green-500 mt-1.5 shrink-0" aria-hidden />
+      )}
+      <div className="min-w-0">
+        <p
+          className={`text-sm font-medium text-gray-900 ${href != null ? 'group-hover:text-green-700' : ''}`}
+        >
+          {notification.title}
+        </p>
+        <p className="text-xs text-gray-500 mt-1">{notification.description}</p>
+        <p className="text-xs text-gray-400 mt-1">
+          {formatNotificationTime(notification.createdAt)}
+        </p>
+      </div>
+    </>
+  );
   return (
     <div className="flex items-start gap-4 p-4 hover:bg-gray-50/50">
-      <Link
-        href={href}
-        className="flex flex-1 min-w-0 gap-3 group"
-        onClick={() => {
-          if (!notification.read) onMarkRead(notification.id);
-        }}
-      >
-        {!notification.read && (
-          <span className="h-2 w-2 rounded-full bg-green-500 mt-1.5 shrink-0" aria-hidden />
-        )}
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-gray-900 group-hover:text-green-700">
-            {notification.title}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">{notification.description}</p>
-          <p className="text-xs text-gray-400 mt-1">
-            {formatNotificationTime(notification.createdAt)}
-          </p>
+      {href == null ? (
+        <div
+          className="flex flex-1 min-w-0 gap-3 group cursor-default"
+          onClick={() => {
+            if (!notification.read) onMarkRead(notification.id);
+          }}
+        >
+          {rowBody}
         </div>
-      </Link>
+      ) : (
+        <Link
+          href={href}
+          className="flex flex-1 min-w-0 gap-3 group"
+          onClick={() => {
+            if (!notification.read) onMarkRead(notification.id);
+          }}
+        >
+          {rowBody}
+        </Link>
+      )}
       <div className="flex items-center gap-2 flex-shrink-0">
         {!notification.read ? (
           <button

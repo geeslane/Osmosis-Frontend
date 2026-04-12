@@ -139,19 +139,8 @@ export default function NotificationDropdown() {
           ) : (
             filteredNotifications.map((notification) => {
               const href = resolveNotificationHref(notification, user?.role);
-              return (
-              <li
-                key={notification.id}
-                className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50"
-              >
-                <Link
-                  href={href}
-                  className="flex flex-1 items-start gap-3 min-w-0 cursor-pointer"
-                  onClick={() => {
-                    setIsOpen(false);
-                    if (!notification.read) void markRead(notification.id);
-                  }}
-                >
+              const rowInner = (
+                <>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900">
                       {notification.title}
@@ -166,7 +155,35 @@ export default function NotificationDropdown() {
                   {!notification.read && (
                     <span className="h-2 w-2 rounded-full bg-green-100 mt-1 flex-shrink-0" />
                   )}
+                </>
+              );
+              return (
+              <li
+                key={notification.id}
+                className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50"
+              >
+                {href == null ? (
+                  <div
+                    className="flex flex-1 items-start gap-3 min-w-0 cursor-default"
+                    onClick={() => {
+                      setIsOpen(false);
+                      if (!notification.read) void markRead(notification.id);
+                    }}
+                  >
+                    {rowInner}
+                  </div>
+                ) : (
+                <Link
+                  href={href}
+                  className="flex flex-1 items-start gap-3 min-w-0 cursor-pointer"
+                  onClick={() => {
+                    setIsOpen(false);
+                    if (!notification.read) void markRead(notification.id);
+                  }}
+                >
+                  {rowInner}
                 </Link>
+                )}
                 <button
                   type="button"
                   onClick={async (e) => {

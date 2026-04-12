@@ -168,9 +168,6 @@ function hrefFromNotificationType(type: string | null | undefined): string | nul
   if (!t) return null;
 
   switch (t) {
-    case 'CALL_DECLINED':
-      // Backend sends no link; mentee can book another call
-      return '/dashboard/book-a-call';
     case 'SIGNUP_PENDING_MENTOR':
       return '/dashboard/pending-requests?role=mentor';
     case 'SIGNUP_PENDING_TEENAGER':
@@ -205,7 +202,13 @@ export function resolveNotificationHref(
     description?: string;
   },
   role: AppRole
-): string {
+): string | null {
+  const notificationType = `${n.type ?? ''}`.trim().toUpperCase();
+  /** Intentionally no in-app destination (e.g. informational only). */
+  if (notificationType === 'CALL_DECLINED') {
+    return null;
+  }
+
   const r = (role ?? '').trim().toUpperCase();
   const isTeen = r === 'TEENAGER';
   const isMentor = r === 'MENTOR';
