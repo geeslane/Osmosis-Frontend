@@ -5,7 +5,13 @@ import {
   useGetMenteeUpcomingCallsQuery,
 } from '@/store/calls/calls.api';
 import type { CallRecord } from '@/store/calls/calls.api';
+import { useTeenagerCallRequestsQuery } from '@/store/dashboard/dashboard.api';
+import {
+  pickCallsArray,
+  rawToTeenagerCallRequestRow,
+} from '@/utils/mapCallApi';
 import Link from 'next/link';
+import { useMemo } from 'react';
 import CreateSchedule from './CreateSchecdule';
 
 /** True if date string (YYYY-MM-DD or parseable) falls within the last 7 days (inclusive). */
@@ -33,10 +39,18 @@ function hadCallInLast7Days(previousCalls: CallRecord[]): boolean {
 export default function BookACallGuard() {
   const { data: upcomingData } = useGetMenteeUpcomingCallsQuery();
   const { data: previousData } = useGetMenteePreviousCallsQuery();
+  const { data: requestsRaw, isError: requestsError } = useTeenagerCallRequestsQuery();
+
   const upcoming = upcomingData?.data ?? [];
   const previous = previousData?.data ?? [];
   const hasUpcoming = upcoming.length > 0;
   const hadRecent = hadCallInLast7Days(previous);
+
+  const hasPendingCallRequest = useMemo(() => {
+    if (requestsError) return false;
+    const rows = pickCallsArray(requestsRaw).map(rawToTeenagerCallRequestRow);
+    return rows.some((r) => r.status === 'Pending');
+  }, [requestsRaw, requestsError]);
 
   if (hasUpcoming) {
     return (
@@ -51,6 +65,28 @@ export default function BookACallGuard() {
             className="inline-block mt-6 text-green-200 font-medium hover:underline"
           >
             View my upcoming calls →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (hasPendingCallRequest) {
+    return (
+      <div className="mt-6 sm:mt-8 max-w-2xl mx-auto w-full min-w-0 px-4 sm:px-0">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-6 sm:p-8 text-center">
+          <h2 className="text-lg font-semibold text-amber-800">
+            You already have a pending call request
+          </h2>
+          <p className="text-amber-700 mt-2 text-sm">
+            Wait for your mentor to respond before booking another call. You can check the status of
+            your request under 'My calls'.
+          </p>
+          <Link
+            href="/dashboard/calls/mentee"
+            className="inline-block mt-6 text-green-200 font-medium hover:underline"
+          >
+            View my calls →
           </Link>
         </div>
       </div>
