@@ -225,10 +225,9 @@ export function rawToCallRecord(raw: unknown): CallRecord {
       ? String(crLabel).trim()
       : '';
   const topicResolved = firstNonEmptyString(
-    r.topic,
+    topicFromRequestParts || undefined,
     r.sessionTopic,
-    r.subject,
-    topicFromRequestParts || undefined
+    r.subject
   );
 
   let menteePostCall: string | undefined;
@@ -383,10 +382,7 @@ export function rawToMentorCallRequestRow(raw: unknown): MentorCallRequestRow {
         : undefined;
 
   const topicLabel = r.topicLabel != null ? String(r.topicLabel).trim() : '';
-  const topicDisplay =
-    typeof r.topic === 'string' && r.topic.trim()
-      ? String(r.topic).trim()
-      : topicLabel || '—';
+  const topicDisplay = topicLabel || '—';
 
   return {
     id: String(r.id ?? r._id ?? ''),
@@ -456,10 +452,7 @@ export function rawToTeenagerCallRequestRow(raw: unknown): TeenagerCallRequestRo
     status = 'Inactive';
 
   const topicLabel = r.topicLabel != null ? String(r.topicLabel).trim() : '';
-  const topicDisplay =
-    typeof r.topic === 'string' && r.topic.trim()
-      ? String(r.topic).trim()
-      : topicLabel || str(r.sessionTopic, '—');
+  const topicDisplay = topicLabel || str(r.sessionTopic, '—');
 
   const noteFromApi =
     r.menteeNotes != null

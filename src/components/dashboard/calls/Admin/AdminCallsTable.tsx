@@ -69,7 +69,13 @@ export default function AdminCallsTable() {
         id: String(c?.id ?? c?._id ?? c?.callId ?? ''),
         mentor: c?.mentor?.fullName ?? c?.mentorName ?? '—',
         mentee: c?.teenager?.teenagerFullName ?? c?.teenager?.fullName ?? c?.teenagerName ?? c?.menteeName ?? '—',
-        topic: c?.topic ?? c?.sessionTopic ?? '—',
+        topic:
+          c?.topicLabel ??
+          (c?.callRequest && typeof c.callRequest === 'object'
+            ? (c.callRequest as { topicLabel?: string }).topicLabel
+            : undefined) ??
+          c?.sessionTopic ??
+          '—',
         date,
         time,
         status: derived.label,
