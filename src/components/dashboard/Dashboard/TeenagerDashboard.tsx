@@ -12,6 +12,7 @@ import {
   useGetMenteeUpcomingCallsQuery,
 } from '@/store/calls/calls.api';
 import {
+  DEFAULT_MODULE_LIST_SORT,
   useModulesQuery,
   useGetProgramConfigQuery,
   useGetTeenagerModulesProgressQuery,
@@ -35,7 +36,8 @@ export default function TeenagerDashboard() {
   const { data: upcomingData } = useGetMenteeUpcomingCallsQuery();
   const { data: previousData } = useGetMenteePreviousCallsQuery();
   const teenId = user?.id != null ? String(user.id) : '';
-  const { data: modulesData, isLoading: loadingModules } = useModulesQuery(undefined);
+  const { data: modulesData, isLoading: loadingModules } =
+    useModulesQuery(DEFAULT_MODULE_LIST_SORT);
   const { data: progressRows = [], isLoading: loadingProgress } =
     useGetTeenagerModulesProgressQuery(teenId, {
       skip: !teenId || user?.role !== 'TEENAGER',

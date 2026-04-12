@@ -15,6 +15,16 @@ export type GetModulesParams = {
   page?: number;
   limit?: number;
   title?: string;
+  /** Sort field for GET `/module` (e.g. `createdAt`). */
+  sortBy?: string;
+  /** Sort direction. */
+  order?: 'asc' | 'desc';
+};
+
+/** Default list ordering: newest modules first (server-side). */
+export const DEFAULT_MODULE_LIST_SORT: Pick<GetModulesParams, 'sortBy' | 'order'> = {
+  sortBy: 'createdAt',
+  order: 'desc',
 };
 
 export type GetMentorsParams = {

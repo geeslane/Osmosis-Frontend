@@ -4,6 +4,7 @@ import { GoBackIcon, LoadingIcon } from '@/assets/icons';
 import { useParams, useRouter } from 'next/navigation';
 import { useGetTeenagerByIdQuery } from '@/store/users/users.api';
 import {
+  DEFAULT_MODULE_LIST_SORT,
   useGetTeenagerModulesProgressQuery,
   useModulesQuery,
 } from '@/store/dashboard/dashboard.api';
@@ -20,7 +21,7 @@ export default function MenteeModulesList() {
   const { data: menteeData, isLoading: isLoadingMentee } =
     useGetTeenagerByIdQuery(id as string);
   const { data: modulesData, isLoading: isLoadingModules } =
-    useModulesQuery(undefined);
+    useModulesQuery(DEFAULT_MODULE_LIST_SORT);
   const { data: progressRows = [], isLoading: loadingProgress } =
     useGetTeenagerModulesProgressQuery(id as string, { skip: !id });
 
