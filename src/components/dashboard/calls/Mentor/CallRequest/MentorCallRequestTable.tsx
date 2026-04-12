@@ -420,9 +420,6 @@ export default function MentorCallRequestTable() {
               </div>
               <div className="min-w-0 flex-1 space-y-1">
                 <p className="text-base font-semibold text-[#101828]">{teenagerDetail.name}</p>
-                <p className="text-xs text-gray-500">
-                  Basic info from this request only — no address or contact details.
-                </p>
               </div>
             </div>
             <div className="mt-5 space-y-4 border-t border-gray-100 pt-4">

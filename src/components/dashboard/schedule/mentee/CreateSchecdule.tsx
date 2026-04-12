@@ -414,7 +414,10 @@ export default function CreateSchedule() {
         topicLabel: selectedTopicLabel?.trim() || undefined,
         topicValue: selectedTopic.trim() || undefined,
       }).unwrap();
-      showToast('Call request sent successfully', 'success');
+      showToast(
+        'Call request sent successfully. Your mentor will let you know when they respond.',
+        'success'
+      );
       router.push('/dashboard/calls/mentee?role=upcoming');
     } catch (err: unknown) {
       const msg =

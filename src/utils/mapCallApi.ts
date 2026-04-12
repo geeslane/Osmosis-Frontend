@@ -220,12 +220,9 @@ export function rawToCallRecord(raw: unknown): CallRecord {
       ? (r.callRequest as Record<string, unknown>)
       : undefined;
   const crLabel = cr?.topicLabel ?? r.topicLabel;
-  const crValue = cr?.topicValue ?? r.topicValue;
   const topicFromRequestParts =
-    crLabel != null || crValue != null
-      ? [String(crLabel ?? '').trim(), String(crValue ?? '').trim()]
-          .filter(Boolean)
-          .join(' · ')
+    crLabel != null && String(crLabel).trim() !== ''
+      ? String(crLabel).trim()
       : '';
   const topicResolved = firstNonEmptyString(
     r.topic,
@@ -386,15 +383,10 @@ export function rawToMentorCallRequestRow(raw: unknown): MentorCallRequestRow {
         : undefined;
 
   const topicLabel = r.topicLabel != null ? String(r.topicLabel).trim() : '';
-  const topicValue = r.topicValue != null ? String(r.topicValue).trim() : '';
-  const topicFromParts =
-    topicLabel && topicValue
-      ? `${topicLabel} · ${topicValue}`
-      : topicLabel || topicValue;
   const topicDisplay =
     typeof r.topic === 'string' && r.topic.trim()
       ? String(r.topic).trim()
-      : topicFromParts || '—';
+      : topicLabel || '—';
 
   return {
     id: String(r.id ?? r._id ?? ''),
@@ -464,15 +456,10 @@ export function rawToTeenagerCallRequestRow(raw: unknown): TeenagerCallRequestRo
     status = 'Inactive';
 
   const topicLabel = r.topicLabel != null ? String(r.topicLabel).trim() : '';
-  const topicValue = r.topicValue != null ? String(r.topicValue).trim() : '';
-  const topicFromParts =
-    topicLabel && topicValue
-      ? `${topicLabel} · ${topicValue}`
-      : topicLabel || topicValue;
   const topicDisplay =
     typeof r.topic === 'string' && r.topic.trim()
       ? String(r.topic).trim()
-      : topicFromParts || str(r.sessionTopic, '—');
+      : topicLabel || str(r.sessionTopic, '—');
 
   const noteFromApi =
     r.menteeNotes != null
