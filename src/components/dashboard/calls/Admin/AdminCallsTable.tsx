@@ -5,6 +5,11 @@ import { SearchIcon } from '@/assets/icons';
 import { Column, DataTable } from '@/components/ui/table';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { useAdminCallsQuery } from '@/store/dashboard/dashboard.api';
+import {
+  adminCallStatusBadgeClass,
+  getAdminCallDisplayStatusFromApiRow,
+  type AdminCallStatusBadge,
+} from '@/utils/adminCallDisplayStatus';
 
 function pickArray(payload: any): any[] {
   if (Array.isArray(payload)) return payload;
@@ -35,6 +40,7 @@ type AdminCallRow = {
   date: string;
   time: string;
   status: string;
+  statusBadge: AdminCallStatusBadge;
 };
 
 export default function AdminCallsTable() {
@@ -52,14 +58,22 @@ export default function AdminCallsTable() {
     const items = pickArray(data);
     return items.map((c: any) => {
       const { date, time } = formatDateTime(c?.scheduledAt ?? c?.startTime ?? c?.date);
+      const derived = getAdminCallDisplayStatusFromApiRow({
+        status: c?.status,
+        scheduledAt: c?.scheduledAt,
+        startTime: c?.startTime,
+        date: c?.date,
+        dateFormatted: c?.dateFormatted,
+      });
       return {
         id: String(c?.id ?? c?._id ?? c?.callId ?? ''),
         mentor: c?.mentor?.fullName ?? c?.mentorName ?? '—',
-        mentee: c?.teenager?.fullName ?? c?.teenagerName ?? c?.menteeName ?? '—',
+        mentee: c?.teenager?.teenagerFullName ?? c?.teenager?.fullName ?? c?.teenagerName ?? c?.menteeName ?? '—',
         topic: c?.topic ?? c?.sessionTopic ?? '—',
         date,
         time,
-        status: c?.status ?? '—',
+        status: derived.label,
+        statusBadge: derived.badge,
       };
     });
   }, [data]);
@@ -79,7 +93,17 @@ export default function AdminCallsTable() {
     { key: 'topic', label: 'Topic', render: (r) => <span className="text-sm text-[#667085]">{r.topic}</span> },
     { key: 'date', label: 'Date', render: (r) => <span className="text-sm text-[#667085]">{r.date}</span> },
     { key: 'time', label: 'Time', render: (r) => <span className="text-sm text-[#667085]">{r.time}</span> },
-    { key: 'status', label: 'Status', render: (r) => <span className="text-sm text-[#667085]">{r.status}</span> },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (r) => (
+        <span
+          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${adminCallStatusBadgeClass(r.statusBadge)}`}
+        >
+          {r.status}
+        </span>
+      ),
+    },
   ];
 
   return (

@@ -9,6 +9,21 @@ import { useGetCallsQuery } from '@/store/calls/calls.api';
 import type { CallRecord } from '@/store/calls/calls.api';
 import { useGetTeenagerByIdQuery } from '@/store/users/users.api';
 import { downloadCallReport } from '@/utils/downloadCallReport';
+import {
+  adminCallStatusBadgeClass,
+  getAdminCallDisplayStatusFromRecord,
+} from '@/utils/adminCallDisplayStatus';
+
+function AdminCallStatusPill({ call }: { call: CallRecord }) {
+  const { label, badge } = getAdminCallDisplayStatusFromRecord(call);
+  return (
+    <span
+      className={`rounded-full px-3 py-1 text-xs font-medium ${adminCallStatusBadgeClass(badge)}`}
+    >
+      {label}
+    </span>
+  );
+}
 
 export default function MentorshipCallsAdmin() {
   const [page, setPage] = useState(1);
@@ -57,15 +72,18 @@ export default function MentorshipCallsAdmin() {
 
   const handleDownloadReport = () => {
     const toExport = filtered.length ? filtered : callData;
-    const reportData = toExport.map((r) => ({
-      'Mentor Name': r.mentorName,
-      'Mentee Name': r.menteeName,
-      'Date & Time': r.time ? `${r.date}, ${r.time}` : r.date,
-      Topic: r.topic,
-      Status: r.status,
-      Comment: r.comment,
-      Rating: r.rating,
-    }));
+    const reportData = toExport.map((r) => {
+      const { label } = getAdminCallDisplayStatusFromRecord(r);
+      return {
+        'Mentor Name': r.mentorName,
+        'Mentee Name': r.menteeName,
+        'Date & Time': r.time ? `${r.date}, ${r.time}` : r.date,
+        Topic: r.topic,
+        Status: label,
+        Comment: r.comment,
+        Rating: r.rating,
+      };
+    });
     const filename = debouncedSearch
       ? `call-history-${debouncedSearch.replace(/\s+/g, '-')}.csv`
       : 'mentorship-calls-report.csv';
@@ -120,19 +138,7 @@ export default function MentorshipCallsAdmin() {
     {
       key: 'status',
       label: 'Status',
-      render: (row) => (
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${
-            row.status === 'Completed'
-              ? 'bg-green-50 text-green-600'
-              : row.status === 'Rescheduled'
-                ? 'bg-amber-50 text-amber-600'
-                : 'bg-gray-100 text-gray-600'
-          }`}
-        >
-          {row.status ?? '—'}
-        </span>
-      ),
+      render: (row) => <AdminCallStatusPill call={row} />,
     },
     {
       key: 'rating',
@@ -267,17 +273,7 @@ export default function MentorshipCallsAdmin() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Status</p>
-                  <p
-                    className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
-                      selectedCall.status === 'Completed'
-                        ? 'bg-green-50 text-green-600'
-                        : selectedCall.status === 'Rescheduled'
-                          ? 'bg-amber-50 text-amber-600'
-                          : 'bg-gray-100 text-gray-600'
-                    }`}
-                  >
-                    {selectedCall.status ?? '—'}
-                  </p>
+                  <AdminCallStatusPill call={selectedCall} />
                 </div>
               </div>
 
