@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getSessionCookie } from '@/lib/session';
+import { buildSignInUrlForProtectedPath } from '@/utils/googleCalendarAvailability';
 
 const ROLE_ACCESS: Record<string, string[]> = {
   SUPERADMIN: [
@@ -84,11 +85,12 @@ export async function middleware(request: NextRequest) {
     (pathname.startsWith('/dashboard') ||
       (pathname.startsWith('/mentor') && !isPublicMentorRoute))
   ) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/signin';
-    url.searchParams.set('redirect', pathname);
-
-    return NextResponse.redirect(url);
+    const signIn = buildSignInUrlForProtectedPath(
+      request.url,
+      pathname,
+      request.nextUrl.searchParams
+    );
+    return NextResponse.redirect(signIn);
   }
 
   /* ---------------- Role Authorization ---------------- */

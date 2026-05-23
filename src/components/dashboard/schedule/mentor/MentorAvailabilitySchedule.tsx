@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { CalendarIcon, GoogleIcon, LoadingIcon } from '@/assets/icons';
+import { LoadingIcon } from '@/assets/icons';
 import Button from '@/components/ui/button/Button';
 import useToastify from '@/hooks/useToastify';
 import { RootState } from '@/store';
@@ -17,6 +17,12 @@ import {
   type DaySchedule,
   type TimeBlock,
 } from '@/store/schedule/schedule.api';
+import GoogleCalendarAvailabilityPanel from '@/components/dashboard/schedule/mentor/GoogleCalendarAvailabilityPanel';
+import {
+  GOOGLE_CALENDAR_COPY,
+  getScheduleApiErrorMessage,
+  isGoogleCalendarReconnectError,
+} from '@/utils/googleCalendarAvailability';
 import {
   useGetMentorByIdQuery,
   useUpdateMentorProfileMutation,
@@ -84,10 +90,10 @@ export default function MentorAvailabilitySchedule() {
   const isMentor = user?.role === 'MENTOR';
   const mentorId = String(user?.id ?? '');
 
-  const { data: availability, isLoading } = useGetMentorAvailabilityQuery(
-    undefined,
-    { refetchOnMountOrArgChange: true }
-  );
+  const { data: availability, isLoading, refetch: refetchAvailability } =
+    useGetMentorAvailabilityQuery(undefined, {
+      refetchOnMountOrArgChange: true,
+    });
   const [saveAvailability, { isLoading: isSaving }] =
     useSaveMentorAvailabilityMutation();
   const [fetchGoogleCalendarAuthUrl, { isFetching: isAuthUrlLoading }] =
@@ -95,9 +101,15 @@ export default function MentorAvailabilitySchedule() {
   const [syncGoogleCalendar, { isLoading: isSyncing }] =
     useSyncGoogleCalendarMutation();
 
-  const isGoogleCalendarConnected =
-    Boolean(availability?.googleCalendarConnected) ||
-    Boolean(availability?.googleCalendarSynced);
+  const googleCalendarConnected = Boolean(availability?.googleCalendarConnected);
+  const googleCalendarSynced = Boolean(availability?.googleCalendarSynced);
+  const autoSyncAttempted = useRef(false);
+
+  useEffect(() => {
+    if (!googleCalendarConnected) {
+      autoSyncAttempted.current = false;
+    }
+  }, [googleCalendarConnected]);
 
   const { data: mentorData } = useGetMentorByIdQuery(mentorId, {
       skip: !isMentor || !mentorId,
@@ -256,35 +268,58 @@ export default function MentorAvailabilitySchedule() {
     try {
       const { url } = await fetchGoogleCalendarAuthUrl().unwrap();
       if (url) {
-        window.location.href = url;
+        window.location.assign(url);
         return;
       }
       showToast('Could not start Google Calendar connection.', 'error');
-    } catch (err: any) {
+    } catch (err: unknown) {
       showToast(
-        err?.data?.message || 'Failed to get Google Calendar link.',
+        getScheduleApiErrorMessage(err) || 'Failed to get Google Calendar link.',
         'error'
       );
     }
   };
 
-  const handleRefreshGoogleCalendar = async () => {
+  const handleSyncGoogleCalendar = useCallback(async () => {
     try {
       const result = await syncGoogleCalendar().unwrap();
-      const msg =
-        result.message ||
-        (result.googleCalendarSynced
-          ? 'Calendar sync updated.'
-          : 'Sync completed.');
-      if (result.success) {
-        showToast(msg, 'success');
-      } else {
-        showToast(msg, 'info');
+      await refetchAvailability();
+      showToast(
+        result.message ?? GOOGLE_CALENDAR_COPY.syncSuccess,
+        'success'
+      );
+    } catch (err: unknown) {
+      await refetchAvailability();
+      if (isGoogleCalendarReconnectError(err)) {
+        showToast(GOOGLE_CALENDAR_COPY.reconnect, 'error');
+        return;
       }
-    } catch (err: any) {
-      showToast(err?.data?.message || 'Failed to sync calendar', 'error');
+      showToast(
+        getScheduleApiErrorMessage(err) || 'Failed to sync calendar',
+        'error'
+      );
     }
-  };
+  }, [refetchAvailability, showToast, syncGoogleCalendar]);
+
+  useEffect(() => {
+    if (isLoading || !availability) return;
+    if (!googleCalendarConnected || googleCalendarSynced) return;
+    const onCalendarStep =
+      step === 3 || (hasFinishedStep2 && !isEditing);
+    if (!onCalendarStep) return;
+    if (autoSyncAttempted.current) return;
+    autoSyncAttempted.current = true;
+    void handleSyncGoogleCalendar();
+  }, [
+    availability,
+    googleCalendarConnected,
+    googleCalendarSynced,
+    handleSyncGoogleCalendar,
+    hasFinishedStep2,
+    isEditing,
+    isLoading,
+    step,
+  ]);
 
   if (isLoading) {
     return (
@@ -385,17 +420,14 @@ export default function MentorAvailabilitySchedule() {
           </div>
         )}
 
-        {(availability?.googleCalendarConnected ||
-          availability?.googleCalendarSynced) && (
-          <div className="flex items-center gap-2 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-200">
-            <CalendarIcon />
-            <span>
-              {availability?.googleCalendarSynced
-                ? 'Google Calendar is connected and synced. Busy times are excluded from booking slots.'
-                : 'Google Calendar is connected. Busy times will be excluded from booking slots after sync.'}
-            </span>
-          </div>
-        )}
+        <GoogleCalendarAvailabilityPanel
+          googleCalendarConnected={googleCalendarConnected}
+          googleCalendarSynced={googleCalendarSynced}
+          onConnect={handleConnectGoogleCalendar}
+          onSync={handleSyncGoogleCalendar}
+          isAuthUrlLoading={isAuthUrlLoading}
+          isSyncing={isSyncing}
+        />
       </div>
     );
   }
@@ -614,41 +646,16 @@ export default function MentorAvailabilitySchedule() {
             <strong>Edit Schedule</strong>.
           </p>
 
-          <div className="space-y-6 rounded-xl border border-green-200/60 bg-white p-6 shadow-sm">
-            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
-              {!isGoogleCalendarConnected ? (
-                <Button
-                  variant="secondary"
-                  onClick={handleConnectGoogleCalendar}
-                  isLoading={isAuthUrlLoading}
-                  leftIcon={<GoogleIcon />}
-                  className="flex items-center gap-2"
-                >
-                  Connect Google Calendar
-                </Button>
-              ) : (
-                <>
-                  <span className="flex items-center gap-2 text-sm font-medium text-green-200">
-                    <CalendarIcon />
-                    Google Calendar connected
-                  </span>
-                  <Button
-                    variant="secondary"
-                    onClick={handleRefreshGoogleCalendar}
-                    isLoading={isSyncing}
-                    leftIcon={<GoogleIcon />}
-                    className="flex items-center gap-2"
-                  >
-                    Refresh sync
-                  </Button>
-                  {availability?.googleCalendarSynced && (
-                    <span className="text-sm text-gray-500">Last sync OK</span>
-                  )}
-                </>
-              )}
-            </div>
+          <GoogleCalendarAvailabilityPanel
+            googleCalendarConnected={googleCalendarConnected}
+            googleCalendarSynced={googleCalendarSynced}
+            onConnect={handleConnectGoogleCalendar}
+            onSync={handleSyncGoogleCalendar}
+            isAuthUrlLoading={isAuthUrlLoading}
+            isSyncing={isSyncing}
+          />
 
-            <div className="flex flex-col items-center justify-center gap-3 pt-2 sm:flex-row sm:flex-wrap">
+          <div className="flex flex-col items-center justify-center gap-3 pt-2 sm:flex-row sm:flex-wrap">
               <Button
                 variant="outline"
                 onClick={() => setStep(2)}
@@ -671,7 +678,6 @@ export default function MentorAvailabilitySchedule() {
                 Finish
               </Button>
             </div>
-          </div>
         </>
       )}
     </div>

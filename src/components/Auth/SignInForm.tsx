@@ -1,7 +1,7 @@
 'use client';
 import { EmailIcon, LoadingIcon } from '@/assets/icons';
 import Image from 'next/image';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import PasswordInputForm from '../form/PasswordInputForm';
 import InputForm from '../form/InputForm';
 import { setSessionCookie } from '@/lib/session';
@@ -16,6 +16,15 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { SignInFormSchema } from '@/validation/schema';
 import Link from 'next/link';
+import {
+  appendGoogleCalendarOAuthToPath,
+  getSignInMessageForPendingGoogleCalendarOAuth,
+  GOOGLE_CALENDAR_COPY,
+  GOOGLE_CALENDAR_OAUTH_QUERY_KEYS,
+  humanizeGoogleCalendarOAuthReason,
+  MENTOR_GOOGLE_CALENDAR_CALLBACK_PATH,
+  pickGoogleCalendarOAuthSearchParams,
+} from '@/utils/googleCalendarAvailability';
 
 type SigninFormInputs = {
   email: string;
@@ -27,6 +36,31 @@ export default function SignInForm() {
   const searchParams = useSearchParams();
   const dispatch = useDispatch<AppDispatch>();
   const redirectPath = searchParams.get('redirect') || '/dashboard';
+  const pendingCalendarOAuth = useMemo(() => {
+    const fromRedirect =
+      getSignInMessageForPendingGoogleCalendarOAuth(redirectPath);
+    if (fromRedirect) return fromRedirect;
+
+    const status = searchParams.get('google_calendar');
+    if (status === 'error') {
+      return {
+        type: 'error' as const,
+        message: humanizeGoogleCalendarOAuthReason(
+          searchParams.get('reason') ??
+            searchParams.get('message') ??
+            searchParams.get('error')
+        ),
+      };
+    }
+    if (status === 'success') {
+      return {
+        type: 'info' as const,
+        message: GOOGLE_CALENDAR_COPY.signInToFinish,
+      };
+    }
+    return null;
+  }, [redirectPath, searchParams]);
+
   const [UserSignIn, { isLoading }] = useLoginMutation();
   const [signupMenuOpen, setSignupMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -37,6 +71,25 @@ export default function SignInForm() {
   } = useForm<SigninFormInputs>({
     resolver: yupResolver(SignInFormSchema),
   });
+
+  /** Legacy URLs: /signin?google_calendar=…&redirect=/mentor/schedule → fold OAuth into redirect only */
+  useEffect(() => {
+    const status = searchParams.get('google_calendar');
+    if (!status || typeof window === 'undefined') return;
+
+    const redirectBase =
+      searchParams.get('redirect')?.split('?')[0] ||
+      MENTOR_GOOGLE_CALENDAR_CALLBACK_PATH;
+    const oauth = pickGoogleCalendarOAuthSearchParams(searchParams);
+    const mergedRedirect = appendGoogleCalendarOAuthToPath(redirectBase, oauth);
+
+    const clean = new URL(window.location.href);
+    for (const key of GOOGLE_CALENDAR_OAUTH_QUERY_KEYS) {
+      clean.searchParams.delete(key);
+    }
+    clean.searchParams.set('redirect', mergedRedirect);
+    window.history.replaceState({}, '', clean.toString());
+  }, [searchParams]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -84,7 +137,6 @@ export default function SignInForm() {
         );
         try {
           const params = new URLSearchParams();
-          params.set('sessionId', loginData.sessionId);
           if (redirectPath && redirectPath !== '/dashboard') {
             params.set('redirect', redirectPath);
           }
@@ -98,7 +150,12 @@ export default function SignInForm() {
             params.set('userId', loginData.userId);
             params.set('userType', loginData.userType);
           }
-          router.push(`/auth/otp/${loginData.sessionId}`);
+          const otpQuery = params.toString();
+          router.push(
+            otpQuery
+              ? `/auth/otp/${loginData.sessionId}?${otpQuery}`
+              : `/auth/otp/${loginData.sessionId}`
+          );
         } catch (navError) {
           console.error('Navigation error:', navError);
         }
@@ -188,6 +245,18 @@ export default function SignInForm() {
             Sign in to continue
           </p>
         </div>
+        {pendingCalendarOAuth && (
+          <div
+            role="alert"
+            className={`rounded-xl border px-4 py-3 text-sm leading-relaxed ${
+              pendingCalendarOAuth.type === 'error'
+                ? 'border-red-200 bg-red-50 text-red-900'
+                : 'border-amber-200 bg-amber-50 text-amber-950'
+            }`}
+          >
+            {pendingCalendarOAuth.message}
+          </div>
+        )}
         <form onSubmit={handleSubmit(onSubmit)} className="w-full  space-y-6">
           <div className="grid grid-cols-1 gap-5 ">
             <div className="sm:col-span-1">
