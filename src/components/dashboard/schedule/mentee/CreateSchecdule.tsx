@@ -306,8 +306,9 @@ export default function CreateSchedule() {
   }, [topicOptions, selectedTopic]);
 
   const {
-    data: mentorsResponse,
-    isLoading: mentorsLoading,
+    currentData: mentorsResponse,
+    isLoading: mentorsInitialLoading,
+    isFetching: mentorsFetching,
     isError: mentorsError,
     refetch: refetchMentors,
   } = useGetMentorsQuery(
@@ -318,6 +319,10 @@ export default function CreateSchedule() {
     },
     { skip: step < 2 }
   );
+
+  /** Avoid showing the previous topic's empty list while a new topic is loading. */
+  const mentorsLoading =
+    mentorsInitialLoading || (mentorsFetching && mentorsResponse === undefined);
 
   const apiMentors = useMemo(
     () =>

@@ -25,6 +25,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import Animated from '@/components/common/Animation';
 import useToastify from '@/hooks/useToastify';
+import { MODULE_CONTENT_PANEL, MODULE_CONTENT_WIDTH } from '../moduleLayout';
 
 export default function ModuleDetails() {
   const router = useRouter();
@@ -98,7 +99,7 @@ export default function ModuleDetails() {
 
   return (
     <div>
-      <div className="flex justify-between items-center gap-4 max-w-[639px] flex-wrap">
+      <div className={`flex justify-between items-center gap-4 ${MODULE_CONTENT_WIDTH} flex-wrap`}>
         <Link
           href={backPath}
           className="flex cursor-pointer items-center gap-1 shrink-0"
@@ -159,7 +160,7 @@ export default function ModuleDetails() {
       </div>
 
       <Tabs
-        containerClassName="w-full max-w-[639px] mt-10"
+        containerClassName={`${MODULE_CONTENT_WIDTH} mt-10`}
         paramKey="content"
         defaultValue="Note"
         tabs={[
@@ -178,7 +179,7 @@ export default function ModuleDetails() {
         ]}
       />
 
-      <div className="mt-2 max-w-[639px]">
+      <div className={`mt-2 ${MODULE_CONTENT_WIDTH}`}>
         <div className="space-y-[37px] mt-6">
           <PageTitle
             title={moduleData ? `Module ${moduleData.moduleNumber}` : 'Module'}
@@ -186,7 +187,7 @@ export default function ModuleDetails() {
 
           <Animated
             activeKey={'params'}
-            className="rounded-lg flex min-h-[400px] w-full max-w-[639px] flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 overflow-x-hidden"
+            className={MODULE_CONTENT_PANEL}
           >
             <ModuleContent
               module={moduleData}

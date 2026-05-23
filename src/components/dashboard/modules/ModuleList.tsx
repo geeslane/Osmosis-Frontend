@@ -7,24 +7,7 @@ import { useState } from 'react';
 import DeleteModal from '@/components/ui/modal/DeleteModal/DeleteModal';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-
-function daysToGo(endDateStr: string | undefined): number | null {
-  if (!endDateStr || endDateStr.length < 10) return null;
-  const end = new Date(endDateStr.slice(0, 10));
-  if (Number.isNaN(end.getTime())) return null;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
-  const diff = Math.ceil((end.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
-  return diff < 0 ? 0 : diff;
-}
-
-function formatDate(s: string | undefined): string {
-  if (!s || s.length < 10) return '';
-  const d = new Date(s.slice(0, 10));
-  if (Number.isNaN(d.getTime())) return s;
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-}
+import ModuleDateRange from '@/components/dashboard/modules/ModuleDateRange';
 
 export default function ModuleList({ modules }: { modules: Module[] }) {
   const router = useRouter();
@@ -108,34 +91,10 @@ export default function ModuleList({ modules }: { modules: Module[] }) {
                     Module {module.moduleNumber}:
                     <span className="font-medium"> {module.title}</span>
                   </h2>
-                  {(module.startDate || module.endDate) && (
-                    <p className="text-xs text-gray-500 font-medium mt-1">
-                      {module.startDate && (
-                        <span className="text-gray-500">{formatDate(module.startDate)}</span>
-                      )}
-                      {module.startDate && module.endDate && (
-                        <span className="text-gray-500" aria-hidden>
-                          {' \u2013 '}
-                        </span>
-                      )}
-                      {module.endDate && (
-                        <span className="text-gray-500">{formatDate(module.endDate)}</span>
-                      )}
-                      {typeof module.endDate === 'string' && (() => {
-                        const d = daysToGo(module.endDate);
-                        return d !== null ? (
-                          <>
-                            <span className="text-gray-500 mx-0.5" aria-hidden>
-                              {'\u00B7'}
-                            </span>
-                            <span className="text-gray-500">
-                              {d} day{d !== 1 ? 's' : ''} to go
-                            </span>
-                          </>
-                        ) : null;
-                      })()}
-                    </p>
-                  )}
+                  <ModuleDateRange
+                    startDate={module.startDate}
+                    endDate={module.endDate}
+                  />
                 </div>
               </div>
               <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>

@@ -10,6 +10,11 @@ import {
   unwrapDeliverableAnswer,
 } from '@/utils/teenagerModuleProgress';
 import { parseMentorStatsApiPayload } from '@/utils/mentorDashboardStats';
+import {
+  normalizeModuleDates,
+  normalizeModulesList,
+} from '@/utils/moduleDateLabels';
+import type { Module } from '@/components/types';
 
 export type GetModulesParams = {
   page?: number;
@@ -151,6 +156,17 @@ export const DashboardApi = createApi({
         method: 'GET',
         params,
       }),
+      transformResponse: (response: ModulesResponse) => {
+        const rows = response?.data?.data;
+        if (!Array.isArray(rows)) return response;
+        return {
+          ...response,
+          data: {
+            ...response.data,
+            data: normalizeModulesList(rows as Module[]),
+          },
+        };
+      },
       providesTags: ['Modules'],
     }),
     createModule: builder.mutation<void, FormData>({
@@ -174,6 +190,17 @@ export const DashboardApi = createApi({
         url: `/module/${id}`,
         method: 'GET',
       }),
+      transformResponse: (response: GetModuleByIdResponse) => {
+        const mod = response?.data?.data;
+        if (!mod) return response;
+        return {
+          ...response,
+          data: {
+            ...response.data,
+            data: normalizeModuleDates(mod),
+          },
+        };
+      },
       providesTags: ['Modules'],
     }),
 

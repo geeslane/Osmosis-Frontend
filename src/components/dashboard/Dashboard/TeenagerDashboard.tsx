@@ -22,6 +22,11 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { normalizeImageUrl } from '@/utils/helper';
 import { progressByModuleId } from '@/utils/teenagerModuleProgress';
+import {
+  describeCurrentModuleForTeen,
+  formatModuleDate,
+  getCurrentProgramModule,
+} from '@/utils/moduleDateLabels';
 import { shouldShowTeenagerFeedbackReminder } from '@/utils/dashboardCallReminders';
 import ReminderCard from './ReminderCard';
 import Link from 'next/link';
@@ -78,21 +83,16 @@ export default function TeenagerDashboard() {
 
   const statsLoading = loadingModules || loadingProgress;
 
-  const programStart = programConfig?.startDate;
-  const programEnd = programConfig?.endDate;
-  let programDaysLeft: number | null = null;
-  if (programEnd) {
-    const end = new Date(programEnd.slice(0, 10));
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    end.setHours(0, 0, 0, 0);
-    const diff = Math.ceil((end.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
-    programDaysLeft = diff < 0 ? 0 : diff;
-  }
-  const formatProgramDate = (s: string) => {
-    const d = new Date(s.slice(0, 10));
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-  };
+  const programStart = programConfig?.startDate?.slice(0, 10);
+  const programEnd = programConfig?.endDate?.slice(0, 10);
+  const currentModuleInfo = statsLoading
+    ? null
+    : getCurrentProgramModule(modules);
+  const currentModuleSummary = describeCurrentModuleForTeen(
+    currentModuleInfo,
+    programStart,
+    programEnd
+  );
 
   return (
     <div className="space-y-6 sm:space-y-8 w-full min-w-0">
@@ -144,28 +144,69 @@ export default function TeenagerDashboard() {
         </div>
       </section>
 
-      {/* Program dates (when admin has set program schedule) */}
-      {programStart && programEnd && (
-        <section className="rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
-          <p className="text-sm font-medium">
-            <span className="text-gray-700">
-              Program: {formatProgramDate(programStart)}
-              <span className="text-gray-700 font-medium" aria-hidden>
-                {' \u2013 '}
-              </span>
-              {formatProgramDate(programEnd)}
-            </span>
-            {programDaysLeft !== null && (
-              <>
-                <span className="text-gray-700 mx-1.5 font-medium" aria-hidden>
-                  {'\u00B7'}
-                </span>
-                <span className="text-green-600 font-semibold">
-                  {programDaysLeft} day{programDaysLeft !== 1 ? 's' : ''} left
-                </span>
-              </>
-            )}
-          </p>
+      {/* Current module (by schedule), not whole-program countdown */}
+      {(currentModuleSummary || (programStart && programEnd)) && (
+        <section className="rounded-2xl border border-gray-200 bg-white px-4 py-3 sm:px-5 shadow-sm">
+          {statsLoading ? (
+            <div className="flex items-center gap-3 text-gray-600">
+              <LoadingIcon width="24" height="24" className="animate-spin text-green-200 shrink-0" />
+              <p className="text-sm font-medium">Loading your schedule…</p>
+            </div>
+          ) : currentModuleSummary ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-2 lg:gap-y-0 lg:items-center">
+              <div className="min-w-0 sm:col-span-2 lg:col-span-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-green-700 leading-tight">
+                  {currentModuleSummary.eyebrow}
+                </p>
+                <p className="text-xs text-gray-600 mt-0.5 leading-snug max-w-md">
+                  {currentModuleSummary.title}
+                </p>
+              </div>
+              <div className="min-w-0 sm:col-span-1 lg:col-span-1">
+                <p className="text-base font-semibold text-[#101828] leading-snug">
+                  {currentModuleSummary.moduleLabel}
+                </p>
+              </div>
+              <div className="min-w-0 sm:col-span-1 sm:text-right lg:col-span-1">
+                {currentModuleSummary.dateRange ? (
+                  <p className="text-sm text-gray-600 leading-snug">
+                    <span className="text-gray-500">Runs </span>
+                    {currentModuleSummary.dateRange}
+                    {currentModuleSummary.countdown && (
+                      <>
+                        <span className="mx-1" aria-hidden>
+                          ·
+                        </span>
+                        <span className="text-green-600 font-semibold whitespace-nowrap">
+                          {currentModuleSummary.countdown}
+                        </span>
+                      </>
+                    )}
+                  </p>
+                ) : currentModuleSummary.countdown ? (
+                  <p className="text-sm font-semibold text-green-600 leading-snug whitespace-nowrap">
+                    {currentModuleSummary.countdown}
+                  </p>
+                ) : null}
+                {currentModuleSummary.dateNote && (
+                  <p className="text-xs text-gray-500 mt-0.5 leading-snug sm:ml-auto sm:max-w-xs">
+                    {currentModuleSummary.dateNote}
+                  </p>
+                )}
+              </div>
+              {programStart && programEnd && !currentModuleSummary.dateNote && (
+                <p className="text-[11px] text-gray-400 col-span-full lg:col-span-3 pt-1 leading-snug border-t border-gray-100 lg:border-0 lg:pt-0">
+                  Full program: {formatModuleDate(programStart)} –{' '}
+                  {formatModuleDate(programEnd)}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600 leading-snug">
+              Program runs {formatModuleDate(programStart)} – {formatModuleDate(programEnd)}.
+              Module dates will appear once modules are scheduled.
+            </p>
+          )}
         </section>
       )}
 
@@ -276,8 +317,8 @@ export default function TeenagerDashboard() {
         </div>
       </section>
 
-      {/* Quick links – teen-friendly */}
-      <section>
+      {/* Quick links – hidden on mobile (sidebar covers navigation) */}
+      <section className="hidden md:block">
         <h2 className="text-lg font-bold text-[#101828] mb-4">Quick links</h2>
         <div className="flex flex-wrap gap-2 sm:gap-3">
           <Link

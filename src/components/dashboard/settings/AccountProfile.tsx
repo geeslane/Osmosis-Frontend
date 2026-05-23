@@ -49,7 +49,7 @@ function mapMentorStatus(raw: unknown): string {
   if (st === 'ACTIVE') return 'Active';
   if (st === 'INACTIVE') return 'Inactive';
   if (st === 'PENDING') return 'Pending';
-  return String(raw ?? '—');
+  return String(raw ?? '');
 }
 
 function mentorApiToMentorDetail(m: Record<string, unknown>) {
@@ -470,7 +470,7 @@ export default function AccountProfile() {
               <InputForm label="Occupation" name="occupation" register={mentorForm.register} error={mentorForm.formState.errors.occupation} />
               <InputForm label="LinkedIn URL" name="linkedinUrl" register={mentorForm.register} error={mentorForm.formState.errors.linkedinUrl} />
               <InputForm
-                label="Mentorship topics (comma-separated)"
+                label="Mentorship topics"
                 name="mentorshipTopics"
                 register={mentorForm.register}
                 error={mentorForm.formState.errors.mentorshipTopics}
@@ -536,7 +536,7 @@ export default function AccountProfile() {
             </div>
             <InputForm label="Address" name="address" as="textarea" rows={2} register={teenForm.register} error={teenForm.formState.errors.address} />
             <InputForm label="Hobbies" name="hobbies" as="textarea" rows={2} register={teenForm.register} error={teenForm.formState.errors.hobbies} />
-            <h3 className="text-lg font-semibold text-green-300">Parent / guardian</h3>
+            <h3 className="text-lg font-semibold text-green-300">Parent details</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InputForm label="Parent full name" name="parentFullName" register={teenForm.register} error={teenForm.formState.errors.parentFullName} />
               <InputForm label="Parent email" name="parentEmail" type="email" register={teenForm.register} error={teenForm.formState.errors.parentEmail} />
@@ -642,10 +642,10 @@ export default function AccountProfile() {
               )}
             </div>
             <div className="space-y-6 min-w-0 flex-1">
-              <DetailRow icon={<UserAddIcon />} label="Full Name" value={String(adminRecord.fullName ?? '—')} />
-              <DetailRow icon={<EmailIcon color="#6CBB01" />} label="Email" value={String(adminRecord.email ?? '—')} />
-              <DetailRow icon={<PhoneIcon color="#6CBB01" />} label="Phone Number" value={String(adminRecord.phoneNumber ?? '—')} />
-              <DetailRow icon={<LocationIcon color="#6CBB01" />} label="Address" value={String(adminRecord.address ?? '—')} />
+              <DetailRow icon={<UserAddIcon />} label="Full Name" value={String(adminRecord.fullName ?? '')} />
+              <DetailRow icon={<EmailIcon color="#6CBB01" />} label="Email" value={String(adminRecord.email ?? '')} />
+              <DetailRow icon={<PhoneIcon color="#6CBB01" />} label="Phone Number" value={String(adminRecord.phoneNumber ?? '')} />
+              <DetailRow icon={<LocationIcon color="#6CBB01" />} label="Address" value={String(adminRecord.address ?? '')} />
               <p className="text-green-300 font-medium text-sm ml-0 md:ml-8">
                 Role:{' '}
                 <span className="rounded-full px-3 py-1 text-xs bg-green-50 text-green-600">{String(adminRecord.role ?? role)}</span>

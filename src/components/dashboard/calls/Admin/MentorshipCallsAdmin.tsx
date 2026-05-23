@@ -1,6 +1,7 @@
 'use client';
 
-import { DownloadIcon, LoadingIcon, SearchIcon, StarIcon } from '@/assets/icons';
+import { DownloadIcon, LoadingIcon, SearchIcon } from '@/assets/icons';
+import { CallRatingDisplay } from '@/components/dashboard/calls/CallRatingDisplay';
 import { Column, DataTable } from '@/components/ui/table';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import Button from '@/components/ui/button/Button';
@@ -13,6 +14,7 @@ import {
   adminCallStatusBadgeClass,
   getAdminCallDisplayStatusFromRecord,
 } from '@/utils/adminCallDisplayStatus';
+import { normalizeCallRating } from '@/utils/callRating';
 
 function AdminCallStatusPill({ call }: { call: CallRecord }) {
   const { label, badge } = getAdminCallDisplayStatusFromRecord(call);
@@ -81,7 +83,7 @@ export default function MentorshipCallsAdmin() {
         Topic: r.topic,
         Status: label,
         Comment: r.comment,
-        Rating: r.rating,
+        Rating: normalizeCallRating(r.rating) ?? '',
       };
     });
     const filename = debouncedSearch
@@ -143,11 +145,7 @@ export default function MentorshipCallsAdmin() {
     {
       key: 'rating',
       label: 'Mentee Rating',
-      render: (row) => (
-        <span className="text-sm font-medium text-gray-600">
-          {row.rating != null ? `${row.rating}/5` : '—'}
-        </span>
-      ),
+      render: (row) => <CallRatingDisplay rating={row.rating} />,
     },
   ];
 
@@ -299,21 +297,7 @@ export default function MentorshipCallsAdmin() {
                 <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">
                   Mentee rating
                 </p>
-                <div className="flex gap-0.5 items-center">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <StarIcon
-                      key={i}
-                      fill={
-                        i < (selectedCall.rating ?? 0) ? '#F59E0B' : '#E5E7EB'
-                      }
-                    />
-                  ))}
-                  {selectedCall.rating != null && (
-                    <span className="ml-1.5 text-xs text-gray-500">
-                      {selectedCall.rating}/5
-                    </span>
-                  )}
-                </div>
+                <CallRatingDisplay rating={selectedCall.rating} />
               </div>
             </div>
           </div>

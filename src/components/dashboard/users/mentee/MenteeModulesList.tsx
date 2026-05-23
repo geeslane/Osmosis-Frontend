@@ -10,6 +10,7 @@ import {
 } from '@/store/dashboard/dashboard.api';
 import type { Module } from '@/components/types';
 import ProgressGauge from '@/components/ui/Progress/ProgressGauge';
+import ModuleDateRange from '@/components/dashboard/modules/ModuleDateRange';
 import { progressByModuleId } from '@/utils/teenagerModuleProgress';
 
 const MENTEE_DETAIL_PATH = (id: string) =>
@@ -144,6 +145,10 @@ export default function MenteeModulesList() {
                     <p className="font-medium text-green-200">
                       Module {row.moduleNumber}: {row.title}
                     </p>
+                    <ModuleDateRange
+                      startDate={row.startDate}
+                      endDate={row.endDate}
+                    />
                     <div className="mt-2 max-w-[280px]">
                       <div className="flex justify-between text-xs text-gray-600 mb-1">
                         <span>{row.progress}% completed</span>

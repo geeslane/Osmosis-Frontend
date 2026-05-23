@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 
-/** Pexels: young women studying together (free licence). */
 const MENTOR_HERO_IMAGE =
   'https://images.pexels.com/photos/5234735/pexels-photo-5234735.jpeg?auto=compress&cs=tinysrgb&w=1400';
 
@@ -39,13 +38,7 @@ export default function MentorHero() {
         </div>
 
         <div className="flex-1 flex justify-center lg:justify-end w-full min-w-0 pb-12 lg:pb-8">
-          <div className="relative w-full max-w-[min(100%,520px)] aspect-[4/5] sm:aspect-[5/6]">
-            {/* Accent panel */}
-            <div
-              className="absolute -z-0 rounded-2xl bg-[#CFE8AF] w-[88%] h-[88%] -right-2 -bottom-2 sm:-right-4 sm:-bottom-4 lg:-right-5 lg:-bottom-5"
-              aria-hidden
-            />
-            <div className="relative z-10 h-full w-full rounded-2xl overflow-hidden border-2 border-[#6CBB0180]/40 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.15)]">
+          <div className="relative w-full max-w-[min(100%,520px)] aspect-[4/5] sm:aspect-[5/6] rounded-2xl overflow-hidden">
               <Image
                 src={MENTOR_HERO_IMAGE}
                 alt="Young women studying together"
@@ -54,7 +47,6 @@ export default function MentorHero() {
                 sizes="(max-width: 1024px) 100vw, 45vw"
                 priority
               />
-            </div>
           </div>
         </div>
       </div>

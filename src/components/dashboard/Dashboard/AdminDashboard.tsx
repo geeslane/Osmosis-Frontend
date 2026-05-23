@@ -45,11 +45,11 @@ export default function AdminDashboard() {
     <div className="space-y-6 sm:space-y-8 w-full min-w-0">
       <WelcomeSection
         title={`Hi ${firstName}, welcome back.`}
-        subtitle="Here’s a snapshot of the platform. Use quick links to jump in, or follow up on program schedule and notifications below."
+        subtitle="Here’s a snapshot of the platform. Follow up on program schedule and notifications below."
       />
 
       <section>
-        <h2 className="text-lg font-semibold text-[#101828] mb-4">At a glance</h2>
+        <h2 className="text-lg font-semibold text-[#101828] mb-4">Stats</h2>
         <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           <StatCard
             label="Pending requests"
@@ -75,7 +75,7 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      <section>
+      <section className="hidden md:block">
         <h2 className="text-lg font-semibold text-[#101828] mb-4">Quick links</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Link

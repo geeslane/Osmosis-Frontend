@@ -21,7 +21,7 @@ export default function TextEditors({
       error={error}
       label={label}
       placeholder="Type or paste content here…"
-      minHeight="280px"
+      minHeight="320px"
     />
   );
 }

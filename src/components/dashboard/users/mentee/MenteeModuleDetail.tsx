@@ -25,6 +25,10 @@ import Workbook from '@/components/dashboard/modules/ModuleDetails/Workbook';
 import AdditionalResourcesView from '@/components/dashboard/modules/ModuleDetails/AdditionalResources';
 import MenteeDeliverableTab from './MenteeDeliverableTab';
 import Animated from '@/components/common/Animation';
+import {
+  MODULE_CONTENT_PANEL,
+  MODULE_CONTENT_WIDTH,
+} from '@/components/dashboard/modules/moduleLayout';
 
 const MENTEE_MODULES_PATH = (menteeId: string) =>
   `/dashboard/users/mentee/${menteeId}/modules`;
@@ -65,8 +69,8 @@ export default function MenteeModuleDetail() {
   }
 
   return (
-    <div className="w-full max-w-[900px]">
-      <div className="flex justify-between max-w-[639px]">
+    <div className={`w-full ${MODULE_CONTENT_WIDTH}`}>
+      <div className={`flex justify-between ${MODULE_CONTENT_WIDTH}`}>
         <button
           type="button"
           onClick={() => router.push(MENTEE_MODULES_PATH(menteeId))}
@@ -78,7 +82,7 @@ export default function MenteeModuleDetail() {
       </div>
 
       <Tabs
-        containerClassName="w-full max-w-[639px] mt-10"
+        containerClassName={`${MODULE_CONTENT_WIDTH} mt-10`}
         paramKey="content"
         defaultValue="Note"
         tabs={[
@@ -97,7 +101,7 @@ export default function MenteeModuleDetail() {
         ]}
       />
 
-      <div className="mt-2 max-w-[639px]">
+      <div className={`mt-2 ${MODULE_CONTENT_WIDTH}`}>
         <div className="space-y-[37px] mt-6">
           <PageTitle
             title={
@@ -109,7 +113,7 @@ export default function MenteeModuleDetail() {
 
           <Animated
             activeKey={currentTab}
-            className="rounded-lg flex min-h-[400px] w-full max-w-[639px] flex-col md:flex-row gap-10 border border-[#6CBB0180] px-10 md:px-[64px] py-8 overflow-x-hidden"
+            className={MODULE_CONTENT_PANEL}
           >
             <MenteeModuleContent
               module={moduleData}

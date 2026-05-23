@@ -9,6 +9,7 @@ import { useModulesQuery } from '@/store/dashboard/dashboard.api';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
 import { NoResult } from '@/components/ui/NotFound/NoResult';
 import { useModuleList } from '@/hooks/useModuleList';
+import { MODULE_FORM_WIDTH } from './moduleLayout';
 
 export default function Modules() {
   const moduleList = useModuleList({ defaultLimit: 10 });
@@ -47,7 +48,7 @@ export default function Modules() {
           </div>
           <h3 className="text-green-200 text-2xl font-bold">Add Module</h3>
 
-          <div className="rounded-md max-w-[747px] px-4 md:px-[64px] border-2 border-[#6CBB0180] py-8 w-full">
+          <div className={`rounded-md ${MODULE_FORM_WIDTH} px-4 md:px-10 lg:px-12 border-2 border-[#6CBB0180] py-8`}>
             <AddModule />
           </div>
         </div>

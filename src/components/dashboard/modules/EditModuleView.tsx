@@ -5,6 +5,7 @@ import { useGetModuleByIdQuery } from '@/store/dashboard/dashboard.api';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Animated from '@/components/common/Animation';
+import { MODULE_FORM_WIDTH } from './moduleLayout';
 
 export default function EditModuleView() {
   const params = useParams<{ id: string }>();
@@ -51,7 +52,7 @@ export default function EditModuleView() {
         <h3 className="text-sm text-green-200 font-medium">Back</h3>
       </Link>
       <h3 className="text-green-200 text-2xl font-bold my-4">Edit Module</h3>
-      <div className="rounded-md max-w-[747px] px-4 md:px-[64px] border-2 border-[#6CBB0180] py-8 w-full">
+      <div className={`rounded-md ${MODULE_FORM_WIDTH} px-4 md:px-10 lg:px-12 border-2 border-[#6CBB0180] py-8`}>
         <AddModule module={moduleData} />
       </div>
     </Animated>

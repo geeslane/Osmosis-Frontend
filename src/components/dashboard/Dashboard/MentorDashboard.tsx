@@ -167,8 +167,8 @@ export default function MentorDashboard() {
         </div>
       </section>
 
-      {/* Quick links */}
-      <section>
+      {/* Quick links – hidden on mobile */}
+      <section className="hidden md:block">
         <h2 className="text-lg font-semibold text-[#101828] mb-4">Quick links</h2>
         <div className="flex flex-wrap gap-2 sm:gap-3">
           <Link

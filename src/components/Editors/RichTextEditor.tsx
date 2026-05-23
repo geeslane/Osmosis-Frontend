@@ -6,9 +6,43 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
+import { TextStyleKit } from '@tiptap/extension-text-style';
 import Image from '@tiptap/extension-image';
 import { YoutubeExtension } from './youtubeExtension';
 import UrlPromptModal, { type UrlPromptType } from './UrlPromptModal';
+
+const editorExtensions = [
+  StarterKit.configure({
+    heading: { levels: [1, 2, 3] },
+  }),
+  Link.configure({
+    openOnClick: false,
+    HTMLAttributes: { class: 'text-green-200 underline hover:text-green-300' },
+  }),
+  Underline,
+  TextStyleKit.configure({
+    backgroundColor: false,
+    color: false,
+    fontSize: false,
+    lineHeight: false,
+  }),
+  TextAlign.configure({
+    types: ['heading', 'paragraph'],
+    alignments: ['left', 'center', 'right', 'justify'],
+    defaultAlignment: 'left',
+  }),
+  Image.configure({ inline: true }),
+  YoutubeExtension.configure({ width: 640, height: 360, nocookie: true }),
+];
+
+const FONT_OPTIONS = [
+  { label: 'Default', value: '' },
+  { label: 'Montserrat', value: 'Montserrat, sans-serif' },
+  { label: 'Arial', value: 'Arial, sans-serif' },
+  { label: 'Georgia', value: 'Georgia, serif' },
+  { label: 'Times New Roman', value: '"Times New Roman", Times, serif' },
+  { label: 'Courier New', value: '"Courier New", Courier, monospace' },
+] as const;
 
 export interface RichTextEditorProps {
   value?: string;
@@ -145,6 +179,65 @@ const Toolbar = ({
         <QuoteIcon />
       </button>
       <span className="w-px h-5 bg-gray-200 mx-0.5" aria-hidden />
+      <select
+        className="h-8 max-w-[9.5rem] rounded border border-gray-200 bg-white px-2 text-xs text-gray-700"
+        value={editor.getAttributes('textStyle').fontFamily || ''}
+        onChange={(e) => {
+          if (!editor.schema.marks.textStyle) return;
+          const family = e.target.value;
+          if (family) {
+            editor.chain().focus().setFontFamily(family).run();
+          } else {
+            editor.chain().focus().unsetFontFamily().run();
+          }
+        }}
+        title="Font"
+        aria-label="Font family"
+      >
+        {FONT_OPTIONS.map((opt) => (
+          <option key={opt.label} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+      <span className="w-px h-5 bg-gray-200 mx-0.5" aria-hidden />
+      <button
+        type="button"
+        onMouseDown={keepFocus}
+        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+        className={`${buttonClass} ${editor.isActive({ textAlign: 'left' }) ? activeClass : ''}`}
+        title="Align left"
+      >
+        <AlignLeftIcon />
+      </button>
+      <button
+        type="button"
+        onMouseDown={keepFocus}
+        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+        className={`${buttonClass} ${editor.isActive({ textAlign: 'center' }) ? activeClass : ''}`}
+        title="Align center"
+      >
+        <AlignCenterIcon />
+      </button>
+      <button
+        type="button"
+        onMouseDown={keepFocus}
+        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+        className={`${buttonClass} ${editor.isActive({ textAlign: 'right' }) ? activeClass : ''}`}
+        title="Align right"
+      >
+        <AlignRightIcon />
+      </button>
+      <button
+        type="button"
+        onMouseDown={keepFocus}
+        onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+        className={`${buttonClass} ${editor.isActive({ textAlign: 'justify' }) ? activeClass : ''}`}
+        title="Justify"
+      >
+        <AlignJustifyIcon />
+      </button>
+      <span className="w-px h-5 bg-gray-200 mx-0.5" aria-hidden />
       <button
         type="button"
         onClick={handleLinkClick}
@@ -237,6 +330,26 @@ function YoutubeIcon() {
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
   );
 }
+function AlignLeftIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="15" y2="12" /><line x1="3" y1="18" x2="18" y2="18" /></svg>
+  );
+}
+function AlignCenterIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="6" y1="12" x2="18" y2="12" /><line x1="4" y1="18" x2="20" y2="18" /></svg>
+  );
+}
+function AlignRightIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="9" y1="12" x2="21" y2="12" /><line x1="6" y1="18" x2="21" y2="18" /></svg>
+  );
+}
+function AlignJustifyIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+  );
+}
 
 export default function RichTextEditor({
   value = '',
@@ -244,7 +357,7 @@ export default function RichTextEditor({
   error,
   label = 'Content',
   placeholder = 'Type or paste content here…',
-  minHeight = '240px',
+  minHeight = '320px',
 }: RichTextEditorProps) {
   const valueRef = useRef(value);
   const [urlModal, setUrlModal] = useState<{
@@ -254,23 +367,11 @@ export default function RichTextEditor({
 
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [
-      StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
-      }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: { class: 'text-green-200 underline hover:text-green-300' },
-      }),
-      Underline,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Image.configure({ inline: true }),
-      YoutubeExtension.configure({ width: 640, height: 360, nocookie: true }),
-    ],
+    extensions: editorExtensions,
     content: value || '',
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px] px-4 py-3 text-[#282F2E]',
+        class: 'prose prose-sm max-w-none focus:outline-none min-h-[220px] lg:min-h-[360px] px-4 py-3 text-[#282F2E]',
         'data-placeholder': placeholder,
       },
     },
@@ -318,7 +419,7 @@ export default function RichTextEditor({
         <label className="text-green-300 font-medium">{label}</label>
       )}
       <div
-        className="border border-[#282F2E] rounded-md overflow-hidden bg-white"
+        className="border border-[#282F2E] rounded-md overflow-hidden bg-white min-h-[280px] lg:min-h-[420px]"
         style={{ minHeight }}
       >
         <Toolbar
@@ -327,7 +428,7 @@ export default function RichTextEditor({
             setUrlModal({ type, initialValue: initialValue ?? '' })
           }
         />
-        <div className="min-h-[200px]" style={{ minHeight: '200px' }}>
+        <div className="min-h-[220px] lg:min-h-[380px]">
           <EditorContent editor={editor} />
         </div>
       </div>
@@ -380,6 +481,30 @@ export default function RichTextEditor({
           border-radius: 0 4px 4px 0;
         }
         .ProseMirror img { max-width: 100%; height: auto; border-radius: 4px; }
+        .ProseMirror p[style*="text-align: justify"],
+        .ProseMirror h1[style*="text-align: justify"],
+        .ProseMirror h2[style*="text-align: justify"],
+        .ProseMirror h3[style*="text-align: justify"] {
+          text-align: justify !important;
+        }
+        .ProseMirror p[style*="text-align: center"],
+        .ProseMirror h1[style*="text-align: center"],
+        .ProseMirror h2[style*="text-align: center"],
+        .ProseMirror h3[style*="text-align: center"] {
+          text-align: center !important;
+        }
+        .ProseMirror p[style*="text-align: right"],
+        .ProseMirror h1[style*="text-align: right"],
+        .ProseMirror h2[style*="text-align: right"],
+        .ProseMirror h3[style*="text-align: right"] {
+          text-align: right !important;
+        }
+        .ProseMirror p[style*="text-align: left"],
+        .ProseMirror h1[style*="text-align: left"],
+        .ProseMirror h2[style*="text-align: left"],
+        .ProseMirror h3[style*="text-align: left"] {
+          text-align: left !important;
+        }
       `}</style>
     </div>
   );

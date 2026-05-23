@@ -25,7 +25,7 @@ export default function Workbook({ title, workbookFile }: WorkbookProps) {
   };
 
   return (
-    <div className="font-montserrat max-w-[639px] w-full min-w-0 montserrat space-y-10">
+    <div className="font-montserrat w-full min-w-0 montserrat space-y-10">
       {title && (
         <h3 className="text-green-200 font-bold text-xl md:text-[32px] break-words">
           {title}
