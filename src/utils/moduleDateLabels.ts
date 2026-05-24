@@ -92,8 +92,18 @@ export function localTodayISO(): string {
   return `${y}-${m}-${day}`;
 }
 
-function compareDateStrings(a: string, b: string): number {
+export function compareDateStrings(a: string, b: string): number {
   return a.slice(0, 10).localeCompare(b.slice(0, 10));
+}
+
+/** True when today is on or after the program start date (YYYY-MM-DD). */
+export function isProgramStarted(
+  programStartDate: string | undefined,
+  today = localTodayISO()
+): boolean {
+  const start = programStartDate?.slice(0, 10);
+  if (!start) return true;
+  return compareDateStrings(today, start) >= 0;
 }
 
 export type CurrentModulePhase = 'active' | 'upcoming' | 'between' | 'program-ended' | 'no-dates';

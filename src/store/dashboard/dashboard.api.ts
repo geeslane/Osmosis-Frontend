@@ -15,6 +15,7 @@ import {
   normalizeModulesList,
 } from '@/utils/moduleDateLabels';
 import type { Module } from '@/components/types';
+import { onCallMutationStarted } from '@/store/callCacheInvalidation';
 
 export type GetModulesParams = {
   page?: number;
@@ -445,6 +446,7 @@ export const DashboardApi = createApi({
         method: 'POST',
       }),
       invalidatesTags: ['CallRequests', 'Calls'],
+      onQueryStarted: onCallMutationStarted,
     }),
     rejectCallRequest: builder.mutation<any, { id: string; reason?: string }>({
       query: ({ id, reason }) => ({
@@ -453,6 +455,7 @@ export const DashboardApi = createApi({
         data: reason ? { reason } : undefined,
       }),
       invalidatesTags: ['CallRequests', 'Calls'],
+      onQueryStarted: onCallMutationStarted,
     }),
     mentorCallFeedback: builder.mutation<
       any,
@@ -608,6 +611,7 @@ export const DashboardApi = createApi({
         data,
       }),
       invalidatesTags: ['CallRequests', 'Calls'],
+      onQueryStarted: onCallMutationStarted,
     }),
 
     // Admin calls list

@@ -5,6 +5,7 @@ import React, { useMemo } from 'react';
 
 import {
   useModulesQuery,
+  useGetProgramConfigQuery,
   useGetTeenagerModulesProgressQuery,
 } from '@/store/dashboard/dashboard.api';
 import { Pagination } from '@/components/ui/Pagination/Pagination';
@@ -15,7 +16,11 @@ import Animated from '@/components/common/Animation';
 import { usePathname } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { mergeModulesWithTeenagerProgress } from '@/utils/teenagerModuleProgress';
+import {
+  buildTeenagerModuleAccessMap,
+  mergeModulesWithTeenagerProgress,
+  sortModulesByNumber,
+} from '@/utils/teenagerModuleProgress';
 
 export default function ModuleMentee() {
   const moduleList = useModuleList({ defaultLimit: 10 });
@@ -26,6 +31,13 @@ export default function ModuleMentee() {
   const { data, isError, isLoading: loadingModules } = useModulesQuery(
     moduleList.queryParams
   );
+  const { data: allModulesData, isLoading: loadingAllForAccess } = useModulesQuery(
+    { page: 1, limit: 200, sortBy: 'moduleNumber', order: 'asc' },
+    { skip: user?.role !== 'TEENAGER' }
+  );
+  const { data: programConfig } = useGetProgramConfigQuery(undefined, {
+    skip: user?.role !== 'TEENAGER',
+  });
   const { data: progressRows = [], isLoading: loadingProgress } =
     useGetTeenagerModulesProgressQuery(teenId, {
       skip: !teenId || user?.role !== 'TEENAGER',
@@ -49,8 +61,23 @@ export default function ModuleMentee() {
     );
   }, [mergedModules, q]);
 
+  const allModulesMerged = useMemo(() => {
+    const catalog = allModulesData?.data?.data ?? [];
+    return mergeModulesWithTeenagerProgress(catalog, progressRows);
+  }, [allModulesData?.data?.data, progressRows]);
+
+  const teenModuleAccess = useMemo(
+    () =>
+      buildTeenagerModuleAccessMap(
+        sortModulesByNumber(allModulesMerged),
+        programConfig?.startDate
+      ),
+    [allModulesMerged, programConfig?.startDate]
+  );
+
   const hasModules = filteredModules.length > 0;
-  const statsLoading = loadingModules || loadingProgress;
+  const statsLoading =
+    loadingModules || loadingProgress || loadingAllForAccess;
 
   if (statsLoading) {
     return (
@@ -101,7 +128,10 @@ export default function ModuleMentee() {
             </div>
             {hasModules ? (
               <>
-                <ModuleList modules={filteredModules} />
+                <ModuleList
+                  modules={filteredModules}
+                  teenModuleAccess={teenModuleAccess}
+                />
                 <div className="flex items-center justify-between mt-4">
                   <Pagination
                     page={moduleList.page}

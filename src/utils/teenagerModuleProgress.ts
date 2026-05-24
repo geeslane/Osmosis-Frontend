@@ -1,4 +1,60 @@
 import type { Module, TeenagerModuleProgressItem } from '@/components/types';
+import {
+  formatModuleDate,
+  isProgramStarted,
+  localTodayISO,
+} from '@/utils/moduleDateLabels';
+
+export type TeenagerModuleAccess = {
+  canView: boolean;
+  disabledReason: string | null;
+};
+
+export function sortModulesByNumber(modules: Module[]): Module[] {
+  return [...modules].sort((a, b) => a.moduleNumber - b.moduleNumber);
+}
+
+/**
+ * Per-module view rules for teenagers: module 1 when program starts; later modules after previous is completed.
+ */
+export function buildTeenagerModuleAccessMap(
+  modulesInOrder: Module[],
+  programStartDate: string | undefined,
+  today = localTodayISO()
+): Map<string, TeenagerModuleAccess> {
+  const map = new Map<string, TeenagerModuleAccess>();
+  const programStarted = isProgramStarted(programStartDate, today);
+  const programStartLabel = formatModuleDate(programStartDate?.slice(0, 10));
+
+  modulesInOrder.forEach((module, index) => {
+    if (index === 0) {
+      if (!programStarted) {
+        map.set(module.id, {
+          canView: false,
+          disabledReason: programStartLabel
+            ? `Opens when the program starts on ${programStartLabel}.`
+            : 'Opens when the program starts.',
+        });
+        return;
+      }
+      map.set(module.id, { canView: true, disabledReason: null });
+      return;
+    }
+
+    const previous = modulesInOrder[index - 1];
+    if (!previous.markedCompleted) {
+      map.set(module.id, {
+        canView: false,
+        disabledReason: `Complete Module ${previous.moduleNumber} first.`,
+      });
+      return;
+    }
+
+    map.set(module.id, { canView: true, disabledReason: null });
+  });
+
+  return map;
+}
 
 /** Normalize one progress row from GET /teenager/.../modules/progress (flexible field names). */
 export function normalizeProgressItem(raw: unknown): TeenagerModuleProgressItem {

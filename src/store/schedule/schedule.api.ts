@@ -1,4 +1,5 @@
 import { axiosBaseQuery } from '@/lib/baseApi';
+import { onCallMutationStarted } from '@/store/callCacheInvalidation';
 import { createApi } from '@reduxjs/toolkit/query/react';
 
 /** API day keys (GET/PUT /mentor/availability). */
@@ -223,6 +224,7 @@ export const ScheduleApi = createApi({
         message: response?.message,
       }),
       invalidatesTags: ['Calls'],
+      onQueryStarted: onCallMutationStarted,
     }),
   }),
 });
