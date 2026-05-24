@@ -1,16 +1,19 @@
 'use client';
-import { mentors } from '@/utils/data';
+
+import { FEATURED_MENTORS, mentorBioPath } from '@/data/featuredMentors';
 import Image from 'next/image';
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
+
+const SLIDE_STEP_PERCENT = 100 / FEATURED_MENTORS.length;
 
 export default function LookLike() {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % mentors.length);
+      setIndex((prev) => (prev + 1) % FEATURED_MENTORS.length);
     }, 4000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -19,7 +22,7 @@ export default function LookLike() {
       {/* Mobile: horizontal mentor slideshow */}
       <div className="w-full md:hidden flex justify-center md:justify-start">
         <div className="relative w-[280px] md:w-[301px] h-[330px] md:h-[550px] rounded-[28px] md:rounded-[40px] overflow-hidden border-2 border-[#68624E] bg-white">
-          {mentors.map((m, i) => {
+          {FEATURED_MENTORS.map((mentor, i) => {
             const position =
               i === index
                 ? 'translate-x-0'
@@ -27,29 +30,31 @@ export default function LookLike() {
                   ? '-translate-x-full'
                   : 'translate-x-full';
             return (
-              <div
-                key={i}
-                className={`absolute inset-0 transition-transform duration-700 ease-in-out ${position} flex flex-col md:gap-6 p-4 md:p-6 items-center justify-start`}
+              <Link
+                key={mentor.slug}
+                href={mentorBioPath(mentor.slug, 'mentors')}
+                className={`absolute inset-0 transition-transform duration-700 ease-in-out ${position} flex flex-col md:gap-6 p-4 md:p-6 items-center justify-start focus:outline-none focus-visible:ring-2 focus-visible:ring-green-200`}
                 style={{ zIndex: i === index ? 20 : 10 }}
+                title={`View ${mentor.name}'s bio`}
               >
                 <div className="relative w-full md:h-[340px] h-[220px] rounded-2xl overflow-hidden">
                   <Image
-                    src={m.image}
-                    alt={m.name}
+                    src={encodeURI(mentor.image)}
+                    alt={mentor.name}
                     fill
                     sizes="(max-width: 768px) 280px, 301px"
                     className="object-cover"
                   />
                 </div>
-                <div className="flex flex-col items-center mt-3">
+                <div className="flex flex-col items-center mt-3 text-center">
                   <h3 className="text-green-200 text-lg md:text-2xl font-bold">
-                    {m.name}
+                    {mentor.name}
                   </h3>
                   <p className="text-green-100 text-sm md:text-base font-medium">
-                    {m.role}
+                    {mentor.title}
                   </p>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
@@ -61,34 +66,36 @@ export default function LookLike() {
           <div className="bg-white flex flex-col gap-6 border-[#68624E] p-4 border-2 w-[301px] ml-6 absolute h-[695px] rounded-[40px] overflow-hidden">
             <div
               className="transition-all duration-700 ease-in-out"
-              style={{ transform: `translateY(-${index * 30}%)` }}
+              style={{ transform: `translateY(-${index * SLIDE_STEP_PERCENT}%)` }}
             >
-              {mentors.map((m, i) => (
-                <div
-                  key={i}
-                  className="flex justify-center items-center flex-col gap-2 py-2"
+              {FEATURED_MENTORS.map((mentor) => (
+                <Link
+                  key={mentor.slug}
+                  href={mentorBioPath(mentor.slug, 'mentors')}
+                  className="flex justify-center items-center flex-col gap-2 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-200 rounded-2xl"
+                  title={`View ${mentor.name}'s bio`}
                 >
                   <Image
-                    src={m.image}
-                    alt={m.name}
+                    src={encodeURI(mentor.image)}
+                    alt={mentor.name}
                     width={400}
                     height={200}
                     sizes="(max-width: 768px) 200px, 200px"
-                    className="rounded-3xl h-full w-full"
+                    className="rounded-3xl h-full w-full object-cover"
                   />
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center text-center">
                     <h3 className="text-green-200 text-2xl font-bold">
-                      {m.name}
+                      {mentor.name}
                     </h3>
-                    <h3 className="text-green-100 text-sm font-medium">
-                      {m.role}
-                    </h3>
+                    <p className="text-green-100 text-sm font-medium">
+                      {mentor.title}
+                    </p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
-          <div className="bg-[#CFE8AF] w-[301px] h-[550px] rounded-[40px]"></div>
+          <div className="bg-[#CFE8AF] w-[301px] h-[550px] rounded-[40px]" />
         </div>
       </div>
 
@@ -105,7 +112,7 @@ export default function LookLike() {
             After choosing their topics, mentors set up their availability by
             uploading their calendars to the Osmosis platform. This allows
             teenagers to view open time slots and schedule mentoring sessions
-            only at the mentor’s preferred times.
+            only at the mentor&apos;s preferred times.
           </p>
           <p className="text-black-200 montserrat text-left lg:text-start md:text-xl">
             Mentor commitment is flexible and intentionally light: just 2–4
