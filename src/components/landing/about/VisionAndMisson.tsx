@@ -25,7 +25,7 @@ export default function VisionAndMisson() {
           Mission Statement{' '}
         </h3>
         <h3 className=" mb-3 text-[#282F2E] px-4 text-lg md:text-2xl">
-          To empower teenagers to live a centered life - A life guided by values, driven by purpose, and obsessed with mission
+          To empower teenagers to live a centered life - A life guided by values, driven by purpose, and obsessed with mission.
         </h3>
       </div>
     </div>
