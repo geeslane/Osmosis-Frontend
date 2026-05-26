@@ -171,7 +171,7 @@ export const MentorSignupForm = () => {
       formData.append('inspiration', data.inspires);
       formData.append('bio', data.bio);
       formData.append('verificationDocument', verificationDocument);
-      formData.append('picturee', pictureFile);
+      formData.append('picture', pictureFile);
       const response = await registerMentor(formData).unwrap();
       showToast(
         response.data?.message || 'Registration successful!',
