@@ -24,11 +24,38 @@ import FileUpload from '../form/FileUpload';
 import { Modal } from '../ui/modal';
 import { useDropdowns } from '@/hooks/useDropDownApi';
 import { RegisterFormData } from '../types';
+import {
+  formatDateToYmd,
+  getMentorMaxDateOfBirth,
+  isMentorTooYoung,
+  MENTOR_MIN_AGE_MESSAGE,
+} from '@/utils/signupDateLimits';
+
+const MARITAL_STATUS_OPTIONS = [
+  { label: 'Single', value: 'Single' },
+  { label: 'Married', value: 'Married' },
+];
+
+const MEANS_OF_VERIFICATION_OPTIONS = [
+  { label: 'NIN', value: 'NIN' },
+  { label: 'Passport', value: 'Passport' },
+  { label: "Driver's License", value: "Driver's License" },
+  { label: 'Other', value: 'Other' },
+];
+
+const VERIFICATION_DOCUMENT_ACCEPT =
+  'image/jpeg,image/jpg,image/png,image/gif,image/webp,application/pdf';
 
 export const MentorSignupForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
   const [pictureFile, setPictureFile] = useState<File | null>(null);
+  const [verificationDocument, setVerificationDocument] = useState<File | null>(
+    null
+  );
+  const [pictureError, setPictureError] = useState('');
+  const [verificationDocumentError, setVerificationDocumentError] =
+    useState('');
   const { showToast } = useToastify();
   const [registerMentor, { isLoading }] = useRegisterMentorMutation();
   const { dropdowns, isLoading: isDropdownsLoading } = useDropdowns([
@@ -43,23 +70,59 @@ export const MentorSignupForm = () => {
     control,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: yupResolver(RegisterMentorFormSchema),
     mode: 'onTouched',
+    defaultValues: {
+      mentorshipTopics: [],
+      maritalStatus: '',
+      meansOfVerification: '',
+      linkedin: '',
+    },
   });
+
+  const selectedTopics = watch('mentorshipTopics') ?? [];
+
+  const toggleMentorshipTopic = (value: string) => {
+    const current = selectedTopics;
+    if (current.includes(value)) {
+      setValue(
+        'mentorshipTopics',
+        current.filter((v) => v !== value),
+        { shouldValidate: true }
+      );
+      return;
+    }
+    if (current.length >= 5) {
+      showToast('You can select at most 5 topics.', 'error');
+      return;
+    }
+    setValue('mentorshipTopics', [...current, value], { shouldValidate: true });
+  };
 
   const totalSteps = 4;
 
   const nextStep = async () => {
     const stepFields: Record<number, (keyof RegisterFormData)[]> = {
       1: ['fullName', 'email', 'phoneNumber'],
-      2: ['dateOfBirth', 'gender'],
-      3: ['address', 'occupation', 'linkedin'],
-      4: ['topic', 'inspires', 'bio'],
+      2: ['dateOfBirth', 'gender', 'maritalStatus'],
+      3: ['address', 'occupation', 'meansOfVerification', 'linkedin'],
+      4: ['mentorshipTopics', 'inspires', 'bio'],
     };
 
     const isValid = await trigger(stepFields[currentStep]);
+    if (currentStep === 2 && !pictureFile) {
+      setPictureError('Profile picture is required');
+      showToast('Profile picture is required', 'error');
+      return;
+    }
+    if (currentStep === 3 && !verificationDocument) {
+      setVerificationDocumentError('Verification document is required');
+      showToast('Verification document is required', 'error');
+      return;
+    }
 
     if (isValid && currentStep < totalSteps) {
       setCurrentStep((prev) => prev + 1);
@@ -77,33 +140,50 @@ export const MentorSignupForm = () => {
   };
 
   const onSubmit = async (data: RegisterFormData) => {
+    if (!pictureFile) {
+      setPictureError('Profile picture is required');
+      showToast('Profile picture is required', 'error');
+      setCurrentStep(2);
+      return;
+    }
+    if (!verificationDocument) {
+      setVerificationDocumentError('Verification document is required');
+      showToast('Verification document is required', 'error');
+      setCurrentStep(3);
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append('fullName', data.fullName);
       formData.append('email', data.email);
       formData.append('dateOfBirth', data.dateOfBirth);
       formData.append('gender', data.gender);
+      formData.append('maritalStatus', data.maritalStatus);
       formData.append('phoneNumber', data.phoneNumber);
       formData.append('address', data.address);
       formData.append('occupation', data.occupation);
+      formData.append('meansOfVerification', data.meansOfVerification);
       if (data.linkedin) {
         formData.append('linkedinUrl', data.linkedin);
       }
-      formData.append('mentorshipTopics[]', data.topic);
+      formData.append('mentorshipTopics', JSON.stringify(data.mentorshipTopics));
       formData.append('inspiration', data.inspires);
       formData.append('bio', data.bio);
-      if (pictureFile) {
-        formData.append('picture', pictureFile);
-      }
+      formData.append('verificationDocument', verificationDocument);
+      formData.append('picturee', pictureFile);
       const response = await registerMentor(formData).unwrap();
       showToast(
         response.data?.message || 'Registration successful!',
         'success'
       );
-       reset();
-       setPictureFile(null);
-       setCurrentStep(1);
-       setShowSuccess(true);
+      reset();
+      setPictureFile(null);
+      setVerificationDocument(null);
+      setPictureError('');
+      setVerificationDocumentError('');
+      setCurrentStep(1);
+      setShowSuccess(true);
     } catch (error: any) {
       const message =
         error?.data?.message ||
@@ -203,18 +283,23 @@ export const MentorSignupForm = () => {
                         <DatePicker
                           selected={field.value ? new Date(field.value) : null}
                           onChange={(date: Date | null) => {
-                            if (date) {
-                              const formattedDate = date
-                                .toISOString()
-                                .split('T')[0];
-                              field.onChange(formattedDate);
-                              setValue('dateOfBirth', formattedDate, {
-                                shouldValidate: true,
-                              });
+                            if (!date) {
+                              field.onChange('');
+                              return;
                             }
+                            if (isMentorTooYoung(date)) {
+                              showToast(MENTOR_MIN_AGE_MESSAGE, 'error');
+                              return;
+                            }
+                            const formattedDate = formatDateToYmd(date);
+                            field.onChange(formattedDate);
+                            setValue('dateOfBirth', formattedDate, {
+                              shouldValidate: true,
+                            });
                           }}
                           dateFormat="MMMM dd, yyyy"
-                          maxDate={new Date()}
+                          maxDate={getMentorMaxDateOfBirth()}
+                          minDate={new Date(1940, 0, 1)}
                           showYearDropdown
                           showMonthDropdown
                           dropdownMode="select"
@@ -250,13 +335,27 @@ export const MentorSignupForm = () => {
                   register={register}
                   error={errors.gender}
                 />
+                <SelectForm
+                  label="Marital Status"
+                  name="maritalStatus"
+                  placeholder="Select marital status"
+                  options={MARITAL_STATUS_OPTIONS}
+                  register={register}
+                  error={errors.maritalStatus}
+                />
                 <FileUpload
-                  label="Picture"
+                  label="Profile Picture"
                   accept="image/png,image/jpeg"
                   widthHint="800×400px"
                   maxSizeMB={2}
-                  onFileSelect={(file) => setPictureFile(file)}
+                  onFileSelect={(file) => {
+                    setPictureFile(file);
+                    setPictureError(file ? '' : 'Profile picture is required');
+                  }}
                 />
+                {pictureError && (
+                  <p className="text-red-500 text-xs mt-1">{pictureError}</p>
+                )}
               </div>
             )}
             {currentStep === 3 && (
@@ -276,6 +375,33 @@ export const MentorSignupForm = () => {
                   register={register}
                   error={errors.occupation}
                 />
+
+                <SelectForm
+                  label="Means of Verification"
+                  name="meansOfVerification"
+                  placeholder="Select document type"
+                  options={MEANS_OF_VERIFICATION_OPTIONS}
+                  register={register}
+                  error={errors.meansOfVerification}
+                />
+
+                <FileUpload
+                  label="Verification Document"
+                  accept={VERIFICATION_DOCUMENT_ACCEPT}
+                  widthHint="JPG, PNG, GIF, WEBP or PDF"
+                  maxSizeMB={5}
+                  onFileSelect={(file) => {
+                    setVerificationDocument(file);
+                    setVerificationDocumentError(
+                      file ? '' : 'Verification document is required'
+                    );
+                  }}
+                />
+                {verificationDocumentError && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {verificationDocumentError}
+                  </p>
+                )}
 
                 <InputForm
                   label="LinkedIn Profile"
@@ -299,16 +425,55 @@ export const MentorSignupForm = () => {
                   rows={4}
                 />
 
-                <SelectForm
-                  label="Mentorship Topics of Interest"
-                  name="topic"
-                  register={register}
-                  placeholder={
-                    isDropdownsLoading ? 'Loading...' : 'Select Topics'
-                  }
-                  error={errors.topic}
-                  options={dropdowns['mentorship-topics']}
-                />
+                <div className="flex flex-col gap-2">
+                  <label className="text-green-300 font-medium">
+                    Mentorship Topics of Interest
+                  </label>
+                  <p className="text-sm text-gray-500">
+                    Choose up to 5 topics ({selectedTopics.length}/5 selected)
+                  </p>
+                  {isDropdownsLoading ? (
+                    <p className="text-sm text-gray-500">Loading topics…</p>
+                  ) : (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {(dropdowns['mentorship-topics'] ?? []).map((option) => {
+                        const checked = selectedTopics.includes(option.value);
+                        const disabled =
+                          !checked && selectedTopics.length >= 5;
+                        return (
+                          <label
+                            key={option.value}
+                            className={`flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 transition-colors ${
+                              checked
+                                ? 'border-green-200 bg-green-50/80'
+                                : disabled
+                                  ? 'cursor-not-allowed border-gray-200 bg-gray-50 opacity-60'
+                                  : 'border-green-200/60 bg-white hover:border-green-200'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              disabled={disabled}
+                              onChange={() => toggleMentorshipTopic(option.value)}
+                              className="mt-1 h-4 w-4 shrink-0 accent-green-100"
+                            />
+                            <span className="text-sm font-medium text-[#37445D]">
+                              {option.label}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {errors.mentorshipTopics && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {typeof errors.mentorshipTopics.message === 'string'
+                        ? errors.mentorshipTopics.message
+                        : 'Select at least one mentorship topic'}
+                    </p>
+                  )}
+                </div>
 
                 <InputForm
                   label="Bio"

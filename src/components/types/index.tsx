@@ -56,11 +56,13 @@ export type RegisterFormData = {
   email: string;
   dateOfBirth: string;
   gender: string;
+  maritalStatus: string;
   phoneNumber: string;
   address: string;
   occupation: string;
+  meansOfVerification: string;
   linkedin: string;
-  topic: string;
+  mentorshipTopics: string[];
   inspires: string;
   bio: string;
 };

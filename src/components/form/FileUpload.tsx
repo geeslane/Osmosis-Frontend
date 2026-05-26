@@ -24,6 +24,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,6 +38,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
       if (preview) URL.revokeObjectURL(preview);
       setPreview(null);
       setFileName(null);
+      setFileType(null);
       onFileSelect(null);
       return;
     }
@@ -49,16 +51,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
     setError(null);
     if (preview) URL.revokeObjectURL(preview);
     setFileName(file.name);
+    setFileType(file.type);
     setPreview(URL.createObjectURL(file));
     onFileSelect(file);
   };
 
-  const isImage =
-    !!preview &&
-    accept
-      .split(',')
-      .map((s) => s.trim())
-      .some((t) => t.startsWith('image/'));
+  const isImage = !!preview && fileType?.startsWith('image/');
 
   return (
     <div className="flex flex-col gap-2 font-montserrat">
@@ -81,7 +79,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
               className="text-sm font-medium text-[#2699BF] hover:underline w-fit"
               disabled={disabled}
             >
-              Change picture
+              Change file
             </button>
           </div>
         ) : (

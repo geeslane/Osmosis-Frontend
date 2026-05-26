@@ -1,20 +1,45 @@
 import * as yup from 'yup';
+import {
+  isMentorAgeValid,
+  isTeenAgeValid,
+  MENTOR_MIN_AGE_MESSAGE,
+  TEEN_AGE_RANGE_MESSAGE,
+} from '@/utils/signupDateLimits';
 
 export const RegisterMentorFormSchema = yup.object({
   fullName: yup.string().required('Full name is required'),
 
   email: yup.string().email('Invalid email').required('Email is required'),
   occupation: yup.string().required('Occupation is required'),
-  dateOfBirth: yup.string().required('Date of birth is required'),
-  topic: yup.string().required('Topic is required'),
-  inspires: yup.string().required('Topic is required'),
+  dateOfBirth: yup
+    .string()
+    .required('Date of birth is required')
+    .test('mentor-min-age', MENTOR_MIN_AGE_MESSAGE, (value) =>
+      isMentorAgeValid(value)
+    ),
+  maritalStatus: yup.string().required('Marital status is required'),
+  mentorshipTopics: yup
+    .array()
+    .of(yup.string().required())
+    .min(1, 'Select at least one mentorship topic')
+    .max(5, 'You can select at most 5 topics')
+    .required('Select at least one mentorship topic'),
+  inspires: yup.string().required('This field is required'),
   phoneNumber: yup.string().required('Phone number is required'),
   gender: yup.string().required('Gender is required'),
   address: yup.string().required('Address is required'),
+  meansOfVerification: yup
+    .string()
+    .required('Means of verification is required'),
   linkedin: yup
     .string()
-    .url('Please enter a valid LinkedIn URL')
-    .required('LinkedIn profile is required'),
+    .trim()
+    .default('')
+    .defined()
+    .test('optional-linkedin-url', 'Please enter a valid LinkedIn URL', (value) => {
+      if (!value) return true;
+      return yup.string().url().isValidSync(value);
+    }),
   bio: yup.string().required('Bio is required'),
 });
 
@@ -34,7 +59,12 @@ export const RegisterFormSchema = yup.object({
 
   parentPhoneNumber: yup.string().required('Parent phone number is required'),
 
-  dateOfBirth: yup.string().required('Date of birth is required'),
+  dateOfBirth: yup
+    .string()
+    .required('Date of birth is required')
+    .test('teen-age-range', TEEN_AGE_RANGE_MESSAGE, (value) =>
+      isTeenAgeValid(value)
+    ),
 
   gender: yup.string().required('Gender is required'),
 

@@ -24,6 +24,13 @@ import FileUpload from '../form/FileUpload';
 import { Modal } from '../ui/modal';
 import { TeenagerRegisterFormData } from '../types';
 import { useDropdowns } from '@/hooks/useDropDownApi';
+import {
+  formatDateToYmd,
+  getTeenMaxDateOfBirth,
+  getTeenMinDateOfBirth,
+  isTeenAgeOutOfRange,
+  TEEN_AGE_RANGE_MESSAGE,
+} from '@/utils/signupDateLimits';
 
 export const TeenagerSignupForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -214,18 +221,23 @@ export const TeenagerSignupForm = () => {
                         <DatePicker
                           selected={field.value ? new Date(field.value) : null}
                           onChange={(date: Date | null) => {
-                            if (date) {
-                              const formattedDate = date
-                                .toISOString()
-                                .split('T')[0];
-                              field.onChange(formattedDate);
-                              setValue('dateOfBirth', formattedDate, {
-                                shouldValidate: true,
-                              });
+                            if (!date) {
+                              field.onChange('');
+                              return;
                             }
+                            if (isTeenAgeOutOfRange(date)) {
+                              showToast(TEEN_AGE_RANGE_MESSAGE, 'error');
+                              return;
+                            }
+                            const formattedDate = formatDateToYmd(date);
+                            field.onChange(formattedDate);
+                            setValue('dateOfBirth', formattedDate, {
+                              shouldValidate: true,
+                            });
                           }}
                           dateFormat="MMMM dd, yyyy"
-                          maxDate={new Date()}
+                          minDate={getTeenMinDateOfBirth()}
+                          maxDate={getTeenMaxDateOfBirth()}
                           showYearDropdown
                           showMonthDropdown
                           dropdownMode="select"
